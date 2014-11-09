@@ -1,0 +1,454 @@
+.gnomenu-panel-box {
+}
+
+.gnomenu-panel-button {
+    margin: 0px;
+    padding: 0px 10px;
+}
+
+.gnomenu-panel-button-icon {
+    padding: 0px;
+}
+
+/*------------------------------*/
+
+.gnomenu-menu-box {
+    padding: 5px 20px 0px 20px;
+}
+
+.gnomenu-menu-topPane {
+    padding: 0px 0px 20px 0px;
+}
+
+.gnomenu-menu-middlePane {
+    padding: 0px 0px 0px 0px;
+}
+
+.gnomenu-menu-middlePane StScrollBar {
+    width: 10px;
+}
+
+.gnomenu-menu-bottomPane {
+    padding: 0px 0px 0px 0px;
+}
+
+/*------------------------------*/
+
+.gnomenu-categorypanel-box {
+    background-gradient-direction: vertical;
+    background-gradient-start: rgba(136,138,133,0.2);
+    background-gradient-end: rgba(136,138,133,0.2);
+    border: 1px solid rgba(136,138,133,0.4);
+    border-radius: 14px;
+}
+
+/*------------------------------*/
+
+.gnomenu-viewMode-box {
+    background-gradient-direction: vertical;
+    background-gradient-start: rgba(136,138,133,0.2);
+    background-gradient-end: rgba(136,138,133,0.2);
+    border: 1px solid rgba(136,138,133,0.4);
+    border-radius: 14px;
+    spacing: 2px;
+}
+
+/*------------------------------*/
+
+.gnomenu-search-box {
+}
+
+.gnomenu-search-searchEntry {
+    background-gradient-start: rgb(200,200,200);
+    background-gradient-end: white;
+    background-gradient-direction: vertical;
+    box-shadow: inset 0px 2px 4px rgba(0,0,0,0.6);
+    border: 1px solid rgba(255,255,255,0.3);
+    width: 150px;
+    font-size: 9pt;
+    font-weight: bold;
+    height: 24px;
+    padding: 0px 8px;
+}
+
+.gnomenu-search-searchEntry-icon {
+}
+
+/*------------------------------*/
+
+.gnomenu-sidebar-scrollbox {
+    background-gradient-direction: vertical;
+    background-gradient-start: rgba(136,138,133,0.1);
+    background-gradient-end: rgba(136,138,133,0.1);
+    border: 1px solid rgba(136,138,133,0.4);
+    border-radius: 8px 0px 0px 8px;
+    padding: 3px;
+}
+
+.gnomenu-sidebar-box {
+    padding: 0px;
+    spacing: 2px;
+}
+
+/*------------------------------*/
+
+.gnomenu-categories-workspaces-wrapper {
+    padding: 0px 0px 0px 0px;
+}
+
+.gnomenu-categories-workspaces-scrollbox {
+    border-image: url("sepa-right.png") 12 12 12 12;
+    height: 311px;
+    padding: 8px 2px 8px 0px;
+}
+
+.gnomenu-categories-box {
+    padding-left: 6px;
+    padding-right: 6px;
+    spacing: 2px;
+}
+
+.gnomenu-workspaces-box {
+    padding-left: 6px;
+    padding-right: 6px;
+    spacing: 2px;
+}
+
+.gnomenu-workspace-thumbnails {
+    spacing: 11px;
+}
+
+.gnomenu-workspaces-background {
+    padding: 5px 12px 5px 11px;
+}
+
+/*------------------------------*/
+
+.gnomenu-controlPane-box {
+    border-width: 2px;
+    padding: 3px 0px 0px 0px;
+    spacing: 2px;
+}
+
+/*------------------------------*/
+
+.gnomenu-mainArea-box {
+    border-image: url("b-panel-r.png") 12 12 12 12;
+    padding: 5px 2px 4px 2px;
+    width: 362px;
+}
+
+.gnomenu-applications-scrollbox {
+}
+
+.gnomenu-applications-box {
+}
+
+.gnomenu-applications-list-box {
+    padding-bottom: 0px;
+    padding-left: 38px;
+    padding-right: 0px;
+    padding-top: 8px;
+    spacing: 2px;
+}
+
+.gnomenu-applications-grid-box {
+    padding-bottom: 0px;
+    padding-left: 4px;
+    padding-right: 4px;
+    padding-top: 0px;
+}
+
+.gnomenu-searchArea-scrollbox {
+}
+
+.gnomenu-searchArea-box {
+    padding-top: 10px;
+    padding-right: 10px;
+}
+
+.gnomenu-searchArea-category-box {
+    padding-left: 15px;
+    padding-bottom: 10px;
+}
+
+.gnomenu-searchArea-list-box {
+    padding-top: 10px;
+    padding-left: 35px;
+}
+
+.gnomenu-searchArea-grid-box {
+    padding-top: 10px;
+    padding-left: 30px;
+}
+
+/*------------------------------*/
+
+.gnomenu-description-box {
+    padding: 2px 6px 0px 0px;
+    text-align: right;
+    max-width: 100px;
+}
+
+.gnomenu-description-box-title {
+    height: 17px;
+    font-weight: bold;
+    font-size: 12px;
+}
+
+.gnomenu-description-box-description {
+    height: 17px;
+    font-size: 12px;
+}
+
+/*------------------------------*/
+/*--------  Buttons  -----------*/
+/*------------------------------*/
+
+.gnomenu-searchArea-category-button {
+    border-radius: 4px;
+    border-width: 1px;
+    height: 20px;
+    padding: 0px 10px;
+    border-image: url("b-panel-r.png") 12 12 12 12;
+}
+
+.gnomenu-searchArea-category-button-label {
+    font-size: 8pt;
+    font-weight: normal;
+    padding: 0px 0px 0px 24px;
+}
+
+.gnomenu-searchArea-category-button:active {
+    background-gradient-direction: vertical;
+    background-gradient-start: rgba(136,138,133,0.1);
+    background-gradient-end: rgba(136,138,133,0.1);
+}
+
+.gnomenu-searchArea-category-button:open {
+    background-gradient-direction: vertical;
+    background-gradient-start: rgba(136,138,133,0.2);
+    background-gradient-end: rgba(136,138,133,0.2);
+}
+
+.gnomenu-searchArea-category-button:pressed {
+    background-gradient-direction: vertical;
+    background-gradient-start: rgba(136,138,133,0.1);
+    background-gradient-end: rgba(136,138,133,0.1);
+}
+
+/*------------------------------*/
+
+.gnomenu-textToggle-button {
+    border-radius: 14px;
+    border-width: 1px;
+    height: 22px;
+    padding: 0px 9px;
+}
+
+.gnomenu-textToggle-button:insensitive {
+    color: #9f9f9f;
+}
+
+.gnomenu-textToggle-button:active {
+}
+
+.gnomenu-textToggle-button:open {
+    background-gradient-direction: vertical;
+    background-gradient-start: rgba(136,138,133,0.2);
+    background-gradient-end: rgba(136,138,133,0.2);
+    border: 1px solid rgba(136,138,133,0.5);
+}
+
+.gnomenu-textToggle-button:pressed {
+    background-gradient-direction: vertical;
+    background-gradient-start: rgba(136,138,133,0.1);
+    background-gradient-end: rgba(136,138,133,0.1);
+    border: 1px solid rgba(136,138,133,0.5);
+}
+
+.gnomenu-textToggle-button-label {
+    font-size: 10pt;
+    font-weight: bold;
+}
+
+/*------------------------------*/
+
+.gnomenu-iconToggle-button {
+    border-radius: 14px;
+    border-width: 1px;
+    padding: 3px 7px;
+}
+
+.gnomenu-iconToggle-button:insensitive {
+}
+
+.gnomenu-iconToggle-button:active {
+}
+
+.gnomenu-iconToggle-button:open {
+    background-gradient-direction: vertical;
+    background-gradient-start: rgba(136,138,133,0.2);
+    background-gradient-end: rgba(136,138,133,0.2);
+    border: 1px solid rgba(136,138,133,0.5);
+}
+
+.gnomenu-iconToggle-button:pressed {
+    background-gradient-direction: vertical;
+    background-gradient-start: rgba(136,138,133,0.1);
+    background-gradient-end: rgba(136,138,133,0.1);
+    border: 1px solid rgba(136,138,133,0.5);
+}
+
+/*------------------------------*/
+
+.gnomenu-text-button {
+    border-radius: 3px;
+    border-width: 1px;
+    height: 22px;
+    padding: 0px 10px;
+}
+
+.gnomenu-text-button-label {
+    font-size: 9pt;
+    font-weight: bold;
+    padding: 3px 10px;
+}
+
+.gnomenu-text-button:active {
+}
+
+.gnomenu-text-button:open {
+    background-gradient-direction: vertical;
+    background-gradient-start: rgba(136,138,133,0.2);
+    background-gradient-end: rgba(136,138,133,0.2);
+    border: 1px solid rgba(136,138,133,0.4);
+}
+
+.gnomenu-text-button:pressed {
+    background-gradient-direction: vertical;
+    background-gradient-start: rgba(136,138,133,0.1);
+    background-gradient-end: rgba(136,138,133,0.1);
+    border: 1px solid rgba(136,138,133,0.5);
+}
+
+/*------------------------------*/
+
+.gnomenu-icon-button {
+    border-radius: 14px;
+    border-width: 1px;
+    padding: 4px 8px;
+}
+
+.gnomenu-icon-button:active {
+}
+
+.gnomenu-icon-button:open {
+    background-gradient-direction: vertical;
+    background-gradient-start: rgba(136,138,133,0.2);
+    background-gradient-end: rgba(136,138,133,0.2);
+    border: 1px solid rgba(136,138,133,0.5);
+}
+
+.gnomenu-icon-button:pressed {
+    background-gradient-direction: vertical;
+    background-gradient-start: rgba(136,138,133,0.1);
+    background-gradient-end: rgba(136,138,133,0.1);
+    border: 1px solid rgba(136,138,133,0.5);
+}
+
+/*------------------------------*/
+
+.gnomenu-appIcon-button {
+    border-radius: 3px;
+    border-width: 1px;
+    padding: 2px;
+}
+
+.gnomenu-appIcon-button-symbolic {
+    padding: 4px;
+}
+
+.gnomenu-appIcon-button:active {
+}
+
+.gnomenu-appIcon-button:open {
+    background-gradient-direction: vertical;
+    background-gradient-start: rgba(136,138,133,0.2);
+    background-gradient-end: rgba(136,138,133,0.2);
+    border: 1px solid rgba(136,138,133,0.5);
+}
+
+.gnomenu-appIcon-button:pressed {
+    background-gradient-direction: vertical;
+    background-gradient-start: rgba(136,138,133,0.1);
+    background-gradient-end: rgba(136,138,133,0.1);
+    border: 1px solid rgba(136,138,133,0.5);
+}
+
+/*------------------------------*/
+
+.gnomenu-appList-button {
+    border-radius: 3px;
+    border-width: 1px;
+    height: 22px;
+    padding: 0px 8px;
+}
+
+.gnomenu-appList-button-label {
+    font-size: 9pt;
+    font-weight: bold;
+    padding: 2px 0px 3px 24px;
+}
+
+.gnomenu-appList-button:active {
+}
+
+.gnomenu-appList-button:open {
+    background-gradient-direction: vertical;
+    background-gradient-start: rgba(136,138,133,0.2);
+    background-gradient-end: rgba(136,138,133,0.2);
+    border: 1px solid rgba(136,138,133,0.5);
+}
+
+.gnomenu-appList-button:pressed {
+    background-gradient-direction: vertical;
+    background-gradient-start: rgba(136,138,133,0.1);
+    background-gradient-end: rgba(136,138,133,0.1);
+    border: 1px solid rgba(136,138,133,0.5);
+}
+
+/*------------------------------*/
+
+.gnomenu-appGrid-button {
+    border-width: 1px;
+    border-radius: 7px;
+    padding: 5px;
+    width: 56px;
+    height: 52px;
+}
+
+.gnomenu-appGrid-button-label {
+    font-size: 8pt;
+    font-weight: bold;
+    padding-top: 2px;
+    text-align: center;
+    width: 48px;
+}
+
+.gnomenu-appGrid-button:active {
+}
+
+.gnomenu-appGrid-button:open {
+    background-gradient-direction: vertical;
+    background-gradient-start: rgba(136,138,133,0.2);
+    background-gradient-end: rgba(136,138,133,0.2);
+    border: 1px solid rgba(136,138,133,0.5);
+}
+
+.gnomenu-appGrid-button:pressed {
+    background-gradient-direction: vertical;
+    background-gradient-start: rgba(136,138,133,0.1);
+    background-gradient-end: rgba(136,138,133,0.1);
+    border: 1px solid rgba(136,138,133,0.5);
+}
