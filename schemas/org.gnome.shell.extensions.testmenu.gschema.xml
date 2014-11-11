@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist gettext-domain="testMenuGettext">
+
+    <enum id='org.gnome.shell.extensions.testMenu.categorySelectionMethod'>
+        <value value='20' nick='selectionMethod_click'/>
+        <value value='21' nick='selectionMethod_hover'/>
+    </enum>
+
+    <enum id='org.gnome.shell.extensions.testMenu.menuViewMode'>
+        <value value='30' nick='viewMode_list'/>
+        <value value='31' nick='viewMode_grid'/>
+    </enum>
+
+    <enum id='org.gnome.shell.extensions.testMenu.menuLayout'>
+        <value value='40' nick='menuLayout_large'/>
+        <value value='41' nick='menuLayout_medium'/>
+        <value value='42' nick='menuLayout_small'/>
+    </enum>
+
+    <enum id='org.gnome.shell.extensions.testMenu.sidebarCategory'>
+        <value value='52' nick='category_favorites'/>
+        <value value='54' nick='category_places'/>
+    </enum>
+
+    <enum id='org.gnome.shell.extensions.testMenu.menuStartCategory'>
+        <value value='51' nick='category_mostUsed'/>
+        <value value='50' nick='category_allApps'/>
+    </enum>
+
+
+    <schema path="/org/gnome/shell/extensions/testmenu/" id="org.gnome.shell.extensions.testmenu">
+
+        <key type="b" name="disable-activities-hotcorner">
+            <default>true</default>
+            <summary>Disable the Applications hot corner.</summary>
+            <description>Disable the Applications hot corner.</description>
+        </key>
+
+        <key type="b" name="disable-menu-hotspot">
+            <default>true</default>
+            <summary>Disable the Menu hotspot.</summary>
+            <description>Disable the Menu hotspot.</description>
+        </key>
+
+        <key type="b" name="enable-menu-shortcut">
+            <default>true</default>
+            <summary>Enable the menu button shortcut.</summary>
+            <description>Enable the menu button shortcut.</description>
+        </key>
+
+        <key type="as" name="menu-shortcut-key">
+            <default><![CDATA[['F2']]]></default>
+            <summary>Set the menu button keyboard shortcut.</summary>
+            <description>Set the menu button keyboard shortcut.</description>
+        </key>
+
+
+
+        <key type="b" name="enable-menu-button">
+            <default>true</default>
+            <summary>Show the menu button.</summary>
+            <description>Show the menu button.</description>
+        </key>
+
+        <key type="as" name="menu-button-text">
+            <default><![CDATA[['Menu']]]></default>
+            <summary>Set the custom menu button text.</summary>
+            <description>Set the custom menu button text.</description>
+        </key>
+
+        <key type="b" name="enable-menu-button-icon">
+            <default>true</default>
+            <summary>Show the menu button icon.</summary>
+            <description>Show the menu button icon.</description>
+        </key>
+
+        <key type="as" name="menu-button-icon">
+            <default><![CDATA[['view-grid-symbolic']]]></default>
+            <summary>Set the menu button icon name.</summary>
+            <description>Set the menu button icon name.</description>
+        </key>
+
+
+
+        <key type="b" name="enable-apps-button">
+            <default>true</default>
+            <summary>Show the apps button.</summary>
+            <description>Show the apps button.</description>
+        </key>
+
+        <key type="as" name="apps-button-text">
+            <default><![CDATA[['Apps']]]></default>
+            <summary>Set the custom apps button text.</summary>
+            <description>Set the custom apps button text.</description>
+        </key>
+
+        <key type="b" name="enable-apps-button-icon">
+            <default>true</default>
+            <summary>Show the apps button icon.</summary>
+            <description>Show the apps button icon.</description>
+        </key>
+
+        <key type="as" name="apps-button-icon">
+            <default><![CDATA[['start-here-symbolic']]]></default>
+            <summary>Set the apps button icon name.</summary>
+            <description>Set the apps button icon name.</description>
+        </key>
+
+
+
+        <key type="b" name="enable-workspace-button">
+            <default>true</default>
+            <summary>Show the workspace button.</summary>
+            <description>Show the workspace button.</description>
+        </key>
+
+        <key type="as" name="workspace-button-text">
+            <default><![CDATA[['View']]]></default>
+            <summary>Set the custom workspace button text.</summary>
+            <description>Set the custom workspace button text.</description>
+        </key>
+
+        <key type="b" name="enable-workspace-button-icon">
+            <default>true</default>
+            <summary>Show the workspace button icon.</summary>
+            <description>Show the workspace button icon.</description>
+        </key>
+
+        <key type="as" name="workspace-button-icon">
+            <default><![CDATA[['emblem-photos-symbolic']]]></default>
+            <summary>Set the workspace button icon name.</summary>
+            <description>Set the workspace button icon name.</description>
+        </key>
+
+
+
+        <key type="b" name="enable-sidebar">
+            <default>true</default>
+            <summary>Show the menu sidebar.</summary>
+            <description>Show the menu sidebar.</description>
+        </key>
+
+        <key enum="org.gnome.shell.extensions.testMenu.sidebarCategory" name="sidebar-category">
+            <default>'category_favorites'</default>
+            <summary>Category to display in the sidebar.</summary>
+            <description>Category to display in the sidebar.</description>
+        </key>
+
+        <key type="i" name="sidebar-iconsize">
+            <default>32</default>
+            <summary>Sidebar button iconsize.</summary>
+            <description>Sidebar button iconsize.</description>
+        </key>
+
+
+
+        <key enum="org.gnome.shell.extensions.testMenu.menuLayout" name="menu-layout">
+            <default>'menuLayout_medium'</default>
+            <summary>Size and layout of the menu.</summary>
+            <description>Size and layout of the menu.</description>
+        </key>
+
+        <key enum="org.gnome.shell.extensions.testMenu.menuStartCategory" name="menu-category">
+            <default>'category_mostUsed'</default>
+            <summary>Startup applications to display.</summary>
+            <description>Startup applications to display.</description>
+        </key>
+
+        <key enum="org.gnome.shell.extensions.testMenu.menuViewMode" name="menu-viewmode">
+            <default>'viewMode_list'</default>
+            <summary>Startup applications view mode.</summary>
+            <description>Startup applications view mode.</description>
+        </key>
+
+        <key enum="org.gnome.shell.extensions.testMenu.categorySelectionMethod" name="menu-category-selectionmethod">
+            <default>'selectionMethod_click'</default>
+            <summary>Method of selecting categories.</summary>
+            <description>Method of selecting categories.</description>
+        </key>
+
+        <key type="i" name="menu-applist-iconsize">
+            <default>24</default>
+            <summary>Application list iconsize.</summary>
+            <description>Application list iconsize.</description>
+        </key>
+
+        <key type="i" name="menu-appgrid-iconsize">
+            <default>48</default>
+            <summary>Application grid iconsize.</summary>
+            <description>Application grid iconsize.</description>
+        </key>
+
+
+
+        <key type="i" name="menu-search-maxresultcount">
+            <default>4</default>
+            <summary>Maximal shown search results.</summary>
+            <description>Maximal shown search results.</description>
+        </key>
+
+    </schema>
+
+</schemalist>

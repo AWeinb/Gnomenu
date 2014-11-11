@@ -12,6 +12,7 @@ const Datamanager = Me.imports.scripts.data.datamanager.Datamanager;
 const EEventType = Constants.EEventType;
 const EViewMode = Constants.EViewMode;
 const ECategoryID = Constants.ECategoryID;
+const ECategoryNum = Constants.ECategoryNum;
 const EMenuLayout = Constants.EMenuLayout;
 const ESelectionMethod = Constants.ESelectionMethod;
 
@@ -158,12 +159,128 @@ const MenuModel = new Lang.Class({
     getSettings: function() {
         return this._settings;
     },
+	
+    
+    isSidebarVisible: function() {
+        return this._settings.get_boolean('enable-sidebar');
+    },
+    
+    registerSidebarVisibleCB: function(onChangeCallback) {
+        this._changeSettingsCB('changed::enable-sidebar', onChangeCallback);
+        return true;
+    },
+    
+    getDefaultSidebarCategory: function() {
+        let defCat = this._settings.get_enum('sidebar-category');
+        
+        switch (defCat) {
+            
+            case ECategoryNum.FAVORITES:
+                defCat = ECategoryID.FAVORITES;
+                break;
+            
+            case ECategoryNum.PLACES:
+                defCat = ECategoryID.PLACES;
+                break;
+                
+            default:
+                defCat = ECategoryID.FAVORITES;
+                break;
+        }
+        
+        return defCat;
+    },
+    
+    registerDefaultSidebarCategoryCB: function(onChangeCallback) {
+        this._changeSettingsCB('changed::sidebar-category', onChangeCallback);
+        return true;
+    },
+    
+    getSidebarIconSize: function() {
+        let iconSize = this._settings.get_int('sidebar-iconsize');
+        if (!iconSize) {
+            iconSize = 64;
+        }
+        return iconSize;
+    },
+    
+    registerSidebarIconSizeCB: function(onChangeCallback) {
+        this._changeSettingsCB('changed::sidebar-iconsize', onChangeCallback);
+        return true;
+    },
+    
+    
+    
+    getMenuLayout: function() {
+        let layout = this._settings.get_enum('menu-layout');
+        if (!layout) {
+            layout = EMenuLayout.MEDIUM;
+        }
+        return layout;
+    },
+    
+    registerMenuLayoutCB: function(onChangeCallback) {
+        this._changeSettingsCB('changed::menu-layout', onChangeCallback);
+        return true;
+    },
+    
+    getDefaultShortcutAreaCategory: function() {
+        let defCat = this._settings.get_enum('menu-category');
+        
+        switch (defCat) {
+            
+            case ECategoryNum.MOST_USED:
+                defCat = ECategoryID.MOST_USED;
+                break;
+            
+            case ECategoryNum.ALL_APPS:
+                defCat = ECategoryID.ALL_APPS;
+                break;
+                
+            default:
+                defCat = ECategoryID.MOST_USED;
+                break;
+        }
+        
+        return defCat;
+    },
+    
+    registerDefaultShortcutAreaCategoryCB: function(onChangeCallback) {
+        this._changeSettingsCB('changed::menu-category', onChangeCallback);
+        return true;
+    },
+    
+    getShortcutAreaViewMode: function() {
+        let viewMode = this._settings.get_enum('menu-viewmode');
+        if (!viewMode) {
+            viewMode = EViewMode.LIST;
+        }
+        return viewMode;
+    },
+    
+    registerShortcutAreaViewModeCB: function(onChangeCallback) {
+        this._changeSettingsCB('changed::menu-viewmode', onChangeCallback);
+        return true;
+    },
+    
+    getCategorySelectionMethod: function() {
+        let method = this._settings.get_enum('menu-category-selectionmethod');
+        if (!method) {
+            method = ESelectionMethod.CLICK;
+        }
+        return method;
+    },
+    
+    registerCategorySelectionMethodCB: function(onChangeCallback) {
+        this._changeSettingsCB('changed::menu-category-selectionmethod', onChangeCallback);
+        return true;
+    },
     
     getShortcutListIconSize: function() {
         if (!this._settings) {
             return null;
         }
-        let iconSize = this._settings.get_int('apps-list-icon-size');
+        let iconSize = this._settings.get_int('menu-applist-iconsize');
         if (!iconSize) {
             iconSize = 28;
         }
@@ -171,12 +288,27 @@ const MenuModel = new Lang.Class({
     },
     
     registerShortcutListIconSizeCB: function(onChangeCallback) {
-        this._changeSettingsCB('changed::apps-list-icon-size', onChangeCallback);
+        this._changeSettingsCB('changed::menu-applist-iconsize', onChangeCallback);
         return true;
     },
     
+    getShortcutGridIconSize: function() {
+        let iconSize = this._settings.get_int('menu-appgrid-iconsize');
+        if (!iconSize) {
+            iconSize = 64;
+        }
+        return iconSize;
+    },
+    
+    registerShortcutGridIconSizeCB: function(onChangeCallback) {
+        this._changeSettingsCB('changed::menu-appgrid-iconsize', onChangeCallback);
+        return true;
+    },
+    
+    
+    
     getShortcutGridColumnCount: function() {
-        let colCount = null;
+        let colCount = null; //XXX
         if (!colCount) {
             colCount = 5;
         }
@@ -188,108 +320,8 @@ const MenuModel = new Lang.Class({
         return true;
     },
     
-    getShortcutGridIconSize: function() {
-        let iconSize = this._settings.get_int('apps-grid-icon-size');
-        if (!iconSize) {
-            iconSize = 64;
-        }
-        return iconSize;
-    },
-    
-    registerShortcutGridIconSizeCB: function(onChangeCallback) {
-        this._changeSettingsCB('changed::apps-grid-icon-size', onChangeCallback);
-        return true;
-    },
-    
-    getShortcutAreaViewMode: function() {
-        let viewMode = this._settings.get_enum('startup-view-mode');
-        if (!viewMode) {
-            viewMode = EViewMode.LIST;
-        }
-        return viewMode;
-    },
-    
-    registerShortcutAreaViewModeCB: function(onChangeCallback) {
-        this._changeSettingsCB('changed::startup-view-mode', onChangeCallback);
-        return true;
-    },
-    
-    getDefaultShortcutAreaCategory: function() {
-        let defCat = this._settings.get_enum('startup-apps-display');
-        if (!defCat) {
-            defCat = ECategoryID.MOST_USED;
-        }
-        return ECategoryID.MOST_USED; //defCat; XXX
-    },
-    
-    registerDefaultShortcutAreaCategoryCB: function(onChangeCallback) {
-        this._changeSettingsCB('changed::startup-apps-display', onChangeCallback);
-        return true;
-    },
-    
-    isSidebarVisible: function() {
-        return !this._settings.get_boolean('hide-shortcuts');
-    },
-    
-    registerSidebarVisibleCB: function(onChangeCallback) {
-        this._changeSettingsCB('changed::hide-shortcuts', onChangeCallback);
-        return true;
-    },
-    
-    getSidebarIconSize: function() {
-        let iconSize = this._settings.get_int('shortcuts-icon-size');
-        if (!iconSize) {
-            iconSize = 64;
-        }
-        return iconSize;
-    },
-    
-    registerSidebarIconSizeCB: function(onChangeCallback) {
-        this._changeSettingsCB('changed::shortcuts-icon-size', onChangeCallback);
-        return true;
-    },
-    
-    getDefaultSidebarCategory: function() {
-        let defCat = this._settings.get_enum('shortcuts-display');
-        if (!defCat) {
-            defCat = ECategoryID.FAVORITES;
-        }
-        return defCat;
-    },
-    
-    registerDefaultSidebarCategoryCB: function(onChangeCallback) {
-        this._changeSettingsCB('changed::shortcuts-display', onChangeCallback);
-        return true;
-    },
-    
-    getMenuLayout: function() {
-        let layout = this._settings.get_enum('menu-layout');
-        if (!layout) {
-            layout = EMenuLayout.MEDIUM;
-        }
-        return EMenuLayout.MEDIUM;//layout; XXX
-    },
-    
-    registerMenuLayoutCB: function(onChangeCallback) {
-        this._changeSettingsCB('changed::menu-layout', onChangeCallback);
-        return true;
-    },
-    
-    getCategorySelectionMethod: function() {
-        let method = this._settings.get_enum('category-selection-method');
-        if (!method) {
-            method = ESelectionMethod.CLICK;
-        }
-        return ESelectionMethod.CLICK; //method; XXX
-    },
-    
-    registerCategorySelectionMethodCB: function(onChangeCallback) {
-        this._changeSettingsCB('changed::category-selection-method', onChangeCallback);
-        return true;
-    },
-    
     getMaxSearchResultCount: function() {
-        let count = null//this._settings.get_enum('max-searchresult-count');
+        let count = this._settings.get_int('menu-search-maxresultcount');
         if (!count) {
             count = 4;
         }
@@ -297,7 +329,7 @@ const MenuModel = new Lang.Class({
     },
     
     registerMaxSearchResultCountCB: function(onChangeCallback) {
-        //this._changeSettingsCB('changed::max-searchresult-count', onChangeCallback);
+        this._changeSettingsCB('changed::menu-search-maxresultcount', onChangeCallback);
         return true;
     },
     
@@ -322,6 +354,7 @@ const MenuModel = new Lang.Class({
         }
         return iconSize;
     },
+    
     
     _changeSettingsCB: function(key, onChangeCallback) {
         if (!onChangeCallback) {

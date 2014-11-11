@@ -11,7 +11,6 @@ const Log = Me.imports.scripts.misc.log;
 
 const EMenuLayout = Constants.EMenuLayout;
 const EStylesheetFilename = Constants.EStylesheetFilename;
-const STYLESHEET_BASE_PATH = Constants.STYLESHEET_BASE_PATH;
 
 
 
@@ -69,7 +68,7 @@ const StyleManager = new Lang.Class({
         let stylesheetFile = themeDirectory + '/extensions/Test/' + stylesheetName;
         if (!GLib.file_test(stylesheetFile, GLib.FileTest.EXISTS)) {
 
-            let stylePath = Me.path + STYLESHEET_BASE_PATH + stylesheetName;
+            let stylePath = Me.path + Me.metadata['stylesheets-path'] + stylesheetName;
             let stylesheetTmpFile = Gio.File.new_for_path(stylePath);
             if (stylesheetTmpFile.query_exists(null)) {
                 stylesheetFile = stylesheetTmpFile.get_path();

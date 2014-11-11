@@ -1,7 +1,5 @@
 
-const SETTINGS = 'org.gnome.shell.extensions.gnomenu';
 const PREFS_DIALOG_CMD = 'gnome-shell-extension-prefs gnomenu@panacier.gmail.com';
-const STYLESHEET_BASE_PATH = '/themes/default/';
 
 const SEARCH_MAX_ENTRIES_PER_ROW = 4;
 
@@ -10,14 +8,6 @@ const EStylesheetFilename = {
     LARGE:  'gnomenu-large.css',
     MEDIUM: 'gnomenu-medium.css',
     SMALL:  'gnomenu-small.css',
-    
-};
-
-const EMenuLayout = {
-    
-    LARGE:  40,
-    MEDIUM: 41,
-    SMALL:  42,
     
 };
 
@@ -50,6 +40,13 @@ const EEventType = {
     
 };
 
+const ESelectionMethod = {
+    
+    CLICK: 20,
+    HOVER: 21,
+    
+};
+
 const EViewMode = {
     
     LIST: 30,
@@ -57,9 +54,24 @@ const EViewMode = {
     
 };
 
-const ESelectionMethod = {
+const EMenuLayout = {
     
-    HOVER: 20,
-    CLICK: 21,
+    LARGE:  40,
+    MEDIUM: 41,
+    SMALL:  42,
+    
+};
+
+const ECategoryNum = {
+        
+    ALL_APPS:    50,
+    MOST_USED:   51,
+    FAVORITES:   52,
+    RECENTFILES: 53,
+    PLACES:      54,
+    DEVICES:     55,
+    NETDEVICES:  56,
+    BOOKMARKS:   57,
+    WEB:         58,
     
 };
