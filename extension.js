@@ -2,6 +2,7 @@
 
 // journalctl /usr/bin/gnome-session -f -o cat
 
+const Clutter = imports.gi.Clutter;
 const Main = imports.ui.main;
 const IconTheme = imports.gi.Gtk.IconTheme;
 
@@ -9,14 +10,17 @@ const Me = imports.misc.extensionUtils.getCurrentExtension();
 const Constants = Me.imports.scripts.constants;
 const ActivitiesButton = Me.imports.scripts.panel.ActivitiesButton;
 const PanelBox = Me.imports.scripts.panel.PanelBox;
-
 const Convenience = Me.imports.scripts.misc.convenience;
 const StyleManager = Me.imports.scripts.misc.styleManager.StyleManager;
+
+/* This can be removed if it is sure that this variables exist. */
+if (Clutter.EVENT_PROPAGATE == undefined) Clutter.EVENT_PROPAGATE = false;
+if (Clutter.EVENT_STOP == undefined) Clutter.EVENT_STOP = true;
 
 
 function enable() {
 	global.log("Gnomenu: Enabled!");
-	let settings = Convenience.getSettings();
+	/*let settings = Convenience.getSettings();
 	log(settings.get_boolean('disable-activities-hotcorner'));
 	log(settings.get_boolean('disable-menu-hotspot'));
 	log(settings.get_boolean('enable-menu-shortcut'));
@@ -48,10 +52,10 @@ function enable() {
 	log(settings.get_int('menu-applist-iconsize'));
 	log(settings.get_int('menu-appgrid-iconsize'));
 	
-    log(settings.get_int('menu-search-maxresultcount'))
+    log(settings.get_int('menu-search-maxresultcount'))*/
 	
 	
-	//let settings = Convenience.getSettings();
+	let settings = Convenience.getSettings();
 	if (!settings) {
 		return;
 	}

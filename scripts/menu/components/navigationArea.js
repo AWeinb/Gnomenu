@@ -1,3 +1,21 @@
+/*
+    Copyright (C) 2014-2015, THE PANACEA PROJECTS <panacier@gmail.com>
+    Copyright (C) 2014-2015, AxP <Der_AxP@t-online.de>
+  
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 3 of the License, or
+    (at your option) any later version.
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+    
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software Foundation,
+    Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
+*/
 
 const Lang = imports.lang;
 const St = imports.gi.St;
@@ -16,6 +34,8 @@ const ECategoryID = Constants.ECategoryID;
 const EEventType = Constants.EEventType;
 const ESelectionMethod = Constants.ESelectionMethod;
 
+const WORKSPACE_SWITCH_WAIT_TIME = 200;
+const CATEGORY_SWITCH_WAIT_TIME = 50;
 
 
 const NavigationBox = new Lang.Class({
@@ -25,26 +45,26 @@ const NavigationBox = new Lang.Class({
     
     _init: function(params) {
         this.actor = new St.BoxLayout(params);
-        
-        this._isShown = true;
     },
     
     hide: function() {
-        if (this._isShown) {
+        if (this.actor.visible) {
             this.actor.hide();
-            this._isShown = false;
         }
     },
     
     show: function() {
-        if (!this._isShown) {
+        if (!this.actor.visible) {
             this.actor.show();
-            this._isShown = true;
         }
     },
     
+    isVisible: function() {
+        return this.actor.visible;  
+    },
+    
     toggleVisibility: function() {
-        if (this._isShown) {
+        if (this.actor.visible) {
             this.hide();
         } else {
             this.show();
@@ -65,24 +85,69 @@ const WorkspaceBox = new Lang.Class({
         
         this.thumbnailsBox = new GnoMenuThumbnailsBox(mediator, model);
         this.actor.add(this.thumbnailsBox.actor);
+        
+		this.actor.connect('scroll-event', Lang.bind(this, this._onScrollEvent));
     },
     
     hide: function() {
-        if (this._isShown) {
+        if (this.actor.visible) {
             this.actor.hide();
-            this._isShown = false;
             
             this.thumbnailsBox.destroyThumbnails();
         }
     },
     
     show: function() {
-        if (!this._isShown) {
+        if (!this.actor.visible) {
             this.actor.show();
-            this._isShown = true;
             
             this.thumbnailsBox.createThumbnails();
             this.actor.height = this.thumbnailsBox.actor.height;
+        }
+    },
+    
+	_onScrollEvent : function(actor, event) {
+        /**
+         * @author scroll-workspaces@gfxmonk.net
+         * Modified by AxP
+         */
+		let diff = 0;
+		let direction = event.get_scroll_direction();
+		if (direction == Clutter.ScrollDirection.DOWN) {
+			diff = 1;
+		} else if (direction == Clutter.ScrollDirection.UP) {
+			diff = -1;
+		} else {
+			return Clutter.EVENT_PROPAGATE;
+		}
+		this._switch(diff);
+        
+        return Clutter.EVENT_STOP;
+	},
+    
+    activateNext: function() {
+        this._switch(+1);
+    },
+    
+    activatePrevious: function() {
+        this._switch(-1);
+    },
+    
+    _switch: function(diff) {
+        /**
+         * @author scroll-workspaces@gfxmonk.net
+         * Modified by AxP
+         */
+        let currentTime = global.get_current_time();
+		if (currentTime > this._lastScroll && currentTime < this._lastScroll + WORKSPACE_SWITCH_WAIT_TIME) {
+            return;
+		}
+		this._lastScroll = currentTime;
+
+		let newIndex = global.screen.get_active_workspace().index() + diff;
+        let metaWorkspace = global.screen.get_workspace_by_index(newIndex);
+		if (metaWorkspace) {
+            metaWorkspace.activate(true);
         }
     },
     
@@ -120,6 +185,7 @@ const CategoryBox = new Lang.Class({
         this._mediator = mediator;
         this._model = model;
         this._categoryButtonMap = {};
+        this._selected = null;
     },
     
     clear: function() {
@@ -127,6 +193,7 @@ const CategoryBox = new Lang.Class({
             btn.actor.destroy();
         }
         this._categoryButtonMap = {};  
+        this._selected = null;
     },
     
     selectCategory: function(categoryID) {
@@ -134,9 +201,53 @@ const CategoryBox = new Lang.Class({
             btn.deselect();
         }
         
-        if (this._categoryButtonMap[categoryID]) {
+        if (categoryID && this._categoryButtonMap[categoryID]) {
             this._categoryButtonMap[categoryID].select();
+            this._selected = categoryID;
         }
+    },
+    
+    activateNext: function() {
+        if (!this._selected) {
+            return;
+        }
+        
+        let currentTime = global.get_current_time();
+		if (this._tLastScroll && currentTime < this._tLastScroll + CATEGORY_SWITCH_WAIT_TIME) {
+            return;
+		}
+		this._tLastScroll = currentTime;
+        
+        let keys = Object.keys(this._categoryButtonMap);
+        let selectedIdx = keys.indexOf(this._selected);
+        let nextIdx = (selectedIdx + 1) % keys.length;
+        let nextID = keys[nextIdx];
+        
+        this.selectCategory(nextID);
+        this._mediator.selectMenuCategory(nextID);
+    },
+    
+    activatePrevious: function() {
+        if (!this._selected) {
+            return;
+        }
+        
+        let currentTime = global.get_current_time();
+		if (this._tLastScroll && currentTime < this._tLastScroll + CATEGORY_SWITCH_WAIT_TIME) {
+            return;
+		}
+		this._tLastScroll = currentTime;
+        
+        let keys = Object.keys(this._categoryButtonMap);
+        let selectedIdx = keys.indexOf(this._selected);
+        let previousIdx = selectedIdx - 1;
+        if (previousIdx < 0) {
+            previousIdx += keys.length;
+        }
+        let previousID = keys[previousIdx];
+        
+        this.selectCategory(previousID);
+        this._mediator.selectMenuCategory(previousID);
     },
     
     addCategory: function(categoryID, categoryNameID, categoryDescriptionID) {
@@ -200,17 +311,109 @@ const NavigationArea = new Lang.Class({
             let button = event.get_button();
             if (button == 3) { //right click
                 this.toggleView();
+                return Clutter.EVENT_STOP;
             }
-            return false;
+            return Clutter.EVENT_PROPAGATE;
         }));
         this.actor = scrollBox;
         
         this._workspaceBox.actor.add_constraint(new Clutter.BindConstraint({ name: 'constraint', source: this._categoryBox.actor, coordinate: Clutter.BindCoordinate.WIDTH, offset: 0 }));
         this._workspaceBox.hide();
         
-        this.update();
+        this._keyPressID = this.actor.connect('key_press_event', Lang.bind(this, this._onKeyboardEvent));
         
-        this.model.registerCategorySelectionMethodCB(Lang.bind(this, function(event) { this.update(null) }));
+        this.update();
+    },
+    
+    refresh: function() {
+        this.update();
+    },
+    
+    _onKeyboardEvent: function(actor, event) {
+        log("NavigationArea received key event!");
+        
+        let receiver = null;
+        if (this._workspaceBox.isVisible()) {
+            receiver = this._workspaceBox;
+        } else {
+            receiver = this._categoryBox;
+        }
+        
+        let returnVal = Clutter.EVENT_PROPAGATE;
+        if (receiver) {
+            let state = event.get_state();
+            let ctrl_pressed = (state & imports.gi.Clutter.ModifierType.CONTROL_MASK ? true : false);
+            let symbol = event.get_key_symbol();
+            
+            switch (symbol) {
+                
+                case Clutter.Up:
+                    returnVal = Clutter.EVENT_STOP;
+                    receiver.activatePrevious();
+                    break;
+                
+                case Clutter.Down:
+                    receiver.activateNext();
+                    returnVal = Clutter.EVENT_STOP;
+                    break;
+                
+                case Clutter.w:
+                    if (ctrl_pressed) {
+                        receiver.activatePrevious();
+                        returnVal = Clutter.EVENT_STOP;
+                    }
+                    break;
+                
+                case Clutter.s:
+                    if (ctrl_pressed) {
+                        receiver.activateNext();
+                        returnVal = Clutter.EVENT_STOP;
+                    }
+                    break;
+                
+                case Clutter.KEY_Tab:
+                    this.toggleView();
+                    returnVal = Clutter.EVENT_STOP;
+                    break;
+                
+                case Clutter.KEY_Return:
+                    if (this._workspaceBox.isVisible()) {
+                        this.mediator.closeMenu();
+                        returnVal = Clutter.EVENT_STOP;
+                    }
+                    break;
+                
+                case Clutter.Left:
+                    //this.mediator.focusSidebar();
+                    this.mediator.moveKeyFocusLeft();
+                    returnVal = Clutter.EVENT_STOP;
+                    break;
+                
+                case Clutter.Right:
+                    //this.mediator.focusMainArea();
+                    this.mediator.moveKeyFocusRight();
+                    returnVal = Clutter.EVENT_STOP;
+                    break;
+                
+                case Clutter.a:
+                    if (ctrl_pressed) {
+                        this.mediator.moveKeyFocusLeft();
+                        //this.mediator.focusSidebar();
+                        returnVal = Clutter.EVENT_STOP;
+                    }
+                    break;
+                
+                case Clutter.d:
+                    if (ctrl_pressed) {
+                        //this.mediator.focusMainArea();
+                        this.mediator.moveKeyFocusRight();
+                        returnVal = Clutter.EVENT_STOP;
+                    }
+                    break;
+            }
+        }
+        
+        return returnVal;
     },
     
     _onDragBegin: function() {
@@ -254,6 +457,8 @@ const NavigationArea = new Lang.Class({
         
         this._workspaceBox.show();
         this._categoryBox.hide();
+        
+        return Clutter.EVENT_STOP;
     },
     
     toggleView: function() {
@@ -261,10 +466,7 @@ const NavigationArea = new Lang.Class({
         this._categoryBox.toggleVisibility();
     },
     
-    setSelectedCategory: function(categoryID) {
-        if (!categoryID) {
-            Log.logError("Gnomenu.navigationArea.NavigationArea", "setSelectedCategory", "categoryID is null!")
-        }
+    selectCategory: function(categoryID) {
         this._categoryBox.selectCategory(categoryID);
         this._workspaceBox.hide();
         this._categoryBox.show();
@@ -275,20 +477,37 @@ const NavigationArea = new Lang.Class({
             
             this._categoryBox.clear();
             
-            this._categoryBox.addCategory(ECategoryID.MOST_USED, ECategoryID.MOST_USED, null);
-            this._categoryBox.addCategory(ECategoryID.ALL_APPS, ECategoryID.ALL_APPS, null);
+            switch (this.model.getDefaultShortcutAreaCategory()) {
+                
+                case ECategoryID.MOST_USED:
+                    this._categoryBox.addCategory(ECategoryID.MOST_USED, ECategoryID.MOST_USED, null);
+                    this._categoryBox.addCategory(ECategoryID.ALL_APPS, ECategoryID.ALL_APPS, null);
+                    break;
+                
+                case ECategoryID.ALL_APPS:
+                    this._categoryBox.addCategory(ECategoryID.ALL_APPS, ECategoryID.ALL_APPS, null);
+                    this._categoryBox.addCategory(ECategoryID.MOST_USED, ECategoryID.MOST_USED, null);
+                    break;
+                
+                default:
+                    break;
+            }
             
             let categories = this.model.getApplicationCategories();
             for (let categoryID in categories) {
                 let categoryNameID = categories[categoryID];
                 this._categoryBox.addCategory(categoryID, categoryNameID, null);
             }
+            
+            this.selectCategory(this.model.getDefaultShortcutAreaCategory());
         }
     },
     
     destroy: function() {
+        
         this.actor.destroy();
+        
         this._workspaceBox.destroy();
         this._categoryBox.destroy();
-    }
+    },
 });

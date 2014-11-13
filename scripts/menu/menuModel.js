@@ -136,6 +136,8 @@ const MenuModel = new Lang.Class({
         
         let event = { type: eventType }
         this._observer.update(event);
+        
+        return true;
     },
     
     
@@ -220,7 +222,7 @@ const MenuModel = new Lang.Class({
     },
     
     registerMenuLayoutCB: function(onChangeCallback) {
-        this._changeSettingsCB('changed::menu-layout', onChangeCallback);
+        //this._changeSettingsCB('changed::menu-layout', onChangeCallback);
         return true;
     },
     
@@ -276,7 +278,7 @@ const MenuModel = new Lang.Class({
         return true;
     },
     
-    getShortcutListIconSize: function() {
+    getAppListIconSize: function() {
         if (!this._settings) {
             return null;
         }
@@ -287,12 +289,12 @@ const MenuModel = new Lang.Class({
         return iconSize;
     },
     
-    registerShortcutListIconSizeCB: function(onChangeCallback) {
+    registerAppListIconSizeCB: function(onChangeCallback) {
         this._changeSettingsCB('changed::menu-applist-iconsize', onChangeCallback);
         return true;
     },
     
-    getShortcutGridIconSize: function() {
+    getAppGridIconSize: function() {
         let iconSize = this._settings.get_int('menu-appgrid-iconsize');
         if (!iconSize) {
             iconSize = 64;
@@ -300,14 +302,14 @@ const MenuModel = new Lang.Class({
         return iconSize;
     },
     
-    registerShortcutGridIconSizeCB: function(onChangeCallback) {
+    registerAppGridIconSizeCB: function(onChangeCallback) {
         this._changeSettingsCB('changed::menu-appgrid-iconsize', onChangeCallback);
         return true;
     },
     
     
     
-    getShortcutGridColumnCount: function() {
+    getAppGridColumnCount: function() {
         let colCount = null; //XXX
         if (!colCount) {
             colCount = 5;
@@ -315,7 +317,7 @@ const MenuModel = new Lang.Class({
         return colCount;
     },
     
-    registerShortcutGridColumnCountCB: function(onChangeCallback) {
+    registerAppGridColumnCountCB: function(onChangeCallback) {
         //XXX
         return true;
     },

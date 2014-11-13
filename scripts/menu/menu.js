@@ -1,7 +1,6 @@
 
 const Lang = imports.lang;
 const Mainloop = imports.mainloop;
-
 const Clutter = imports.gi.Clutter;
 const St = imports.gi.St;
 
@@ -27,7 +26,6 @@ const DescriptionBox = Me.imports.scripts.menu.components.descriptionBox.Descrip
 const PreferencesButton = Me.imports.scripts.menu.components.preferencesButton.PreferencesButton;
 
 
-
 const Menu = new Lang.Class({
 
     Name: 'Gnomenu.Menu',
@@ -38,7 +36,7 @@ const Menu = new Lang.Class({
         if (!sourceActor || !settings) {
             Log.logError("Gnomenu.Menu", "_init", "sourceActor or settings is null!");
         }
-        
+
         this.parent(sourceActor, 0.0, St.Align.START);
         Main.panel.menuManager.addMenu(this);
         
@@ -53,12 +51,16 @@ const Menu = new Lang.Class({
         this._model.setSearchSystem(this._menuSearch.getSearchSystem());
         this._mediator.setSearchSystem(this._menuSearch.getSearchSystem());
         
-        this._onOpenId = this._section.connect('open-state-changed', Lang.bind(this, function() {
+        this._onOpenStateId = this._section.connect('open-state-changed', Lang.bind(this, function() {
             if (this.isOpen) {
                 this._onMenuOpened();
+                
+            } else {
+                this._onMenuClosed();
             }
+            return true;
         }));
-        this._onCloseId = this._section.connect('menu-closed', Lang.bind(this, this._onMenuClosed));
+        this._keyPressID = this.actor.connect('key_press_event', Lang.bind(this, this._handleKeyboardEvents));
         
         this._create();
         this._initMenu();
@@ -120,13 +122,21 @@ const Menu = new Lang.Class({
             this._mainAreaAllocationID = undefined;
         }
         
-        Mainloop.timeout_add(1000, Lang.bind(this, function() {
+        Mainloop.timeout_add(200, Lang.bind(this, function() {
         
             let height = this._navigationArea.actor.height;
             this._sidebar.actor.height = height;
             this._mainArea.actor.height = height;
         
-            let sidebarWidth = this._sidebar.actor.width;
+            if (!this._categoryPane.min_width) this._categoryPane.min_width = this._categoryPane.actor.width;
+            if (!this._navigationArea.min_width) this._navigationArea.min_width = this._navigationArea.actor.width;
+            if (!this._controlPane.min_width) this._controlPane.min_width = this._controlPane.actor.width;
+            
+            let sidebarWidth = 0;
+            if (this._model.isSidebarVisible()) {
+                sidebarWidth = this._sidebar.actor.width;
+            }
+            log(sidebarWidth)
             let maxWidth = Math.max(this._categoryPane.actor.width, (this._navigationArea.actor.width + sidebarWidth), this._controlPane.actor.width);
             if (maxWidth > 0) {
                 this._categoryPane.actor.width = maxWidth;
@@ -151,8 +161,81 @@ const Menu = new Lang.Class({
         this._mediator.setDescriptionBox(this._descriptionBox);
         this._mediator.setExtensionPrefButton(this._extensionPrefButton);
         
-        this._mediator.selectMenuCategory(this._model.getDefaultShortcutAreaCategory());
-        this._mediator.selectShortcutViewMode(this._model.getShortcutAreaViewMode(), true);
+        this._registerSettingCallbacks();
+    },
+    
+    _registerSettingCallbacks: function() { 
+        this._model.registerDefaultSidebarCategoryCB(Lang.bind(this, function(event) {
+            this._categoryPane.actor.width = this._categoryPane.min_width;
+            this._navigationArea.actor.width = this._navigationArea.min_width;
+            this._controlPane.actor.width = this._controlPane.min_width;
+            
+            this._categoryPane.refresh();
+            this._sidebar.refresh();
+            
+            this._fixElements();
+            return true;
+        }));
+        
+        this._model.registerSidebarIconSizeCB(Lang.bind(this, function(event) {
+            this._categoryPane.actor.width = this._categoryPane.min_width;
+            this._navigationArea.actor.width = this._navigationArea.min_width;
+            this._controlPane.actor.width = this._controlPane.min_width;
+            
+            this._sidebar.refresh();
+            
+            this._fixElements();
+            return true;
+        }));
+        
+        this._model.registerSidebarVisibleCB(Lang.bind(this, function(event) {
+            this._categoryPane.actor.width = this._categoryPane.min_width;
+            this._navigationArea.actor.width = this._navigationArea.min_width;
+            this._controlPane.actor.width = this._controlPane.min_width;
+            
+            this._sidebar.refresh();
+            
+            this._fixElements();
+            return true;
+        }));
+        
+        
+        this._model.registerDefaultShortcutAreaCategoryCB(Lang.bind(this, function(event) {
+            this._navigationArea.refresh();
+            this._mediator.selectMenuCategory(this._model.getDefaultShortcutAreaCategory());
+            return true;
+        }));
+        
+        this._model.registerShortcutAreaViewModeCB(Lang.bind(this, function(event) {
+            this._mediator.selectShortcutViewMode(this._model.getShortcutAreaViewMode(), true);
+            return true;
+        }));
+        
+        this._model.registerCategorySelectionMethodCB(Lang.bind(this, function(event) {
+            this._navigationArea.refresh();
+            return true;
+        }));
+        
+        this._model.registerAppListIconSizeCB(Lang.bind(this, function(event) {
+            this._mainArea.refresh();
+            return true;
+        }));
+        
+        this._model.registerAppGridIconSizeCB(Lang.bind(this, function(event) {
+            this._mainArea.refresh();
+            return true;
+        }));
+        
+        
+        this._model.registerMaxSearchResultCountCB(Lang.bind(this, function(event) {
+            this._mainArea.refresh();
+            return true;
+        }));
+    },
+    
+    _handleKeyboardEvents: function(actor, event) {
+        this._mediator.onKeyboardEvent(actor, event);
+        return true;
     },
     
     _onMenuOpened: function() {
@@ -191,9 +274,14 @@ const Menu = new Lang.Class({
     },
     
     destroy: function() {
-        if (this._onCloseId > 0) {
-            this._section.disconnect(this._onCloseId);
-            this._onCloseId = 0;
+        if (this._onOpenStateId > 0) {
+            this._section.disconnect(this._onOpenStateId);
+            this._onOpenStateId = undefined;
+        }
+        
+        if (this._keyPressID > 0) {
+            this.actor.disconnect(this._keyPressID);
+            this._keyPressID = undefined;
         }
         
         this._section.destroy();

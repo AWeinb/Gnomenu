@@ -156,13 +156,19 @@ const ProviderResultList = new Lang.Class({
         }
     },
     
+    selectNext: function() {
+    },
+    
+    selectPrevious: function() {
+    },
+    
     addResultButton: function(providerSearchResult) {
         if (!providerSearchResult) {
             Log.logWarning("GnoMenu.searchResultArea.ProviderResultList", "addResultButton", "providerSearchResult is null!");
             return;
         }
         
-        let iconSize = this.model.getShortcutListIconSize();
+        let iconSize = this.model.getAppListIconSize();
         this._box.add_actor(new DraggableSearchListButton(this.mediator, iconSize, providerSearchResult).actor);
         this._buttonCount++;
     },
@@ -226,13 +232,19 @@ const ProviderResultGrid = new Lang.Class({
         }
     },
     
+    selectNext: function() {
+    },
+    
+    selectPrevious: function() {
+    },
+    
     addResultButton: function(providerSearchResult) {
         if (!providerSearchResult ) {
             Log.logWarning("GnoMenu.searchResultArea.ProviderResultGrid", "addResultButton", "providerSearchResult is null!");
             return;
         }
         
-        let iconSize = this.model.getShortcutGridIconSize();
+        let iconSize = this.model.getAppGridIconSize();
         let btn = new DraggableSearchGridButton(this.mediator, iconSize, providerSearchResult);
         
         let colMax = SEARCH_MAX_ENTRIES_PER_ROW;
@@ -270,7 +282,8 @@ const ResultArea = new Lang.Class({
         this.actor.set_mouse_scrolling(true);
         this.actor.add_actor(this._mainBox);
         
-        this._viewMode = EViewMode.LIST;
+        this._viewMode = model.getShortcutAreaViewMode();
+        
         this.reset();
     },
     
@@ -281,6 +294,10 @@ const ResultArea = new Lang.Class({
                 this._mainBox.remove_actor(actor);
             }
         }
+    },
+    
+    refresh: function() {
+        this.reset();    
     },
     
     reset: function() {
@@ -304,6 +321,16 @@ const ResultArea = new Lang.Class({
     
     hide: function() {
         this.actor.hide();
+    },
+    
+    isVisible: function() {
+        return this.actor.visible;
+    },
+    
+    selectNext: function() {
+    },
+    
+    selectPrevious: function() {
     },
     
     setViewMode: function(viewMode) {
@@ -386,5 +413,10 @@ const ResultArea = new Lang.Class({
         }
         
         this._lastResults = resultMetas;
+    },
+    
+    destroy: function() {
+        this.reset();
+        this.actor.destroy();
     },
 });

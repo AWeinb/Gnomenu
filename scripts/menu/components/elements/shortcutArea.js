@@ -24,7 +24,7 @@ const ShortcutBoxBase = new Lang.Class({
     Name: 'Gnomenu.shortcutArea.ShortcutBoxBase',
     
     
-    _init: function(mediator, model) {
+    _init: function(model, mediator) {
         if (!model || !mediator) {
             Log.logError("GnoMenu.shortcutArea.ShortcutBoxBase", "_init", "model, mediator, may not be null!");
         }
@@ -99,6 +99,13 @@ const ShortcutBoxBase = new Lang.Class({
         }
     },
     
+    isVisible: function() {
+        if (this.actor) {
+            return this.actor.visible;
+        }
+        return false;
+    },
+    
     toggleVisibility: function() {
         if (this._isShown) {
             this.hide();
@@ -123,9 +130,41 @@ const ShortcutList = new Lang.Class({
     Extends: ShortcutBoxBase,
     
     
-    _init: function(mediator, model) {
-        this.parent(mediator, model);
+    _init: function(model, mediator) {
+        this.parent(model, mediator);
         this.actor = new St.BoxLayout({ style_class: 'gnomenu-applications-list-box', vertical:true });
+        
+        this._selectedButtonMap = null;
+        this._selectedButtonIdx = 0;
+    },
+    
+    selectNext: function() {
+        if (!this._selectedButtonMap) {
+            return;
+        }
+        
+        let keys = Object.keys(this._selectedButtonMap);
+        let buttonID = keys[this._selectedButtonIdx % keys.length];
+        let btn = this._selectedButtonMap[buttonID];
+        btn.select();
+        
+        this._selectedButtonIdx += 1;
+    },
+    
+    selectPrevious: function() {
+        if (!this._selectedButtonMap) {
+            return;
+        }
+        
+        let keys = Object.keys(this._selectedButtonMap);
+        if(this._selectedButtonIdx < 0) {
+            this._selectedButtonIdx = keys.length - 1;
+        }
+        let buttonID = keys[this._selectedButtonIdx];
+        let btn = this._selectedButtonMap[buttonID];
+        btn.select();
+        
+        this._selectedButtonIdx -= 1;
     },
     
     addCategoryButton: function(categoryID, launchable, isAppCategory) {
@@ -148,17 +187,21 @@ const ShortcutList = new Lang.Class({
             map = this._categoryButtonMap;
         }
         
-        let iconSize = this.model.getShortcutListIconSize();
+        let iconSize = this.model.getAppListIconSize();
         map[categoryID].push(new DraggableListButton(this.mediator, iconSize, launchable));
     },
     
     showCategory: function(categoryID, isAppCategory) {
         let buttonMap = null;
+        
         if (isAppCategory) {
             buttonMap = this._appCategoryButtonMap[categoryID];
         } else {
             buttonMap = this._categoryButtonMap[categoryID];
         }
+        
+        this._selectedButtonMap = buttonMap;
+        this._selectedButtonIdx = 0;
         
         if (!buttonMap) {
             return false;
@@ -181,9 +224,41 @@ const ShortcutGrid = new Lang.Class({
     Extends: ShortcutBoxBase,
     
     
-    _init: function(mediator, model) {
-        this.parent(mediator, model);
+    _init: function(model, mediator) {
+        this.parent(model, mediator);
         this.actor = new St.Table({ homogeneous: false, reactive: true, style_class: 'gnomenu-applications-grid-box' });
+        
+        this._selectedButtonMap = null;
+        this._selectedButtonIdx = 0;
+    },
+    
+    selectNext: function() {
+        if (!this._selectedButtonMap) {
+            return;
+        }
+        
+        let keys = Object.keys(this._selectedButtonMap);
+        let buttonID = keys[this._selectedButtonIdx % keys.length];
+        let btn = this._selectedButtonMap[buttonID];
+        btn.select();
+        
+        this._selectedButtonIdx += 1;
+    },
+    
+    selectPrevious: function() {
+        if (!this._selectedButtonMap) {
+            return;
+        }
+        
+        let keys = Object.keys(this._selectedButtonMap);
+        if(this._selectedButtonIdx < 0) {
+            this._selectedButtonIdx = keys.length - 1;
+        }
+        let buttonID = keys[this._selectedButtonIdx];
+        let btn = this._selectedButtonMap[buttonID];
+        btn.select();
+        
+        this._selectedButtonIdx -= 1;
     },
     
     addCategoryButton: function(categoryID, launchable, isAppCategory) {
@@ -206,17 +281,21 @@ const ShortcutGrid = new Lang.Class({
             map = this._categoryButtonMap;
         }
         
-        let iconSize = this.model.getShortcutGridIconSize();
+        let iconSize = this.model.getAppGridIconSize();
         map[categoryID].push(new DraggableGridButton(this.mediator, iconSize, launchable));
     },
     
     showCategory: function(categoryID, isAppCategory) {
         let buttonMap = null;
+        
         if (isAppCategory) {
             buttonMap = this._appCategoryButtonMap[categoryID];
         } else {
             buttonMap = this._categoryButtonMap[categoryID];
         }
+        
+        this._selectedButtonMap = buttonMap;
+        this._selectedButtonIdx = 0;
         
         if (!buttonMap) {
             return false;
@@ -225,7 +304,7 @@ const ShortcutGrid = new Lang.Class({
         this.clear();
         
         let count = 0;
-        let colMax = this.model.getShortcutGridColumnCount();
+        let colMax = this.model.getAppGridColumnCount();
         for each (let btn in buttonMap) {
             let rowTmp = parseInt(count / colMax);
             let colTmp = count % colMax;
@@ -254,8 +333,8 @@ const ShortcutArea = new Lang.Class({
         this.actor.set_mouse_scrolling(true);
         this.actor.add_actor(this._mainBox);
         
-        this._shortcutList = new ShortcutList(this.mediator, this.model);
-        this._shortcutGrid = new ShortcutGrid(this.mediator, this.model);
+        this._shortcutList = new ShortcutList(model, mediator);
+        this._shortcutGrid = new ShortcutGrid(model, mediator);
         this._mainBox.add(this._shortcutList.actor, { expand: true, x_fill: false, y_fill: false, x_align: St.Align.START, y_align: St.Align.START });
         this._mainBox.add(this._shortcutGrid.actor, { expand: true, x_fill: false, y_fill: false, x_align: St.Align.START, y_align: St.Align.START });
         
@@ -271,9 +350,6 @@ const ShortcutArea = new Lang.Class({
         this._updateTimeoutIds[EEventType.NETDEVICES_EVENT] = 0;
         this._updateTimeoutIds[EEventType.BOOKMARKS_EVENT] = 0;
         
-        this.model.registerShortcutListIconSizeCB(Lang.bind(this, function(event) {this.update(null)}));
-        this.model.registerShortcutGridIconSizeCB(Lang.bind(this, function(event) {this.update(null)}));
-        
         this.update();
     },
     
@@ -283,6 +359,14 @@ const ShortcutArea = new Lang.Class({
     
     hide: function() {
         this.actor.hide();
+    },
+    
+    isVisible: function() {
+        return this.actor.visible;
+    },
+    
+    refresh: function() {
+        this.update();
     },
     
     setViewMode: function(id) {
@@ -303,6 +387,22 @@ const ShortcutArea = new Lang.Class({
             default:
                 Log.logWarning("GnoMenu.shortcutArea.ShortcutArea", "setViewMode", "id is null!");
                 break;
+        }
+    },
+    
+    selectNext: function() {
+        if (this._shortcutList.isVisible()) {
+            this._shortcutList.selectNext();
+        } else {
+            this._shortcutGrid.selectNext()
+        }
+    },
+    
+    selectPrevious: function() {
+        if (this._shortcutList.isVisible()) {
+            this._shortcutList.selectPrevious();
+        } else {
+            this._shortcutGrid.selectPrevious()
         }
     },
     

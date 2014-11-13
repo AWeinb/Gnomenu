@@ -1,3 +1,21 @@
+/*
+    Copyright (C) 2014-2015, THE PANACEA PROJECTS <panacier@gmail.com>
+    Copyright (C) 2014-2015, AxP <Der_AxP@t-online.de>
+
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software Foundation,
+    Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
+*/
 
 const Lang = imports.lang;
 const St = imports.gi.St;
@@ -7,115 +25,151 @@ const Log = Me.imports.scripts.misc.log;
 const Component = Me.imports.scripts.menu.components.component.Component;
 const Constants = Me.imports.scripts.constants;
 const TextToggleButton = Me.imports.scripts.menu.components.elements.menubutton.TextToggleButton;
-const ToggleButtonGroup = Me.imports.scripts.menu.components.elements.menubuttonBase.ToggleButtonGroup;
+const ButtonGroup = Me.imports.scripts.menu.components.elements.menubutton.ButtonGroup;
 
 const ECategoryID = Constants.ECategoryID;
 const EMenuLayout = Constants.EMenuLayout;
 
 
-
+/**
+ * @class CategoryPane: Represents the small category panel above the
+ *                      main category box.
+ * @extends Component
+ *
+ * @param {MenuModel} model A model instance.
+ * @param {MenuMediator} mediator A mediator instance.
+ *
+ * @property {Clutter.Actor} actor The clutter actor of this component.
+ *
+ * 
+ * @author AxP
+ * @version 1.0
+ */
 const CategoryPane = new Lang.Class({
-    
+
     Name: 'Gnomenu.CategoryPane',
     Extends: Component,
 
-    
+
     _init: function(model, mediator) {
         this.parent(model, mediator);
-        
+
         this.actor = new St.BoxLayout({ style_class: 'gnomenu-categorypanel-box' });
-        
-        let recentCategoryBtn = new TextToggleButton(mediator, 'Recent', 'Recent', null);
-        recentCategoryBtn.id = ECategoryID.RECENTFILES;
-        recentCategoryBtn.setOnClickHandler(Lang.bind(this, this._onRecentSelected));
-        
-        let webBookmarksCategoryBtn = new TextToggleButton(mediator, 'Web', 'Web', null);
-        webBookmarksCategoryBtn.id = ECategoryID.WEB;
-        webBookmarksCategoryBtn.setOnClickHandler(Lang.bind(this, this._onWebSelected));
-        
+        this._buttonGroup = new ButtonGroup();
+
+        this.refresh();
+    },
+
+    /**
+     * @description Use this function to bring the view up-to-date.
+     * @public
+     * @function
+     */
+    refresh: function() {
+        // Creates the recent category button.
+        let recentCategoryBtn = new TextToggleButton(this.mediator, 'Recent', 'Recent', null);
+        recentCategoryBtn.setID(ECategoryID.RECENTFILES);
+        recentCategoryBtn.setOnLeftClickHandler(this._getCallback(ECategoryID.RECENTFILES));
+
+        // Creates the web category button.
+        let webBookmarksCategoryBtn = new TextToggleButton(this.mediator, 'Web', 'Web', null);
+        webBookmarksCategoryBtn.setID(ECategoryID.WEB);
+        webBookmarksCategoryBtn.setOnLeftClickHandler(this._getCallback(ECategoryID.WEB));
+
+        // Creates either the favorites category or the places category button.
         let tmpCategoryBtn = null;
-        switch (model.getDefaultSidebarCategory()) {
-            
+        switch (this.model.getDefaultSidebarCategory()) {
+
             case ECategoryID.FAVORITES:
-                tmpCategoryBtn = new TextToggleButton(mediator, 'Places', 'Places', null);
-                tmpCategoryBtn.id = ECategoryID.PLACES;
-                tmpCategoryBtn.setOnClickHandler(Lang.bind(this, this._onPlacesSelected));
+                tmpCategoryBtn = new TextToggleButton(this.mediator, 'Places', 'Places', null);
+                tmpCategoryBtn.setID(ECategoryID.PLACES);
+                tmpCategoryBtn.setOnLeftClickHandler(this._getCallback(ECategoryID.PLACES));
                 break;
-            
+
             case ECategoryID.PLACES:
-                tmpCategoryBtn = new TextToggleButton(mediator, 'Favorites', 'Favorites', null);
-                tmpCategoryBtn.id = ECategoryID.FAVORITES;
-                tmpCategoryBtn.setOnClickHandler(Lang.bind(this, this._onFavoritesSelected));
+                tmpCategoryBtn = new TextToggleButton(this.mediator, 'Favorites', 'Favorites', null);
+                tmpCategoryBtn.setID(ECategoryID.FAVORITES);
+                tmpCategoryBtn.setOnLeftClickHandler(this._getCallback(ECategoryID.FAVORITES));
                 break;
-            
+
             default:
                 break;
         }
-        
-        this._toggleButtonGroup = new ToggleButtonGroup();
-        this._toggleButtonGroup.addButton(recentCategoryBtn);
-        this._toggleButtonGroup.addButton(webBookmarksCategoryBtn);
-        this._toggleButtonGroup.addButton(tmpCategoryBtn);
-        
+
+        // The buttongroup handles the interaction between the buttons.
+        this._buttonGroup.addButton(recentCategoryBtn);
+        this._buttonGroup.addButton(webBookmarksCategoryBtn);
+        this._buttonGroup.addButton(tmpCategoryBtn);
+
         this.actor.add(recentCategoryBtn.actor,       { expand: true, x_fill: true, y_fill: false, x_align: St.Align.MIDDLE, y_align: St.Align.MIDDLE });
         this.actor.add(webBookmarksCategoryBtn.actor, { expand: true, x_fill: true, y_fill: false, x_align: St.Align.MIDDLE, y_align: St.Align.MIDDLE });
         this.actor.add(tmpCategoryBtn.actor,          { expand: true, x_fill: true, y_fill: false, x_align: St.Align.MIDDLE, y_align: St.Align.MIDDLE });
     },
-    
-    _onFavoritesSelected: function(isSelected) {
-        if (this.mediator) {
+
+    /**
+     * @description This function returns the callback for the buttons.
+     * @returns {Bound Function} A callback that triggers a category change.
+     * @private
+     * @function
+     */
+    _getCallback: function(categoryID) {
+        return Lang.bind(this, function(isSelected) {
+            let cat = this.model.getDefaultShortcutAreaCategory();
             if (isSelected) {
-                this.mediator.selectMenuCategory(ECategoryID.FAVORITES);
-            } else {
-                this.mediator.selectMenuCategory(this.model.getDefaultShortcutAreaCategory());
+                cat = categoryID;
+            }
+            this.mediator.selectMenuCategory(cat);
+
+            return true;
+        });
+    },
+
+    /**
+     * @description Use this function to remove all actors from the component.
+     * @public
+     * @function
+     */
+    clear: function() {
+        let actors = this.actor.get_children();
+        if (actors) {
+            for each (let actor in actors) {
+                this.actor.remove_actor(actor);
+                // We dont need the buttons anymore so they can be destroyed.
+                actor.destroy();
             }
         }
+        // The buttongroup is now empty again.
+        this._buttongroup.reset();
     },
-    
-    _onRecentSelected: function(isSelected) {
-        if (this.mediator) {
-            if (isSelected) {
-                this.mediator.selectMenuCategory(ECategoryID.RECENTFILES);
-            } else {
-                this.mediator.selectMenuCategory(this.model.getDefaultShortcutAreaCategory());
-            }
-        }
-    },  
-    
-    _onPlacesSelected: function(isSelected) {
-        if (this.mediator) {
-            if (isSelected) {
-                this.mediator.selectMenuCategory(ECategoryID.PLACES);
-            } else {
-                this.mediator.selectMenuCategory(this.model.getDefaultShortcutAreaCategory());
-            }
-        }
-    },
-    
-    _onWebSelected: function(isSelected) {
-        if (this.mediator) {
-            if (isSelected) {
-                this.mediator.selectMenuCategory(ECategoryID.WEB);
-            } else {
-                this.mediator.selectMenuCategory(this.model.getDefaultShortcutAreaCategory());
-            }
-        }
-    },
-    
-    selectButton: function(categoryID) {
-        if (!categoryID) {
-            Log.logWarning("Gnomenu.CategoryPane", "selectButton", "categoryID is null!");
-            return;
-        }
-        this._toggleButtonGroup.clearButtonStates();
-        this._toggleButtonGroup.select(categoryID);
-    },
-    
-    deselectButtons: function() {
-        this._toggleButtonGroup.clearButtonStates();
-    },
-    
+
+    /**
+     * @description Use this function to destroy the component.
+     * @public
+     * @function
+     */
     destroy: function() {
         this.actor.destroy();
-    }
+    },
+
+    /**
+     * @description Use this function to select a button by category ID.
+     * @param {Enum String} The category id that the button handles.
+     * @public
+     * @function
+     */
+    selectCategory: function(categoryID) {
+        this._buttonGroup.clearButtonStates();
+        // For this to work the buttons need to have their category id.
+        this._buttonGroup.selectByID(categoryID);
+    },
+
+    /**
+     * @description Use this function to deselect all buttons. May be needed in
+     * combination with the main category box.
+     * @public
+     * @function
+     */
+    deselectButtons: function() {
+        this._buttonGroup.clearButtonStates();
+    },
 });

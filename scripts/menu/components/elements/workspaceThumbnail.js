@@ -20,7 +20,6 @@ let MAX_THUMBNAIL_SCALE = 1/10.;
 const RESCALE_ANIMATION_TIME = 0.2;
 const SLIDE_ANIMATION_TIME = 0.2;
 const WORKSPACE_SWITCH_TIME = 0.25;
-const WORKSPACE_SWITCH_WAIT_TIME = 200;
 
 const WINDOW_DND_SIZE = 256;
 const DRAGGING_WINDOW_OPACITY = 100;
@@ -50,6 +49,9 @@ const WindowClone = new Lang.Class({
 
     
     _init : function(realWindow) {
+        //if(Clutter.EVENT_PROPAGATE == undefined) throw Error();
+        //if(Clutter.EVENT_STOP == undefined) throw Error();
+    
         this.actor = new Clutter.Clone({ source: realWindow.get_texture(), reactive: true });
         this.actor._delegate = this;
         this.realWindow = realWindow;
@@ -142,11 +144,12 @@ const WindowClone = new Lang.Class({
     _onButtonRelease : function (actor, event) {
         let button = event.get_button();
         if (button == 3) { //right click
-            return false;
+            return Clutter.EVENT_PROPAGATE;
         }
 
         this.emit('selected', event.get_time());
-        return true;
+        
+        return Clutter.EVENT_STOP;
     },
 
     _onDragBegin : function (draggable, time) {
@@ -314,14 +317,12 @@ const WorkspaceThumbnail = new Lang.Class({
         if (!win) {
             // Newly-created windows are added to a workspace before
             // the compositor finds out about them...
-            Mainloop.idle_add(Lang.bind(this,
-                                        function () {
-                                            if (!this._removed &&
-                                                metaWin.get_compositor_private() &&
-                                                metaWin.get_workspace() == this.metaWorkspace)
-                                                this._doAddWindow(metaWin);
-                                            return false;
-                                        }));
+            Mainloop.idle_add(Lang.bind(this, function () {
+                if (!this._removed && metaWin.get_compositor_private() && metaWin.get_workspace() == this.metaWorkspace) {
+                    this._doAddWindow(metaWin);
+                }
+                return false;
+            }));
             return;
         }
 
@@ -577,9 +578,8 @@ const GnoMenuThumbnailsBox = new Lang.Class({
 
         this._thumbnails = [];
         
-        this.actor.connect('button-press-event', function() { return true; });
+        this.actor.connect('button-press-event', function() { return Clutter.EVENT_STOP; });
         this.actor.connect('button-release-event', Lang.bind(this, this._onButtonRelease));
-		this.actor.connect('scroll-event', Lang.bind(this, this._onScrollEvent));
 
         this._settings = new Gio.Settings({ schema: OVERRIDE_SCHEMA });
         this._settings.connect('changed::dynamic-workspaces', Lang.bind(this, this._updateSwitcherVisibility));
@@ -592,7 +592,7 @@ const GnoMenuThumbnailsBox = new Lang.Class({
     _onButtonRelease: function(actor, event) {
         let button = event.get_button();
         if (button == 3) { //right click
-            return false;
+            return Clutter.EVENT_PROPAGATE;
         }
 
         
@@ -608,40 +608,8 @@ const GnoMenuThumbnailsBox = new Lang.Class({
             }
         }
 
-        return true;
+        return Clutter.EVENT_STOP;
     },
-
-    /**
-     * @author scroll-workspaces@gfxmonk.net
-     * Modified by AxP
-     */
-	_onScrollEvent : function(actor, event) {
-		let direction = event.get_scroll_direction();
-		let diff = 0;
-		if (direction == Clutter.ScrollDirection.DOWN) {
-			diff = 1;
-		} else if (direction == Clutter.ScrollDirection.UP) {
-			diff = -1;
-		} else {
-			return false;
-		}
-
-		var currentTime = global.get_current_time();
-		if (currentTime > this._lastScroll && currentTime < this._lastScroll + WORKSPACE_SWITCH_WAIT_TIME) {
-			// within wait period - consume this event (but do nothing)
-			// to prevent accidental rapid scrolling
-			return true;
-		}
-		this._lastScroll = currentTime;
-
-		let newIndex = global.screen.get_active_workspace().index() + diff;
-        let metaWorkspace = global.screen.get_workspace_by_index(newIndex);
-		if (metaWorkspace) {
-            metaWorkspace.activate(true);
-        }
-        
-		return true;
-	},
     
     onDragBegin: function() {
         this._dragCancelled = false;

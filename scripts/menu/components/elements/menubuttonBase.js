@@ -1,12 +1,11 @@
 
 const Lang = imports.lang;
-
+const Clutter = imports.gi.Clutter;
 const Gio = imports.gi.Gio;
 const St = imports.gi.St;
 
 const DND = imports.ui.dnd;
 const Main = imports.ui.main;
-
 
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const Gettext = imports.gettext.domain(Me.metadata['gettext-domain']);
@@ -22,37 +21,34 @@ const _ = Gettext.gettext;
 //    label_add_params: {  },
 //};
 
-
+//if(Clutter.EVENT_PROPAGATE == undefined) throw Error();
+//if(Clutter.EVENT_STOP == undefined) throw Error();
 
 
 const Button = new Lang.Class({
 
-    Name: 'Gnomenu.buttons.Button',
+    Name: 'Gnomenu.menubuttonBase.Button',
 
     
     _init: function(icon, iconSize, labelTextID, hoverTitleID, hoverDescriptionID, params) {
-        this._stIcon = null;
-        this._stLabel = null;
-        this._btnReleaseId = null;
-        this._btnClickHandler = null;
-        this._btnLeftClickHandler = null;
-        this._btnMiddleClickHandler = null;
-        this._btnRightClickHandler = null;
+        this._btnHandlers = [null, null, null, null];
         this._btnHoverHandler = null;
-        this._btnPressId = null;
-        this._btnEnterId = null;
-        this._btnLeaveId = null;
-        this._hoverTitle = null;
-        this._hoverDescription = null;
         this._hoverTitleChanger = null;
         this._hoverDescriptionChanger = null;
-        this.isSelected = false;
         
-        if (hoverTitleID) this._hoverTitle = _(hoverTitleID)
-        if (hoverDescriptionID) this._hoverDescription = _(hoverDescriptionID)
+        this._hoverTitle = null;
+        if (hoverTitleID) {
+            this._hoverTitle = _(hoverTitleID);
+        }
+        
+        this._hoverDescription = null;
+        if (hoverDescriptionID) {
+            this._hoverDescription = _(hoverDescriptionID);
+        }
 
         let buttonbox = new St.BoxLayout(params.container_params);
         
+        this._stIcon = null;
         if (icon && iconSize) {
             if (typeof icon == 'string') {
                 this._stIcon = new St.Icon({ icon_name: icon, icon_size: iconSize });
@@ -66,6 +62,7 @@ const Button = new Lang.Class({
             buttonbox.add(this._stIcon, params.icon_add_params);
         }
         
+        this._stLabel = null;
         if (labelTextID) {
             this._stLabel = new St.Label(params.label_params);
             this._stLabel.set_text(_(labelTextID));
@@ -83,6 +80,17 @@ const Button = new Lang.Class({
         
         this.actor.connect('destroy', Lang.bind(this, this._onDestroy));
         this.actor._delegate = this;
+        
+        this.isSelected = false;
+        this.id = undefined;
+    },
+    
+    setID: function(id) {
+        this.id = id;
+    },
+    
+    getID: function() {
+        return this.id;
     },
     
     setTitleChanger: function(changer) {
@@ -92,27 +100,24 @@ const Button = new Lang.Class({
     setDescriptionChanger: function(changer) {
         this._hoverDescriptionChanger = changer;
     },
-
-
-    setOnClickHandler: function(handler) {
-        this._btnClickHandler = handler;
-    },
+    
 
     setOnLeftClickHandler: function(handler) {
-        this._btnLeftClickHandler = handler;
+        this._btnHandlers[1] = handler;
     },
     
     setOnMiddleClickHandler: function(handler) {
-        this._btnMiddleClickHandler = handler;
+        this._btnHandlers[2] = handler;
     },
     
     setOnRightClickHandler: function(handler) {
-        this._btnRightClickHandler = handler;
+        this._btnHandlers[3] = handler;
     },
     
     setOnHoverHandler: function(handler) {
         this._btnHoverHandler = handler;
     },
+    
     
     select: function() {
         this.actor.add_style_pseudo_class('open');
@@ -123,6 +128,7 @@ const Button = new Lang.Class({
         this.reset();
         this.isSelected = false;
     },
+    
     
     reset: function() {
         this.actor.remove_style_pseudo_class('open');
@@ -136,58 +142,33 @@ const Button = new Lang.Class({
             this._hoverDescriptionChanger(null);
         }
     },
-
     
     _onRelease: function(actor, event) {
-        if (this._hoverTitleChanger) {
-            this._hoverTitleChanger(null);
-        }
-        if (this._hoverDescriptionChanger) {
-            this._hoverDescriptionChanger(null);
+        let button = event.get_button();
+        if (this._btnHandlers[button]) {
+            return Clutter.EVENT_STOP;
         }
         
-        let valid = false;
-        if (this._btnClickHandler) {
-            this._btnClickHandler(actor, event);
-            valid = true;
-            
-        } else {
-            let button = event.get_button();
-            if (button == 1 && this._btnLeftClickHandler) {
-                this._btnLeftClickHandler(actor, event);
-                valid = true;
-            }
-            if (button == 2 && this._btnMiddleClickHandler) {
-                this._btnMiddleClickHandler(actor, event);
-                valid = true;
-            }
-            if (button == 3 && this._btnRightClickHandler) {
-                this._btnRightClickHandler(actor, event);
-                valid = true;
-            }
-        }
-        
-        if (valid) {
-            this.actor.remove_style_pseudo_class('pressed');
-            this.actor.remove_style_pseudo_class('active');
-        }
+        return Clutter.EVENT_PROPAGATE;
     },
     
     _onPress: function(actor, event) {
         let button = event.get_button();
         
-        if (this._btnClickHandler) {
-            this.actor.add_style_pseudo_class('pressed');
+        if (this._btnHandlers[button]) {
+            if (this._hoverTitleChanger) {
+                this._hoverTitleChanger(null);
+            }
             
-        } else if (this._btnLeftClickHandler && button == 1) {
-            this.actor.add_style_pseudo_class('pressed');
+            if (this._hoverDescriptionChanger) {
+                this._hoverDescriptionChanger(null);
+            }
             
-        } else if (this._btnMiddleClickHandler && button == 2) {
-            this.actor.add_style_pseudo_class('pressed');
+            this._btnHandlers[button](actor, event);
             
-        } else if (this._btnRightClickHandler && button == 3) {
-            this.actor.add_style_pseudo_class('pressed');
+            return Clutter.EVENT_STOP;
         }
+        return Clutter.EVENT_PROPAGATE;
     },
 
     _onEnter: function(actor, event) {
@@ -196,12 +177,17 @@ const Button = new Lang.Class({
         if (this._hoverTitleChanger) {
             this._hoverTitleChanger(this._hoverTitle);
         }
+        
         if (this._hoverDescriptionChanger) {
             this._hoverDescriptionChanger(this._hoverDescription);
         }
+        
         if (this._btnHoverHandler) {
             this._btnHoverHandler(actor, event);
+            
+            return Clutter.EVENT_STOP;
         }
+        return Clutter.EVENT_PROPAGATE;
     },
 
     _onLeave: function(actor, event) {
@@ -210,11 +196,14 @@ const Button = new Lang.Class({
         if (this._hoverTitleChanger) {
             this._hoverTitleChanger(null);
         }
+        
         if (this._hoverDescriptionChanger) {
             this._hoverDescriptionChanger(null);
         }
+        
+        return Clutter.EVENT_STOP;
     },
-
+    
     _onDestroy: function() {
         this.actor.disconnect(this._btnPressId);
         this.actor.disconnect(this._btnReleaseId);
@@ -229,7 +218,7 @@ const Button = new Lang.Class({
 
 const ToggleButton = new Lang.Class({
 
-    Name: 'Gnomenu.buttons.ToggleButton',
+    Name: 'Gnomenu.menubuttonBase.ToggleButton',
     Extends: Button,
     
     
@@ -268,84 +257,44 @@ const ToggleButton = new Lang.Class({
         this._stateToggledCallback = callback;
     },
     
-    _onRelease: function() {
-        this.actor.remove_style_pseudo_class('pressed');
-        //this.actor.remove_style_pseudo_class('active');
-        
+    _onPress: function(actor, event) {
+        this.toggleState();
         if (this._hoverTitleChanger) {
             this._hoverTitleChanger(null);
         }
+        
         if (this._hoverDescriptionChanger) {
             this._hoverDescriptionChanger(null);
         }
+    
+        let button = event.get_button();
+        if (this._btnHandlers[button]) {
+            this._btnHandlers[button](this.active);
+            this.actor.remove_style_pseudo_class('pressed');
+            this.actor.remove_style_pseudo_class('active');
             
-        this.toggleState();
+            return Clutter.EVENT_STOP;
+        }
         
-        if (this._btnClickHandler) {
-            this._btnClickHandler(this.active);
-        }
+        return Clutter.EVENT_PROPAGATE;
     },
 });
-
-
-const ToggleButtonGroup = new Lang.Class({
-
-    Name: 'Gnomenu.buttons.ToggleButtonGroup',
-    
-    
-    _init: function() {
-        this._buttons = [];
-    },
-    
-    addButton: function(button) {
-        if (button) {
-            button.setStateToggledCallback(Lang.bind(this, function(btn, isActive) {
-                if (isActive) {
-                    this.clearButtonStates();
-                    btn.setState(true);
-                }
-            }));
-            this._buttons.push(button);
-        }
-    },
-    
-    select: function(id) {
-        for each (let btn in this._buttons) {
-            if (btn.id == id) {
-                btn.setState(true);
-            } else {
-                btn.setState(false);
-            }
-        }
-    },
-    
-    clearButtonStates: function() {
-        for each (let button in this._buttons) {
-            button.setState(false);
-        }
-    }
-});
-
 
 
 // =============================================================================
 
 const DraggableButton = new Lang.Class({
 
-    Name: 'Gnomenu.buttons.DraggableButton',
+    Name: 'Gnomenu.menubuttonBase.DraggableButton',
     Extends: Button,
     
     
     _init: function(icon, iconSize, labelTextID, hoverTitleID, hoverDescriptionID, params) {
         this.parent(icon, iconSize, labelTextID, hoverTitleID, hoverDescriptionID, params);
         this.actor._delegate = this;
-        
+    
         this._gicon = null;
         this._iconName = null;
-        this._iconSize = null;
-        this._dragMonitor = null;
-        this._dragIds = [];
-    
         if (typeof icon == 'string') {
             this._iconName = icon;
         } else if (icon instanceof St.Icon) {
@@ -361,6 +310,8 @@ const DraggableButton = new Lang.Class({
         
         this._draggable = DND.makeDraggable(this.actor);
         
+        this._dragMonitor = null;
+        this._dragIds = [];
         let id = 0;
         id = this._draggable.connect('drag-begin', Lang.bind(this, this._onDragBegin));
         this._dragIds.push(id);
@@ -381,6 +332,39 @@ const DraggableButton = new Lang.Class({
 
     getDragActorSource: function() {
         return this._stIcon;
+    },
+    
+    _onRelease: function(actor, event) {
+        let button = event.get_button();
+        if (this._btnHandlers[button]) {
+            if (this._hoverTitleChanger) {
+                this._hoverTitleChanger(null);
+            }
+            
+            if (this._hoverDescriptionChanger) {
+                this._hoverDescriptionChanger(null);
+            }
+            
+            this.actor.remove_style_pseudo_class('pressed');
+            this.actor.remove_style_pseudo_class('active');
+            
+            this._btnHandlers[button](actor, event);
+            
+            return Clutter.EVENT_STOP;
+        }
+        
+        return Clutter.EVENT_PROPAGATE;
+    },
+    
+    _onPress: function(actor, event) {
+        let button = event.get_button();
+        
+        if (this._btnHandlers[button]) {
+            this.actor.add_style_pseudo_class('pressed');
+            
+            return Clutter.EVENT_PROPAGATE;
+        }
+        return Clutter.EVENT_PROPAGATE;
     },
     
     _onDragBegin: function() {
@@ -433,6 +417,5 @@ const DraggableButton = new Lang.Class({
             }
         }
         this._dragIds = [];
-    }
+    },
 });
-

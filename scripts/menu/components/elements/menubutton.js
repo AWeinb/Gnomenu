@@ -20,7 +20,7 @@ const ToggleButton = Me.imports.scripts.menu.components.elements.menubuttonBase.
 
 const IconButton = new Lang.Class({
 
-    Name: 'Gnomenu.buttons.IconButton',
+    Name: 'Gnomenu.menubutton.IconButton',
     Extends: Button,
 
     
@@ -44,7 +44,7 @@ const IconButton = new Lang.Class({
 
 const TextButton = new Lang.Class({
     
-    Name: 'GnoMenu.buttons.TextButton',
+    Name: 'GnoMenu.menubutton.TextButton',
     Extends: Button,
     
     
@@ -73,7 +73,7 @@ const TextButton = new Lang.Class({
 
 const IconToggleButton = new Lang.Class({
 
-    Name: 'Gnomenu.buttons.IconToggleButton',
+    Name: 'Gnomenu.menubutton.IconToggleButton',
     Extends: ToggleButton,
     
     
@@ -98,7 +98,7 @@ const IconToggleButton = new Lang.Class({
 
 const TextToggleButton = new Lang.Class({
 
-    Name: 'Gnomenu.buttons.TextToggleButton',
+    Name: 'Gnomenu.menubutton.TextToggleButton',
     Extends: ToggleButton,
     
     
@@ -127,7 +127,7 @@ const TextToggleButton = new Lang.Class({
 
 const DraggableIconButton = new Lang.Class({
     
-    Name: 'GnoMenu.buttons.DraggableIconButton',
+    Name: 'GnoMenu.menubutton.DraggableIconButton',
     Extends: DraggableButton,
     
     
@@ -192,7 +192,7 @@ const DraggableIconButton = new Lang.Class({
 
 const DraggableGridButton = new Lang.Class({
     
-    Name: 'GnoMenu.buttons.DraggableGridButton',
+    Name: 'GnoMenu.menubutton.DraggableGridButton',
     Extends: DraggableButton,
     
     
@@ -257,7 +257,7 @@ const DraggableGridButton = new Lang.Class({
 
 const DraggableListButton = new Lang.Class({
     
-    Name: 'GnoMenu.buttons.DraggableListButton',
+    Name: 'GnoMenu.menubutton.DraggableListButton',
     Extends: DraggableButton,
     
     
@@ -326,7 +326,7 @@ const DraggableListButton = new Lang.Class({
 
 const DraggableSearchGridButton = new Lang.Class({
     
-    Name: 'GnoMenu.buttons.DraggableSearchGridButton',
+    Name: 'GnoMenu.menubutton.DraggableSearchGridButton',
     Extends: DraggableButton,
     
     
@@ -391,7 +391,7 @@ const DraggableSearchGridButton = new Lang.Class({
 
 const DraggableSearchListButton = new Lang.Class({
     
-    Name: 'GnoMenu.buttons.DraggableSearchListButton',
+    Name: 'GnoMenu.menubutton.DraggableSearchListButton',
     Extends: DraggableButton,
     
     
@@ -450,6 +450,81 @@ const DraggableSearchListButton = new Lang.Class({
     shellWorkspaceLaunch : function(params) {
         if (this._searchResult) {
             this._searchResult.launch(true, params);
+        }
+    },
+});
+
+
+// =============================================================================
+
+const ButtonGroup = new Lang.Class({
+
+    Name: 'Gnomenu.menubutton.ButtonGroup',
+    
+    
+    _init: function() {
+        this.reset();
+    },
+    
+    reset: function() {
+        this._buttons = [];
+        this._selectedIdx = -1;
+    },
+    
+    addButton: function(button) {
+        if (button && button.setStateToggledCallback) {
+            button.setStateToggledCallback(Lang.bind(this, function(btn, isActive) {
+                if (isActive) {
+                    this.clearButtonStates();
+                    btn.setState(true);
+                }
+            }));
+            this._buttons.push(button);
+        }
+    },
+    
+    selectFirst: function() {
+        this.clearButtonStates();
+        this._selectedIdx = 0;
+        if (this._buttons.length > 0) {
+            this._buttons[this._selectedIdx].select();
+        }
+    },
+    
+    selectNext: function() {
+        let previousIdx = this._selectedIdx;
+        this._selectedIdx = (this._selectedIdx + 1) % this._buttons.length;
+        if (this._buttons.length > 0) {
+            this._buttons[previousIdx].deselect();
+            this._buttons[this._selectedIdx].select();
+        }
+    },
+    
+    selectPrevious: function() {
+        let previousIdx = this._selectedIdx;
+        this._selectedIdx = this._selectedIdx - 1;
+        if (this._selectedIdx < 0) {
+            this._selectedIdx = this._buttons.length - 1;
+        }
+        if (this._buttons.length > 0) {
+            this._buttons[previousIdx].deselect();
+            this._buttons[this._selectedIdx].select();
+        }
+    },
+    
+    selectByID: function(categoryID) {
+        for each (let btn in this._buttons) {
+            if (btn.id == categoryID) {
+                btn.select();
+            } else {
+                btn.deselect();
+            }
+        }
+    },
+    
+    clearButtonStates: function() {
+        for each (let button in this._buttons) {
+            button.setState(false);
         }
     },
 });

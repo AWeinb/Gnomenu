@@ -5,6 +5,7 @@ const GnomeSession = imports.misc.gnomeSession;
 const LoginManager = imports.misc.loginManager;
 const Main = imports.ui.main;
 const Shell = imports.gi.Shell;
+const Clutter = imports.gi.Clutter;
 
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const Log = Me.imports.scripts.misc.log;
@@ -111,6 +112,7 @@ const MenuMediator = new Lang.Class({
     },
     
     onMenuOpened: function() {
+        global.stage.set_key_focus(this._menu.actor);
     },
     
     onMenuClosed: function() {
@@ -130,6 +132,98 @@ const MenuMediator = new Lang.Class({
         this._navigationArea._onDragEnd();
     },
     
+    onKeyboardEvent: function(actor, event) {
+        log("Mediator received key event!");
+        
+        let state = event.get_state();
+        let ctrl_pressed = (state & imports.gi.Clutter.ModifierType.CONTROL_MASK ? true : false);
+        let symbol = event.get_key_symbol();
+        
+        switch (symbol) {
+            
+            case Clutter.Up:
+                this.focusNavigation();
+                this._navigationArea._onKeyboardEvent(actor, event);
+                break;
+            
+            case Clutter.Down:
+                this.focusNavigation();
+                this._navigationArea._onKeyboardEvent(actor, event);
+                break;
+            
+            case Clutter.w:
+                if (ctrl_pressed) {
+                    this.focusNavigation();
+                    this._navigationArea._onKeyboardEvent(actor, event);
+                }
+                break;
+            
+            case Clutter.s:
+                if (ctrl_pressed) {
+                    this.focusNavigation();
+                    this._navigationArea._onKeyboardEvent(actor, event);
+                }
+                break;
+            
+            case Clutter.Left:
+                this.focusSidebar();
+                this._sidebar._onKeyboardEvent(actor, event);
+                break;
+            
+            case Clutter.Right:
+                this.focusMainArea();
+                this._mainArea._onKeyboardEvent(actor, event);
+                break;
+            
+            case Clutter.a:
+                if (ctrl_pressed) {
+                    this.focusSidebar();
+                    this._sidebar._onKeyboardEvent(actor, event);
+                }
+                break;
+            
+            case Clutter.d:
+                if (ctrl_pressed) {
+                    this.focusMainArea();
+                    this._mainArea._onKeyboardEvent(actor, event);
+                }
+                break;
+        }
+        
+        return Clutter.EVENT_STOP;
+    },
+    
+    moveKeyFocusLeft: function() {
+        
+    },
+    
+    moveKeyFocusRight: function() {
+        
+    },
+    
+    moveKeyFocusTop: function() {
+        
+    },
+    
+    moveKeyFocusDown: function() {
+        
+    },
+    
+    focusNavigation: function() {
+        global.stage.set_key_focus(this._navigationArea.actor);
+    },
+    
+    focusSidebar: function() {
+        global.stage.set_key_focus(this._sidebar.actor);
+    },
+    
+    focusMainArea: function() {
+        global.stage.set_key_focus(this._mainArea.actor);
+    },
+    
+    focusSearch: function() {
+        global.stage.set_key_focus(this._searchField.actor);
+    },
     
     // #########################################################################
     // ---
@@ -224,32 +318,32 @@ const MenuMediator = new Lang.Class({
     
     // #########################################################################
     // ---
-    // Mediator <-> MidPane
+    // Mediator <-> Apps
 
     selectMenuCategory: function(categoryID) {
-        if (!this._mainArea) {
-            Log.logError("Gnomenu.MenuMediator", "selectMenuCategory", "this._mainArea is null!");
+        if (!this._searchField || !this._categoryPane || !this._navigationArea || !this._mainArea) {
+            Log.logError("Gnomenu.MenuMediator", "selectMenuCategory", "Something is null!");
         }
+        
         this._searchField.reset();
-        this._categoryPane.selectButton(categoryID);
-        this._navigationArea.setSelectedCategory(categoryID);
+        this._categoryPane.selectCategory(categoryID);
+        this._navigationArea.selectCategory(categoryID);
         this._mainArea.showCategory(categoryID);
     },
     
-    selectShortcutViewMode: function(viewModeID, selectBtn) {
-        if (!this._mainArea && !this._viewModePane) {
-            Log.logError("Gnomenu.MenuMediator", "selectShortcutViewMode", "this._mainArea or this._viewModePane is null!");
+    setViewMode: function(viewMode) {
+        if (!this._mainArea) {
+            Log.logError("Gnomenu.MenuMediator", "setViewMode", "this._mainArea is null!");
         }
-        this._mainArea.setViewMode(viewModeID);
-        if (selectBtn) {
-            this._viewModePane.selectButton(viewModeID);
+        
+        if (viewMode) {
+            this._mainArea.setViewMode(viewMode);
         }
     },
-    
 
     // #########################################################################
     // ---
-    // Mediator <-> Bottom
+    // Mediator <-> Info
     
     getFocusedTitleChanger: function() {
         return Lang.bind(this, function(title) {
@@ -264,17 +358,14 @@ const MenuMediator = new Lang.Class({
     },
     
     setFocusedTitle: function(title) {
-        if (!this._descriptionBox) {
-            Log.logError("Gnomenu.MenuMediator", "setFocusedTitle", "this._descriptionBox is null!");
+        if (this._descriptionBox) {
+            this._descriptionBox.setTitle(title);
         }
-        this._descriptionBox.setTitle(title);
     },
     
     setFocusedDescription: function(desc) {
-        if (!this._descriptionBox) {
-            Log.logError("Gnomenu.MenuMediator", "setFocusedDescription", "this._descriptionBox is null!");
+        if (this._descriptionBox) {
+            this._descriptionBox.setDescription(desc);
         }
-        this._descriptionBox.setDescription(desc);
     },
-    
 });
