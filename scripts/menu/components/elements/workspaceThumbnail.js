@@ -1,4 +1,9 @@
-// -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
+/*
+    Copyright (C) 2014-2015, Gnome Shell
+    
+    Modified by THE PANACEA PROJECTS <panacier@gmail.com>
+                AxP                  <Der_AxP@t-online.de>
+*/
 
 const Clutter = imports.gi.Clutter;
 const Gio = imports.gi.Gio;
@@ -44,14 +49,11 @@ const ThumbnailState = {
 
 
 const WindowClone = new Lang.Class({
-    
+
     Name: 'GnoMenu.workspaceThumbnail.WindowClone',
 
-    
+
     _init : function(realWindow) {
-        //if(Clutter.EVENT_PROPAGATE == undefined) throw Error();
-        //if(Clutter.EVENT_STOP == undefined) throw Error();
-    
         this.actor = new Clutter.Clone({ source: realWindow.get_texture(), reactive: true });
         this.actor._delegate = this;
         this.realWindow = realWindow;
@@ -127,7 +129,7 @@ const WindowClone = new Lang.Class({
     destroy: function () {
         this.actor.destroy();
     },
-    
+
     _onDestroy: function() {
         this._disconnectRealWindowSignals();
 
@@ -148,7 +150,7 @@ const WindowClone = new Lang.Class({
         }
 
         this.emit('selected', event.get_time());
-        
+
         return Clutter.EVENT_STOP;
     },
 
@@ -181,14 +183,14 @@ Signals.addSignalMethods(WindowClone.prototype);
 
 
 const WorkspaceThumbnail = new Lang.Class({
-    
+
     Name: 'GnoMenu.workspaceThumbnail.WorkspaceThumbnail',
 
-    
+
     _init : function(mediator, metaWorkspace) {
         this._mediator = mediator;
         this.metaWorkspace = metaWorkspace;
-        
+
         this.monitorIndex = Main.layoutManager.primaryIndex;
         this._removed = false;
 
@@ -502,7 +504,7 @@ const WorkspaceThumbnail = new Lang.Class({
 
             metaWindow.change_workspace_by_index(this.metaWorkspace.index(), false, time);
             return true;
-        
+
         } else if (source.shellWorkspaceLaunch) {
             source.shellWorkspaceLaunch({ workspace: this.metaWorkspace ? this.metaWorkspace.index() : -1, timestamp: time });
             return true;
@@ -515,17 +517,17 @@ Signals.addSignalMethods(WorkspaceThumbnail.prototype);
 
 
 const GnoMenuThumbnailsBox = new Lang.Class({
-    
+
     Name: 'GnoMenu.workspaceThumbnail.GnoMenuThumbnailsBox',
 
-    
-    _init: function(mediator, model) {
-        if (!mediator || !model) {
-            Log.logError("GnoMenu.workspaceThumbnail.GnoMenuThumbnailsBox", "_init", "mediator or model is null!");
+
+    _init: function(mediator) {
+        if (!mediator) {
+            Log.logError("GnoMenu.workspaceThumbnail.GnoMenuThumbnailsBox", "_init", "mediator is null!");
         }
-        
+
         this._mediator = mediator;
-        this._gsCurrentVersion = model.getGnomeShellVersion();
+        this._gsCurrentVersion = mediator.getMenuSettings().getGnomeShellVersion();
 
         // override GS38 _init to remove create/destroy thumbnails when showing/hiding overview
         this.actor = new Shell.GenericContainer({ reactive: true, style_class: 'gnomenu-workspace-thumbnails', request_mode: Clutter.RequestMode.WIDTH_FOR_HEIGHT });
@@ -577,7 +579,7 @@ const GnoMenuThumbnailsBox = new Lang.Class({
         }
 
         this._thumbnails = [];
-        
+
         this.actor.connect('button-press-event', function() { return Clutter.EVENT_STOP; });
         this.actor.connect('button-release-event', Lang.bind(this, this._onButtonRelease));
 
@@ -588,14 +590,13 @@ const GnoMenuThumbnailsBox = new Lang.Class({
     _updateSwitcherVisibility: function() {
         this.actor.visible = this._settings.get_boolean('dynamic-workspaces') || global.screen.n_workspaces > 1;
     },
-    
+
     _onButtonRelease: function(actor, event) {
         let button = event.get_button();
         if (button == 3) { //right click
             return Clutter.EVENT_PROPAGATE;
         }
 
-        
         let [stageX, stageY] = event.get_coords();
         let [r, x, y] = this.actor.transform_stage_point(stageX, stageY);
 
@@ -610,7 +611,7 @@ const GnoMenuThumbnailsBox = new Lang.Class({
 
         return Clutter.EVENT_STOP;
     },
-    
+
     onDragBegin: function() {
         this._dragCancelled = false;
         this._dragMonitor = {
@@ -623,14 +624,14 @@ const GnoMenuThumbnailsBox = new Lang.Class({
         this._dragCancelled = true;
         this._endDrag();
     },
-    
+
     onDragEnd: function() {
         if (this._dragCancelled) {
             return;
         }
         this._endDrag();
     },
-    
+
     _onDragMotion: function(dragEvent) {
         if (!this.actor.contains(dragEvent.targetActor)) {
             this._clearDragPlaceholder();
@@ -662,7 +663,7 @@ const GnoMenuThumbnailsBox = new Lang.Class({
 
         this._dropWorkspace = -1;
         let placeholderPos = -1;
-        
+
         let targetBase;
         if (this._dropPlaceholderPos == 0) {
             targetBase = this._dropPlaceholder.y;
@@ -670,7 +671,7 @@ const GnoMenuThumbnailsBox = new Lang.Class({
             targetBase = this._thumbnails[0].actor.y;
         }
         let targetTop = targetBase - spacing - WORKSPACE_CUT_SIZE;
-        
+
         let length = this._thumbnails.length;
         for (let i = 0; i < length; i ++) {
             // Allow the reorder target to have a 10px "cut" into
@@ -774,7 +775,7 @@ const GnoMenuThumbnailsBox = new Lang.Class({
             return false;
         }
     },
-    
+
     createThumbnails: function() {
         this._switchWorkspaceNotifyId = global.window_manager.connect('switch-workspace', Lang.bind(this, this._activeWorkspaceChanged));
         this._nWorkspacesNotifyId = global.screen.connect('notify::n-workspaces', Lang.bind(this, this._workspacesChanged));
@@ -826,6 +827,10 @@ const GnoMenuThumbnailsBox = new Lang.Class({
                 break;
             }
         }
+        
+        if (!thumbnail.actor) {
+            return;
+        }
 
         this._animatingIndicator = true;
         let indicatorThemeNode = this._indicator.get_theme_node();
@@ -843,7 +848,7 @@ const GnoMenuThumbnailsBox = new Lang.Class({
             onCompleteScope: this
         });
     },
-    
+
     _workspacesChanged: function() {
         let oldNumWorkspaces = this._thumbnails.length;
         let newNumWorkspaces = global.screen.n_workspaces;
@@ -867,13 +872,13 @@ const GnoMenuThumbnailsBox = new Lang.Class({
 
         this._updateSwitcherVisibility();
     },
-    
+
     _syncStacking: function(overview, stackIndices) {
         for (let i = 0; i < this._thumbnails.length; i++) {
             this._thumbnails[i].syncStacking(stackIndices);
         }
     },
-    
+
     _addThumbnails: function(start, count) {
         for (let k = start; k < start + count; k++) {
             let metaWorkspace = global.screen.get_workspace_by_index(k);
@@ -881,7 +886,7 @@ const GnoMenuThumbnailsBox = new Lang.Class({
             thumbnail.setPorthole(this._porthole.x, this._porthole.y, this._porthole.width, this._porthole.height);
             this._thumbnails.push(thumbnail);
             this.actor.add_actor(thumbnail.actor);
-            
+
             if (start > 0 && this._spliceIndex == -1) {
                 // not the initial fill, and not splicing via DND
                 thumbnail.state = ThumbnailState.NEW;
@@ -902,7 +907,7 @@ const GnoMenuThumbnailsBox = new Lang.Class({
         // Clear the splice index, we got the message
         this._spliceIndex = -1;
     },
-    
+
     _removeThumbnails: function(start, count) {
         let currentPos = 0;
         for (let k = 0; k < this._thumbnails.length; k++) {
@@ -978,9 +983,9 @@ const GnoMenuThumbnailsBox = new Lang.Class({
 
         // Then slide out any thumbnails that have been destroyed
         this._iterateStateThumbnails(ThumbnailState.REMOVING, function(thumbnail) {
-            
+
                 this._setThumbnailState(thumbnail, ThumbnailState.ANIMATING_OUT);
-                
+
                 Tweener.addTween(thumbnail, {
                     slidePosition: 1,
                     time: SLIDE_ANIMATION_TIME,
@@ -1063,7 +1068,7 @@ const GnoMenuThumbnailsBox = new Lang.Class({
         // that the actors aren't depending on the virtual functions being called.
 
         if (this._thumbnails.length == 0) {
-            return;
+            return 0;
         }
 
         let themeNode = this.actor.get_theme_node();
@@ -1072,8 +1077,11 @@ const GnoMenuThumbnailsBox = new Lang.Class({
         let nWorkspaces = global.screen.n_workspaces;
         let totalSpacing = (nWorkspaces - 1) * spacing;
 
-        alloc.min_size = totalSpacing;
-        alloc.natural_size = totalSpacing + nWorkspaces * this._porthole.height * MAX_THUMBNAIL_SCALE;
+        if (alloc) {
+            alloc.min_size = totalSpacing;
+            alloc.natural_size = totalSpacing + nWorkspaces * this._porthole.height * MAX_THUMBNAIL_SCALE;
+        }
+        return totalSpacing + nWorkspaces * this._porthole.height * MAX_THUMBNAIL_SCALE;
     },
 
     _getPreferredWidth: function(actor, forHeight, alloc) {
@@ -1095,7 +1103,7 @@ const GnoMenuThumbnailsBox = new Lang.Class({
         alloc.min_size = width;
         alloc.natural_size = width;
     },
-    
+
     _allocate: function(actor, box, flags) {
         let rtl = (Clutter.get_default_text_direction () == Clutter.TextDirection.RTL);
 

@@ -160,7 +160,7 @@
             <description>Size and layout of the menu.</description>
         </key>
 
-        <key enum="org.gnome.shell.extensions.testMenu.menuStartCategory" name="menu-category">
+        <key enum="org.gnome.shell.extensions.testMenu.menuStartCategory" name="menu-startcategory">
             <default>'category_mostUsed'</default>
             <summary>Startup applications to display.</summary>
             <description>Startup applications to display.</description>

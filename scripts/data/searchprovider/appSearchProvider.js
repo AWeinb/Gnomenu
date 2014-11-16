@@ -29,7 +29,7 @@ const AppSearchProvider = new Lang.Class({
     
     getResults: function(filterParams) {
         let results = this._results;
-        if (filterParams && filterParams.maxNumber) {
+        if (results && filterParams && filterParams.maxNumber) {
             results = this._results.slice(0, filterParams.maxNumber);
         }
         return results;

@@ -29,9 +29,10 @@ const PanelBox = new Lang.Class({
     },
 
     destroy: function() {
-        this.actor.destroy();
         this._buttonOne.destroy();
         //this._buttonTwo.destroy();
+        
+        this.actor.destroy();
     }
 });
 

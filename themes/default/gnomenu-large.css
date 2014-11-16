@@ -175,6 +175,7 @@
 .gnomenu-searchArea-list-box {
     padding-top: 10px;
     padding-left: 80px;
+    spacing: 11px;
 }
 
 .gnomenu-searchArea-grid-box {
@@ -312,7 +313,7 @@
 .gnomenu-text-button-label {
     font-size: 11pt;
     font-weight: bold;
-    padding: 5px 10px;
+    padding: 0px 10px;
 }
 
 .gnomenu-text-button:active {

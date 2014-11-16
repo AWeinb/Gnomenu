@@ -23,12 +23,11 @@ const St = imports.gi.St;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const Log = Me.imports.scripts.misc.log;
 const Component = Me.imports.scripts.menu.components.component.Component;
-const Constants = Me.imports.scripts.constants;
+const MenuModel = Me.imports.scripts.menu.menuModel;
 const TextToggleButton = Me.imports.scripts.menu.components.elements.menubutton.TextToggleButton;
 const ButtonGroup = Me.imports.scripts.menu.components.elements.menubutton.ButtonGroup;
 
-const ECategoryID = Constants.ECategoryID;
-const EMenuLayout = Constants.EMenuLayout;
+const ECategoryID = MenuModel.ECategoryID;
 
 
 /**
@@ -66,6 +65,8 @@ const CategoryPane = new Lang.Class({
      * @function
      */
     refresh: function() {
+        this.clear();
+        
         // Creates the recent category button.
         let recentCategoryBtn = new TextToggleButton(this.mediator, 'Recent', 'Recent', null);
         recentCategoryBtn.setID(ECategoryID.RECENTFILES);
@@ -78,7 +79,7 @@ const CategoryPane = new Lang.Class({
 
         // Creates either the favorites category or the places category button.
         let tmpCategoryBtn = null;
-        switch (this.model.getDefaultSidebarCategory()) {
+        switch (this.menuSettings.getSidebarCategory()) {
 
             case ECategoryID.FAVORITES:
                 tmpCategoryBtn = new TextToggleButton(this.mediator, 'Places', 'Places', null);
@@ -114,7 +115,7 @@ const CategoryPane = new Lang.Class({
      */
     _getCallback: function(categoryID) {
         return Lang.bind(this, function(isSelected) {
-            let cat = this.model.getDefaultShortcutAreaCategory();
+            let cat = this.menuSettings.getDefaultShortcutAreaCategory();
             if (isSelected) {
                 cat = categoryID;
             }
@@ -139,7 +140,7 @@ const CategoryPane = new Lang.Class({
             }
         }
         // The buttongroup is now empty again.
-        this._buttongroup.reset();
+        this._buttonGroup.reset();
     },
 
     /**
@@ -148,6 +149,7 @@ const CategoryPane = new Lang.Class({
      * @function
      */
     destroy: function() {
+        this.clear();
         this.actor.destroy();
     },
 

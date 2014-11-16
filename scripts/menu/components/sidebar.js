@@ -20,17 +20,16 @@
 const Lang = imports.lang;
 const Clutter = imports.gi.Clutter;
 const Gtk = imports.gi.Gtk;
-const Meta = imports.gi.Meta;
 const St = imports.gi.St;
 
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-const Constants = Me.imports.scripts.constants;
+const MenuModel = Me.imports.scripts.menu.menuModel;
 const DraggableIconButton = Me.imports.scripts.menu.components.elements.menubutton.DraggableIconButton;
 const ButtonGroup = Me.imports.scripts.menu.components.elements.menubutton.ButtonGroup;
 const UpdateableComponent = Me.imports.scripts.menu.components.component.UpdateableComponent;
 
-const ECategoryID = Constants.ECategoryID;
-const EEventType = Constants.EEventType;
+const ECategoryID = MenuModel.ECategoryID;
+const EEventType = MenuModel.EEventType;
 
 
 /**
@@ -55,7 +54,6 @@ const Sidebar = new Lang.Class({
 
     _init: function(model, mediator) {
         this.parent(model, mediator);
-        log(Clutter.EVENT_STOP)
 
         // The buttongroup handles the interaction between the buttons.
         this._buttongroup = new ButtonGroup();
@@ -72,7 +70,7 @@ const Sidebar = new Lang.Class({
         this._keyPressID = this.actor.connect('key_press_event', Lang.bind(this, this._onKeyboardEvent));
 
         // Receives the app data and updates the view.
-        this.update();
+        this.refresh();
     },
 
     /**
@@ -81,7 +79,39 @@ const Sidebar = new Lang.Class({
      * @function
      */
     refresh: function() {
-        this.update();
+        // Remove the old buttons.
+        this.clear();
+        
+        if (!this.menuSettings.isSidebarVisible()) {
+            this.actor.hide();
+        } else {
+            this.actor.show();
+        }
+
+        // Get a list with apps.
+        let launchables = null;
+        this._category = this.menuSettings.getSidebarCategory();
+        switch (this._category) {
+
+            case ECategoryID.FAVORITES:
+                launchables = this.model.getFavoriteApps();
+                break;
+
+            case ECategoryID.PLACES:
+                launchables = this.model.getPlaces();
+                break;
+
+            default:
+                break;
+        }
+
+        // And fill the component again.
+        let iconSize = this.menuSettings.getSidebarIconsize();
+        for each (let launchable in launchables) {
+            let btn = new DraggableIconButton(this.mediator, iconSize, launchable);
+            this._buttongroup.addButton(btn);
+            this._mainBox.add_actor(btn.actor);
+        }
     },
 
     /**
@@ -127,48 +157,25 @@ const Sidebar = new Lang.Class({
      * @function
      */
     update: function(event) {
-        if (!event || event.type == EEventType.FAVORITES_EVENT) {
-            Meta.later_add(Meta.LaterType.BEFORE_REDRAW, Lang.bind(this, function() {
+        if (!event) {
+            event = { type: EEventType.DATA_FAVORITES_EVENT };
+        }
+        
+        switch (event.type) {
+            
+            case EEventType.DATA_FAVORITES_EVENT:
+                this.refresh();
+                break;
 
-                    if (!this.model.isSidebarVisible()) {
-                        this.actor.hide();
-                    } else {
-                        this.actor.show();
-                    }
-
-                    // Get a list with apps.
-                    let launchables = null;
-                    switch (this.model.getDefaultSidebarCategory()) {
-
-                        case ECategoryID.FAVORITES:
-                            launchables = this.model.getFavoriteApps();
-                            break;
-
-                        case ECategoryID.PLACES:
-                            launchables = this.model.getPlaces();
-                            break;
-
-                        default:
-                            break;
-                    }
-
-                    // Remove the old buttons.
-                    this.clear();
-
-                    // And fill the component again.
-                    let iconSize = this.model.getSidebarIconSize();
-                    for each (let launchable in launchables) {
-                        let btn = new DraggableIconButton(this.mediator, iconSize, launchable);
-                        this._buttongroup.addButton(btn);
-                        this._mainBox.add_actor(btn.actor);
-                    }
-
-                    return false;
-                }
-            ));
+            case EEventType.DATA_PLACES_EVENT:
+                this.refresh();
+                break;
+            
+            default:
+                break;
         }
     },
-
+    
     /**
      * @description This function handles the keyboard events.
      * @param {Clutter.Actor} actor

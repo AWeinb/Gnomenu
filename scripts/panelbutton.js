@@ -232,9 +232,9 @@ const MenuButton = new Lang.Class({
     
     destroy: function() {
         this._hotspot.destroy();
+        this.menu.destroy();
         
         this.setKeyboardShortcut(null, null, null);
-        this.menu.destroy();
         this.actor.destroy();
     },
 

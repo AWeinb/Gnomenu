@@ -7,7 +7,6 @@ const Main = imports.ui.main;
 const IconTheme = imports.gi.Gtk.IconTheme;
 
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-const Constants = Me.imports.scripts.constants;
 const ActivitiesButton = Me.imports.scripts.panel.ActivitiesButton;
 const PanelBox = Me.imports.scripts.panel.PanelBox;
 const Convenience = Me.imports.scripts.misc.convenience;
@@ -17,6 +16,13 @@ const StyleManager = Me.imports.scripts.misc.styleManager.StyleManager;
 if (Clutter.EVENT_PROPAGATE == undefined) Clutter.EVENT_PROPAGATE = false;
 if (Clutter.EVENT_STOP == undefined) Clutter.EVENT_STOP = true;
 
+/**
+ *
+ * @author AxP
+ * @author ??? from the THE PANACEA PROJECTS (I rewrote a lot so I am not sure what to write here.) Same for the components and other classes. TODO
+ * 
+ * @version 1.0
+ */
 
 function enable() {
 	global.log("Gnomenu: Enabled!");
@@ -55,6 +61,12 @@ function enable() {
     log(settings.get_int('menu-search-maxresultcount'))*/
 	
 	
+    // Add extension icons to icon theme directory path
+    // TODO: move this to enable/disable?
+    // GS patch https://bugzilla.gnome.org/show_bug.cgi?id=675561
+    let theme = IconTheme.get_default();
+    theme.append_search_path(Me.path + "/icons");
+	
 	let settings = Convenience.getSettings();
 	if (!settings) {
 		return;
@@ -87,10 +99,4 @@ function disable() {
 
 function init() {
     Convenience.initTranslations();
-
-    // Add extension icons to icon theme directory path
-    // TODO: move this to enable/disable?
-    // GS patch https://bugzilla.gnome.org/show_bug.cgi?id=675561
-    let theme = IconTheme.get_default();
-    theme.append_search_path(Me.path + "/icons");
 }

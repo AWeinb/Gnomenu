@@ -23,12 +23,11 @@ const St = imports.gi.St;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const Log = Me.imports.scripts.misc.log;
 const Component = Me.imports.scripts.menu.components.component.Component;
-const Constants = Me.imports.scripts.constants;
+const MenuModel = Me.imports.scripts.menu.menuModel;
 const IconToggleButton = Me.imports.scripts.menu.components.elements.menubutton.IconToggleButton;
 const ButtonGroup = Me.imports.scripts.menu.components.elements.menubutton.ButtonGroup;
 
-const EMenuLayout = Constants.EMenuLayout;
-const EViewMode = Constants.EViewMode;
+const EViewMode = MenuModel.EViewMode;
 
 
 /**
@@ -54,7 +53,7 @@ const ViewModePane = new Lang.Class({
 
         // The actor gets two togglebuttons which change the viewmode.
         this.actor = new St.BoxLayout({ style_class: 'gnomenu-viewMode-box' });
-        let iconSize = this.model.getMiscBtnIconSize();
+        let iconSize = this.menuSettings.getLayoutDependendIconsize();
 
         let listViewBtn = new IconToggleButton(mediator, 'view-list-symbolic', iconSize, 'List View', null);
         listViewBtn.setID(EViewMode.LIST);
@@ -88,7 +87,7 @@ const ViewModePane = new Lang.Class({
      * @function
      */
     refresh: function() {
-        this.selectButton(this.model.getShortcutAreaViewMode());
+        this.selectButton(this.menuSettings.getShortcutAreaViewMode());
     },
 
     /**

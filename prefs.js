@@ -143,13 +143,11 @@ const SignalHandlers = new Lang.Class({
     
     // Combobox
     _changeSidebarCategory: function(combobox) {
-        log(SIDEBAR_CATEGORIES[combobox.get_active()])
         this._settings.set_enum('sidebar-category', SIDEBAR_CATEGORIES[combobox.get_active()]);
     },
     
     // Combobox
     _changeSidebarIconsize: function(combobox) {
-        log(ICONSIZES[combobox.get_active()])
         this._settings.set_int('sidebar-iconsize', ICONSIZES[combobox.get_active()]);
     },
     
@@ -175,25 +173,21 @@ const SignalHandlers = new Lang.Class({
             menuAppListIconsizeCombobox.set_active(ICONSIZES.indexOf(32));
             menuAppGridIconsizeCombobox.set_active(ICONSIZES.indexOf(64));
         }
-        log(MENU_LAYOUTS[selected])
         this._settings.set_enum('menu-layout', MENU_LAYOUTS[selected]);
     },
     
     // Combobox
     _changeMenuStartCategory: function(combobox) {
-        log(MENU_CATEGORIES[combobox.get_active()])
-        this._settings.set_enum('menu-category', MENU_CATEGORIES[combobox.get_active()]);
+        this._settings.set_enum('menu-startcategory', MENU_CATEGORIES[combobox.get_active()]);
     },
     
     // Combobox
     _changeMenuDefaultViewMode: function(combobox) {
-        log(VIEWMODES[combobox.get_active()])
         this._settings.set_enum('menu-viewmode', VIEWMODES[combobox.get_active()]);
     },
     
     // Combobox
     _changeMenuCatSelectMethod: function(combobox) {
-        log(SELECT_METHODS[combobox.get_active()])
         this._settings.set_enum('menu-category-selectionmethod', SELECT_METHODS[combobox.get_active()]);
     },
     
@@ -209,7 +203,6 @@ const SignalHandlers = new Lang.Class({
     
     // numberfield
     _changeSearchResultCount: function(spinButton) {
-        log(spinButton.get_value())
         this._settings.set_int('menu-search-maxresultcount', spinButton.get_value());
     },
     
@@ -318,7 +311,7 @@ function _setDefaults(builder) {
     let menuAppListIconsizeCombobox = builder.get_object('nb2_menuSettingsBox_grid_combobox5');
     let menuAppGridIconsizeCombobox = builder.get_object('nb2_menuSettingsBox_grid_combobox6');
     menuLayoutCombobox.set_active(MENU_LAYOUTS.indexOf(settings.get_enum('menu-layout')) + '');
-    menuStartCategoryCombobox.set_active(MENU_CATEGORIES.indexOf(settings.get_enum('menu-category')) + '');
+    menuStartCategoryCombobox.set_active(MENU_CATEGORIES.indexOf(settings.get_enum('menu-startcategory')) + '');
     menuViewModeCombobox.set_active(VIEWMODES.indexOf(settings.get_enum('menu-viewmode')) + '');
     menuCatSelectMethodCombobox.set_active(SELECT_METHODS.indexOf(settings.get_enum('menu-category-selectionmethod')) + '');
     menuAppListIconsizeCombobox.set_active(ICONSIZES.indexOf(settings.get_int('menu-applist-iconsize')) + '');

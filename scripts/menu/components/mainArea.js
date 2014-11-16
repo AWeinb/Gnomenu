@@ -23,12 +23,12 @@ const St = imports.gi.St;
 
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const Log = Me.imports.scripts.misc.log;
-const Constants = Me.imports.scripts.constants;
+const MenuModel = Me.imports.scripts.menu.menuModel;
 const ResultArea = Me.imports.scripts.menu.components.elements.searchResultArea.ResultArea;
 const ShortcutArea = Me.imports.scripts.menu.components.elements.shortcutArea.ShortcutArea;
 const UpdateableComponent = Me.imports.scripts.menu.components.component.UpdateableComponent;
 
-const EEventType = Constants.EEventType;
+const EEventType = MenuModel.EEventType;
 
 
 /**
@@ -70,6 +70,8 @@ const MainArea = new Lang.Class({
         // This component listens for keys to handle the keyboard control.
         this._keyPressID = this.actor.connect('key_press_event', Lang.bind(this, this._onKeyboardEvent));
 
+        this.searchActive = false;
+        
         this.refresh();
     },
 
@@ -79,24 +81,27 @@ const MainArea = new Lang.Class({
      * @function
      */
     refresh: function() {
+        if (this.searchActive) {
+            this._resultArea.show();
+            this._shortcutArea.hide();
+            
+        } else {
+            this._resultArea.hide();
+            this._shortcutArea.show();
+        }
+        
         this._resultArea.refresh();
         this._shortcutArea.refresh();
-
-        this.setViewMode(this.model.getShortcutAreaViewMode());
-        this.showCategory(this.model.getDefaultShortcutAreaCategory());
     },
 
     /**
      * @description Use this function to remove all actors from the component.
-     *              Not implemented for this class.
      * @public
      * @function
      */
     clear: function() {
-        /*
-         * It is not intended to clear the component.
-         */
-        Log.logWarning("Gnomenu.ControlPane", "clear", "This is not useful!");
+        this._resultArea.clear();
+        this._shortcutArea.clear();
     },
 
     /**
@@ -110,10 +115,10 @@ const MainArea = new Lang.Class({
             this._keyPressID = undefined;
         }
 
-        this.actor.destroy();
-
         this._resultArea.destroy();
         this._shortcutArea.destroy();
+        
+        this.actor.destroy();
     },
 
     /**
@@ -131,11 +136,13 @@ const MainArea = new Lang.Class({
                 case EEventType.SEARCH_UPDATE_EVENT:
                     this._resultArea.show();
                     this._shortcutArea.hide();
+                    this.searchActive = true;
                     break;
 
                 case EEventType.SEARCH_STOP_EVENT:
                     this._resultArea.hide();
                     this._shortcutArea.show();
+                    this.searchActive = false;
                     break;
 
                 default:
@@ -143,8 +150,8 @@ const MainArea = new Lang.Class({
             }
         }
 
-        this._resultArea.update(event);
-        this._shortcutArea.update(event);
+        this._resultArea.updateSearch(event);
+        this._shortcutArea.updateCategory(event);
     },
 
     /**

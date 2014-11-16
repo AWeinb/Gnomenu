@@ -110,10 +110,13 @@ const SearchSystem = new Lang.Class({
                 continue;
             }
             
-            let rawResults = provider.getResults(filterParams);
-            let resultsMetas = provider.getResultMetas(rawResults);
-            results[provider.id] = resultsMetas;
-            
+            try {
+                let rawResults = provider.getResults(filterParams);
+                let resultsMetas = provider.getResultMetas(rawResults);
+                results[provider.id] = resultsMetas;
+            } catch(e) {
+                Log.logWarning("GnoMenu.SearchSystem", "getResults", e.message);
+            }
         }
         return results;
     },

@@ -21,12 +21,9 @@ const Lang = imports.lang;
 const St = imports.gi.St;
 
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-const Constants = Me.imports.scripts.constants;
 const Component = Me.imports.scripts.menu.components.component.Component;
 const IconButton = Me.imports.scripts.menu.components.elements.menubutton.IconButton;
 const ButtonGroup = Me.imports.scripts.menu.components.elements.menubutton.ButtonGroup;
-
-const EMenuLayout = Constants.EMenuLayout;
 
 
 /**
@@ -55,31 +52,42 @@ const ControlPane = new Lang.Class({
 
         this.actor = new St.BoxLayout({ style_class: 'gnomenu-controlPane-box'});
         this._buttonGroup = new ButtonGroup();
+        
+        this.refresh();
+    },
 
-        let iconSize = this.model.getMiscBtnIconSize();
-        let systemRestart = new IconButton(mediator, 'refresh-symbolic', iconSize, 'Restart Shell', null);
-        systemRestart.setOnLeftClickHandler(Lang.bind(mediator, function() {
-            mediator.restartShell();
+    /**
+     * @description Use this function to bring the view up-to-date.
+     * @public
+     * @function
+     */
+    refresh: function() {
+        this.clear();
+        
+        let iconSize = this.menuSettings.getLayoutDependendIconsize();
+        let systemRestart = new IconButton(this.mediator, 'refresh-symbolic', iconSize, 'Restart Shell', null);
+        systemRestart.setOnLeftClickHandler(Lang.bind(this, function() {
+            this.mediator.restartShell();
         }));
 
-        let systemSuspend = new IconButton(mediator, 'suspend-symbolic', iconSize, 'Suspend', null);
-        systemSuspend.setOnLeftClickHandler(Lang.bind(mediator, function() {
-            mediator.suspendComputer();
+        let systemSuspend = new IconButton(this.mediator, 'suspend-symbolic', iconSize, 'Suspend', null);
+        systemSuspend.setOnLeftClickHandler(Lang.bind(this, function() {
+            this.mediator.suspendComputer();
         }));
 
-        let systemShutdown = new IconButton(mediator, 'shutdown-symbolic', iconSize, 'Shutdown', null);
-        systemShutdown.setOnLeftClickHandler(Lang.bind(mediator, function() {
-            mediator.shutdownComputer();
+        let systemShutdown = new IconButton(this.mediator, 'shutdown-symbolic', iconSize, 'Shutdown', null);
+        systemShutdown.setOnLeftClickHandler(Lang.bind(this, function() {
+            this.mediator.shutdownComputer();
         }));
 
-        let logoutUser = new IconButton(mediator, 'user-logout-symbolic', iconSize, 'Logout User', null);
-        logoutUser.setOnLeftClickHandler(Lang.bind(mediator, function() {
-            mediator.logoutSession();
+        let logoutUser = new IconButton(this.mediator, 'user-logout-symbolic', iconSize, 'Logout User', null);
+        logoutUser.setOnLeftClickHandler(Lang.bind(this, function() {
+            this.mediator.logoutSession();
         }));
 
-        let lockScreen = new IconButton(mediator, 'user-lock-symbolic', iconSize, 'Lock Screen', null);
-        lockScreen.setOnLeftClickHandler(Lang.bind(mediator, function() {
-            mediator.lockSession();
+        let lockScreen = new IconButton(this.mediator, 'user-lock-symbolic', iconSize, 'Lock Screen', null);
+        lockScreen.setOnLeftClickHandler(Lang.bind(this, function() {
+            this.mediator.lockSession();
         }));
 
         this._buttonGroup.addButton(systemRestart);
@@ -96,30 +104,19 @@ const ControlPane = new Lang.Class({
     },
 
     /**
-     * @description Use this function to bring the view up-to-date. But in this case
-     *              there is no moment in which this view would be outdated.
-     * @public
-     * @function
-     */
-    refresh: function() {
-        /*
-         * There is no use in implementing this. The buttons are independent
-         * from the menu data. Not implemented for this class.
-         */
-        Log.logWarning("Gnomenu.ControlPane", "refresh", "This is not useful!");
-    },
-
-    /**
      * @description Use this function to remove all actors from the component.
-     *              Not implemented for this class.
      * @public
      * @function
      */
     clear: function() {
-        /*
-         * It is not intended to refresh the component so why clear it.
-         */
-        Log.logWarning("Gnomenu.ControlPane", "clear", "This is not useful!");
+        let actors = this.actor.get_children();
+        if (actors) {
+            for each (let actor in actors) {
+                this.actor.remove_actor(actor);
+                actor.destroy();
+            }
+        }
+        this._buttonGroup.reset();
     },
 
     /**
@@ -128,15 +125,7 @@ const ControlPane = new Lang.Class({
      * @function
      */
     destroy: function() {
-        let actors = this.actor.get_children();
-        if (actors) {
-            for each (let actor in actors) {
-                this.actor.remove_actor(actor);
-                actor.destroy();
-            }
-        }
-        this._buttongroup.reset();
-
+        this.clear();
         this.actor.destroy();
     }
 });

@@ -51,6 +51,7 @@ const Component = new Lang.Class({
 
         this.model = model;
         this.mediator = mediator;
+        this.menuSettings = mediator.getMenuSettings();
     },
 
     /**

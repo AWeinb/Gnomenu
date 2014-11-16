@@ -6,12 +6,19 @@ const Main = imports.ui.main;
 const St = imports.gi.St;
 
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-const Constants = Me.imports.scripts.constants;
+const MenuModel = Me.imports.scripts.menu.menuModel;
 const Log = Me.imports.scripts.misc.log;
 
-const EMenuLayout = Constants.EMenuLayout;
-const EStylesheetFilename = Constants.EStylesheetFilename;
+const EMenuLayout = MenuModel.EMenuLayout;
 
+
+const EStylesheetFilename = {
+    
+    LARGE:  'gnomenu-large.css',
+    MEDIUM: 'gnomenu-medium.css',
+    SMALL:  'gnomenu-small.css',
+    
+};
 
 
 const StyleManager = new Lang.Class({

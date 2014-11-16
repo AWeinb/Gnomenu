@@ -1,3 +1,21 @@
+/*
+    Copyright (C) 2014-2015, THE PANACEA PROJECTS <panacier@gmail.com>
+    Copyright (C) 2014-2015, AxP <Der_AxP@t-online.de>
+
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software Foundation,
+    Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
+*/
 
 const Lang = imports.lang;
 const Mainloop = imports.mainloop;
@@ -26,6 +44,18 @@ const DescriptionBox = Me.imports.scripts.menu.components.descriptionBox.Descrip
 const PreferencesButton = Me.imports.scripts.menu.components.preferencesButton.PreferencesButton;
 
 
+/**
+ * @class Menu: This class creates the entire menu. The menu is build from
+ *              many components. This components are not connected to each other
+ *              but communicate over an observer and mediator.
+ *
+ * @param {Clutter.Actor} sourceActor The button.
+ * @param {Settings} settings
+ *
+ *
+ * @author AxP
+ * @version 1.0
+ */
 const Menu = new Lang.Class({
 
     Name: 'Gnomenu.Menu',
@@ -36,36 +66,46 @@ const Menu = new Lang.Class({
         if (!sourceActor || !settings) {
             Log.logError("Gnomenu.Menu", "_init", "sourceActor or settings is null!");
         }
-
         this.parent(sourceActor, 0.0, St.Align.START);
         Main.panel.menuManager.addMenu(this);
         
+        // Everything is put inside of this section.
         this._section = new PopupMenuSection();
         this.addMenuItem(this._section);
         
-        this._model = new MenuModel(settings);
+        // The menu is a model-view-controller architecture with an additional mediator.
+        // The mediator is usefull to handle some direct connections.
+        this._model = new MenuModel();
         this._modelObserver = this._model.getObserver();
-        this._mediator = new MenuMediator(this, this._model);
+        this._mediator = new MenuMediator(this, settings);
         
+        // This sets up the search. To change the providers modify the MenuSearch.
         this._menuSearch = new MenuSearch();
         this._model.setSearchSystem(this._menuSearch.getSearchSystem());
         this._mediator.setSearchSystem(this._menuSearch.getSearchSystem());
         
+        // I want to know when the menu is closed and opened.
         this._onOpenStateId = this._section.connect('open-state-changed', Lang.bind(this, function() {
             if (this.isOpen) {
-                this._onMenuOpened();
+                this._mediator._onMenuOpened();
                 
             } else {
-                this._onMenuClosed();
+                this._mediator._onMenuClosed();
             }
             return true;
         }));
+        // The key presses are used to implement a keyboard control.
         this._keyPressID = this.actor.connect('key_press_event', Lang.bind(this, this._handleKeyboardEvents));
         
         this._create();
         this._initMenu();
     },
     
+    /**
+     * @description This creates the menu components and adds them to the section.
+     * @private
+     * @function
+     */
     _create: function() {
         // mainbox holds the topPane and bottomPane
         let mainBox = new St.BoxLayout({ style_class: 'gnomenu-menu-box', vertical: true });
@@ -89,9 +129,7 @@ const Menu = new Lang.Class({
         this._descriptionBox = new DescriptionBox(this._model, this._mediator);
         this._extensionPrefButton = new PreferencesButton(this._model, this._mediator);
         
-        this._sidebar.actor.add_constraint(new Clutter.BindConstraint({name: 'constraint', source: this._navigationArea.actor, coordinate: Clutter.BindCoordinate.HEIGHT, offset: 0}));
-        this._mainArea.actor.add_constraint(new Clutter.BindConstraint({name: 'constraint', source: this._navigationArea.actor, coordinate: Clutter.BindCoordinate.HEIGHT, offset: 0}));
-        
+        // There are some placeholder items to prevent the components from scaling and to get free space.
         topPane.add(this._categoryPane.actor);
         topPane.add(new St.Label({ text: '' }), { expand: true, x_align: St.Align.MIDDLE, y_align: St.Align.MIDDLE });
         topPane.add(this._viewModePane.actor);
@@ -113,30 +151,43 @@ const Menu = new Lang.Class({
         
         this._section.actor.add(mainBox);
         
+        // The fix function needs the width and height of the elements. But accessing them before the data is set is
+        // a bad idea. You get a lot gtk "There is no blah with name" errors when you try it.
         this._mainAreaAllocationID = this._mainArea.actor.connect('notify::allocation', Lang.bind(this, this._fixElements));
     },
     
+    /**
+     * @description Fixes the height and width of the elements.
+     * @private
+     * @function
+     */
     _fixElements: function() {
+        let menuSettings = this._mediator.getMenuSettings();
+        
+        // Disconnect the allocation callback.
         if (this._mainAreaAllocationID) {
             this._mainArea.actor.disconnect(this._mainAreaAllocationID);
             this._mainAreaAllocationID = undefined;
         }
         
+        // To be sure i wait again some time to prevent errors.
         Mainloop.timeout_add(200, Lang.bind(this, function() {
         
+            // This fixes the height.
             let height = this._navigationArea.actor.height;
             this._sidebar.actor.height = height;
             this._mainArea.actor.height = height;
         
+            // This info is needed for later width changes.
             if (!this._categoryPane.min_width) this._categoryPane.min_width = this._categoryPane.actor.width;
             if (!this._navigationArea.min_width) this._navigationArea.min_width = this._navigationArea.actor.width;
             if (!this._controlPane.min_width) this._controlPane.min_width = this._controlPane.actor.width;
             
+            // This fits all left elements to one width.
             let sidebarWidth = 0;
-            if (this._model.isSidebarVisible()) {
+            if (menuSettings.isSidebarVisible()) {
                 sidebarWidth = this._sidebar.actor.width;
             }
-            log(sidebarWidth)
             let maxWidth = Math.max(this._categoryPane.actor.width, (this._navigationArea.actor.width + sidebarWidth), this._controlPane.actor.width);
             if (maxWidth > 0) {
                 this._categoryPane.actor.width = maxWidth;
@@ -146,7 +197,13 @@ const Menu = new Lang.Class({
         }));
     },
     
+    /**
+     * @description This sets up the model and mediator stuff for the components.
+     * @private
+     * @function
+     */
     _initMenu: function() {
+        // The model sends messages to this components if it changes.
         this._modelObserver.registerUpdateable(this._sidebar);
         this._modelObserver.registerUpdateable(this._navigationArea);
         this._modelObserver.registerUpdateable(this._mainArea);
@@ -164,20 +221,36 @@ const Menu = new Lang.Class({
         this._registerSettingCallbacks();
     },
     
-    _registerSettingCallbacks: function() { 
-        this._model.registerDefaultSidebarCategoryCB(Lang.bind(this, function(event) {
+    /**
+     * @description This connects the elements with the settings. Not every
+     *              is handleable here.
+     * @private
+     * @function
+     */
+    _registerSettingCallbacks: function() {
+        let menuSettings = this._mediator.getMenuSettings();
+        
+        // The visbility of the sidebar. This effects also the width of the left side.
+        menuSettings.registerSidebarVisibleCB(Lang.bind(this, function(event) {
             this._categoryPane.actor.width = this._categoryPane.min_width;
             this._navigationArea.actor.width = this._navigationArea.min_width;
             this._controlPane.actor.width = this._controlPane.min_width;
             
+            this._sidebar.refresh();
+            
+            this._fixElements();
+            return true;
+        }));
+        
+        // The apps of the sidebar.
+        menuSettings.registerSidebarCategoryCB(Lang.bind(this, function(event) {
+            this._sidebar.refresh();
             this._categoryPane.refresh();
-            this._sidebar.refresh();
-            
-            this._fixElements();
             return true;
         }));
         
-        this._model.registerSidebarIconSizeCB(Lang.bind(this, function(event) {
+        // The iconsize of the sidebar buttons.
+        menuSettings.registerSidebarIconsizeCB(Lang.bind(this, function(event) {
             this._categoryPane.actor.width = this._categoryPane.min_width;
             this._navigationArea.actor.width = this._navigationArea.min_width;
             this._controlPane.actor.width = this._controlPane.min_width;
@@ -188,64 +261,56 @@ const Menu = new Lang.Class({
             return true;
         }));
         
-        this._model.registerSidebarVisibleCB(Lang.bind(this, function(event) {
-            this._categoryPane.actor.width = this._categoryPane.min_width;
-            this._navigationArea.actor.width = this._navigationArea.min_width;
-            this._controlPane.actor.width = this._controlPane.min_width;
-            
-            this._sidebar.refresh();
-            
-            this._fixElements();
-            return true;
-        }));
-        
-        
-        this._model.registerDefaultShortcutAreaCategoryCB(Lang.bind(this, function(event) {
+        // Here are some more setting callbacks. They affect the categories and apps.
+        menuSettings.registerDefaultShortcutAreaCategoryCB(Lang.bind(this, function(event) {
             this._navigationArea.refresh();
-            this._mediator.selectMenuCategory(this._model.getDefaultShortcutAreaCategory());
+            this._mediator.selectMenuCategory(menuSettings.getDefaultShortcutAreaCategory());
             return true;
         }));
         
-        this._model.registerShortcutAreaViewModeCB(Lang.bind(this, function(event) {
-            this._mediator.selectShortcutViewMode(this._model.getShortcutAreaViewMode(), true);
+        menuSettings.registerShortcutAreaViewModeCB(Lang.bind(this, function(event) {
+            this._mediator.setViewMode(menuSettings.getShortcutAreaViewMode(), true);
             return true;
         }));
         
-        this._model.registerCategorySelectionMethodCB(Lang.bind(this, function(event) {
+        menuSettings.registerCategorySelectionMethodCB(Lang.bind(this, function(event) {
             this._navigationArea.refresh();
             return true;
         }));
         
-        this._model.registerAppListIconSizeCB(Lang.bind(this, function(event) {
+        menuSettings.registerAppListIconsizeCB(Lang.bind(this, function(event) {
             this._mainArea.refresh();
             return true;
         }));
         
-        this._model.registerAppGridIconSizeCB(Lang.bind(this, function(event) {
+        menuSettings.registerAppGridIconsizeCB(Lang.bind(this, function(event) {
             this._mainArea.refresh();
             return true;
         }));
         
-        
-        this._model.registerMaxSearchResultCountCB(Lang.bind(this, function(event) {
+        // Maximum of apps shown as search result.
+        menuSettings.registerMaxSearchResultCountCB(Lang.bind(this, function(event) {
             this._mainArea.refresh();
             return true;
         }));
     },
     
+    /**
+     * @description Handles the keyboard events.
+     * @private
+     * @function
+     */
     _handleKeyboardEvents: function(actor, event) {
-        this._mediator.onKeyboardEvent(actor, event);
+        // Actually the mediator handles it.
+        this._mediator._onKeyboardEvent(actor, event);
         return true;
     },
     
-    _onMenuOpened: function() {
-        this._mediator.onMenuOpened();
-    },
-    
-    _onMenuClosed: function() {
-        this._mediator.onMenuClosed();
-    },
-    
+    /**
+     * @description Resets the whole menu. It is essentially recreated.
+     * @public
+     * @function
+     */
     reset: function() {
         let actors = this._section.actor.get_children();
         if (actors) {
@@ -273,6 +338,11 @@ const Menu = new Lang.Class({
         this._initMenu();
     },
     
+    /**
+     * @description Destroys the menu.
+     * @public
+     * @function
+     */
     destroy: function() {
         if (this._onOpenStateId > 0) {
             this._section.disconnect(this._onOpenStateId);
@@ -283,8 +353,6 @@ const Menu = new Lang.Class({
             this.actor.disconnect(this._keyPressID);
             this._keyPressID = undefined;
         }
-        
-        this._section.destroy();
         
         this._categoryPane.destroy();
         this._viewModePane.destroy();
@@ -300,5 +368,7 @@ const Menu = new Lang.Class({
         
         this._model.destroy();
         this._menuSearch.destroy();
+        
+        this._section.destroy();
     },
 });
