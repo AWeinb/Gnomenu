@@ -220,31 +220,49 @@ const Sidebar = new Lang.Class({
                 break;
 
             case Clutter.Left:
-                this.mediator.moveKeyFocusLeft();
-                //this._buttongroup.selectFirst();
+                this._buttongroup.selectFirst();
                 returnVal = Clutter.EVENT_STOP;
                 break;
 
             case Clutter.Right:
-                this.mediator.moveKeyFocusRight();
-                //this.mediator.focusNavigation();
+                this._buttongroup.clearButtonStates();
+                this.mediator.moveKeyFocusRight(actor, event);
                 returnVal = Clutter.EVENT_STOP;
                 break;
 
             case Clutter.a:
                 if (ctrl_pressed) {
-                    this.mediator.moveKeyFocusLeft();
-                    //this._buttongroup.selectFirst();
+                    this._buttongroup.selectFirst();
                     returnVal = Clutter.EVENT_STOP;
                 }
                 break;
 
             case Clutter.d:
                 if (ctrl_pressed) {
-                    this.mediator.moveKeyFocusRight();
-                    //this.mediator.focusNavigation();
+                    this._buttongroup.clearButtonStates();
+                    this.mediator.moveKeyFocusRight(actor, event);
                     returnVal = Clutter.EVENT_STOP;
                 }
+                break;
+            
+            case Clutter.KEY_Tab:
+                this._buttongroup.clearButtonStates();
+                if (ctrl_pressed) {
+                    this._buttongroup.activateSelected(true);
+                } else {
+                    this._buttongroup.activateSelected(false);
+                }
+                returnVal = Clutter.EVENT_STOP;
+                break;
+                
+            case Clutter.KEY_Return:
+                this._buttongroup.clearButtonStates();
+                if (ctrl_pressed) {
+                    this._buttongroup.activateSelected(false);
+                } else {
+                    this._buttongroup.activateSelected(true);
+                }
+                returnVal = Clutter.EVENT_STOP;
                 break;
         }
 

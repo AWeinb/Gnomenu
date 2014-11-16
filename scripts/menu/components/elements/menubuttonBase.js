@@ -212,6 +212,14 @@ const Button = new Lang.Class({
         this.reset();
         this.isSelected = false;
     },
+    
+    /**
+     * @description Activates the button. Not implemented.
+     * @public
+     * @function
+     */
+    activate: function() {
+    },
 
     /**
      * @description Resets the button.
@@ -680,17 +688,6 @@ const DraggableButton = new Lang.Class({
 
     _onDragEndCB: function() {
         // Implement this for it to be useful.
-    },
-
-    /**
-     * @description Launches the button app with the given parameters.
-     * @public
-     * @function
-     */
-    shellWorkspaceLaunch : function(params) {
-        if (this._launchable) {
-            this._launchable.launch(true, params);
-        }
     },
 
     /**

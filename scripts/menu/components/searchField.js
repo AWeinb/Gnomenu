@@ -84,7 +84,7 @@ const SearchField = new Lang.Class({
         // To search we need the keyboard events.
         this._keyPressID = this._searchEntryText.connect('key_release_event', Lang.bind(this, this._onKeyPress));
     },
-
+    
     /**
      * @description Use this function to bring the view up-to-date.
      * @public
@@ -143,6 +143,39 @@ const SearchField = new Lang.Class({
     },
 
     /**
+     * @description This function sets the focus on to the search entry. Also it is possible
+     *              to give it the last typed event. In this case the last typed
+     *              char is entered into the field.
+     * @param actor
+     * @param event
+     * @public
+     * @function
+     */
+    activateFocus: function(actor, event) {
+        global.stage.set_key_focus(this._searchEntryText);
+        if (event) {
+            // I can only use valid chars as input.
+            let symbolID = event.get_key_symbol();
+            let unicode = Clutter.keysym_to_unicode(symbolID);
+            if (unicode != 0 && this._getTermsForSearchString(String.fromCharCode(unicode)).length > 0) {
+                this._searchEntry.text = String.fromCharCode(unicode);
+                // This call runs the lost run of the search.
+                this._onKeyPress(actor, event);
+            }
+        }
+    },
+    
+    /**
+     * @description Returns if the textfield has more than zero chars.
+     * @returns {Boolean}
+     * @public
+     * @function
+     */
+    hasText: function() {
+        return this._searchEntry.text != '';
+    },
+
+    /**
      * @description This function is called by the keyboard event handler.
      * @param actor
      * @param event
@@ -152,6 +185,10 @@ const SearchField = new Lang.Class({
      */
     _onKeyPress: function(actor, event) {
         let symbolID = event.get_key_symbol();
+        
+        if (this._searchEntry.text == '' && symbolID == Clutter.BackSpace) {
+            this.mediator.resetKeyFocus();
+        }
         // Refresh the search only if the key is important for the search.
         if (this._shouldTriggerSearch(symbolID)) {
             this._onTextChanged();

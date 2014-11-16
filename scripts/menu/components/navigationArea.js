@@ -336,6 +336,14 @@ const CategoryBox = new Lang.Class({
             this._selected = categoryID;
         }
     },
+    
+    activateFirst: function() {
+        let keys = Object.keys(this._categoryButtonMap);
+        let nextID = keys[0];
+
+        this.selectCategory(nextID);
+        this._mediator.selectMenuCategory(nextID);
+    },
 
     /**
      * @description Activates the next category.
@@ -682,8 +690,8 @@ const NavigationArea = new Lang.Class({
             switch (symbol) {
 
                 case Clutter.Up:
-                    returnVal = Clutter.EVENT_STOP;
                     receiver.activatePrevious();
+                    returnVal = Clutter.EVENT_STOP;
                     break;
 
                 case Clutter.Down:
@@ -705,6 +713,32 @@ const NavigationArea = new Lang.Class({
                     }
                     break;
 
+                case Clutter.Left:
+                    receiver.activateFirst();
+                    this.mediator.moveKeyFocusLeft(actor, event);
+                    returnVal = Clutter.EVENT_STOP;
+                    break;
+
+                case Clutter.Right:
+                    this.mediator.moveKeyFocusRight(actor, event);
+                    returnVal = Clutter.EVENT_STOP;
+                    break;
+
+                case Clutter.a:
+                    if (ctrl_pressed) {
+                        receiver.activateFirst();
+                        this.mediator.moveKeyFocusLeft(actor, event);
+                        returnVal = Clutter.EVENT_STOP;
+                    }
+                    break;
+
+                case Clutter.d:
+                    if (ctrl_pressed) {
+                        this.mediator.moveKeyFocusRight(actor, event);
+                        returnVal = Clutter.EVENT_STOP;
+                    }
+                    break;
+
                 case Clutter.KEY_Tab:
                     this.toggleView();
                     returnVal = Clutter.EVENT_STOP;
@@ -713,34 +747,6 @@ const NavigationArea = new Lang.Class({
                 case Clutter.KEY_Return:
                     if (this._workspaceBox.isVisible()) {
                         this.mediator.closeMenu();
-                        returnVal = Clutter.EVENT_STOP;
-                    }
-                    break;
-
-                case Clutter.Left:
-                    //this.mediator.focusSidebar();
-                    this.mediator.moveKeyFocusLeft();
-                    returnVal = Clutter.EVENT_STOP;
-                    break;
-
-                case Clutter.Right:
-                    //this.mediator.focusMainArea();
-                    this.mediator.moveKeyFocusRight();
-                    returnVal = Clutter.EVENT_STOP;
-                    break;
-
-                case Clutter.a:
-                    if (ctrl_pressed) {
-                        this.mediator.moveKeyFocusLeft();
-                        //this.mediator.focusSidebar();
-                        returnVal = Clutter.EVENT_STOP;
-                    }
-                    break;
-
-                case Clutter.d:
-                    if (ctrl_pressed) {
-                        //this.mediator.focusMainArea();
-                        this.mediator.moveKeyFocusRight();
                         returnVal = Clutter.EVENT_STOP;
                     }
                     break;

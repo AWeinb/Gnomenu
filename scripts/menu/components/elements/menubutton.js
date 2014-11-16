@@ -280,6 +280,26 @@ const DraggableIconButton = new Lang.Class({
     },
 
     /**
+     * @description Activates the button.
+     * @public
+     * @function
+     */
+    activate: function(newWindow, params) {
+        this._launchable.launch(newWindow, params);
+        this._mediator.closeMenu();
+        this._mediator.hideOverview();
+    },
+    
+    /**
+     * @description Launches the button app with the given parameters.
+     * @public
+     * @function
+     */
+    shellWorkspaceLaunch : function(params) {
+        this._launchable.launch(true, params);
+    },
+    
+    /**
      * @description A callback which is called on drag begin. It informs the mediator.
      * @private
      * @function
@@ -371,6 +391,26 @@ const DraggableGridButton = new Lang.Class({
     },
 
     /**
+     * @description Activates the button.
+     * @public
+     * @function
+     */
+    activate: function(newWindow, params) {
+        this._launchable.launch(newWindow, params);
+        this._mediator.closeMenu();
+        this._mediator.hideOverview();
+    },
+    
+    /**
+     * @description Launches the button app with the given parameters.
+     * @public
+     * @function
+     */
+    shellWorkspaceLaunch : function(params) {
+        this._launchable.launch(true, params);
+    },
+
+    /**
      * @description A callback which is called on drag begin. It informs the mediator.
      * @private
      * @function
@@ -459,6 +499,26 @@ const DraggableListButton = new Lang.Class({
             this._mediator.hideOverview();
 
         }));
+    },
+
+    /**
+     * @description Activates the button.
+     * @public
+     * @function
+     */
+    activate: function(newWindow, params) {
+        this._launchable.launch(newWindow, params);
+        this._mediator.closeMenu();
+        this._mediator.hideOverview();
+    },
+    
+    /**
+     * @description Launches the button app with the given parameters.
+     * @public
+     * @function
+     */
+    shellWorkspaceLaunch : function(params) {
+        this._launchable.launch(true, params);
     },
 
     /**
@@ -557,6 +617,26 @@ const DraggableSearchGridButton = new Lang.Class({
     },
 
     /**
+     * @description Activates the button.
+     * @public
+     * @function
+     */
+    activate: function(newWindow, params) {
+        this._launchable.launch(newWindow, params);
+        this._mediator.closeMenu();
+        this._mediator.hideOverview();
+    },
+    
+    /**
+     * @description Launches the button app with the given parameters.
+     * @public
+     * @function
+     */
+    shellWorkspaceLaunch : function(params) {
+        this._launchable.launch(true, params);
+    },
+
+    /**
      * @description A callback which is called on drag begin. It informs the mediator.
      * @private
      * @function
@@ -648,6 +728,26 @@ const DraggableSearchListButton = new Lang.Class({
     },
 
     /**
+     * @description Activates the button.
+     * @public
+     * @function
+     */
+    activate: function(newWindow, params) {
+        this._launchable.launch(newWindow, params);
+        this._mediator.closeMenu();
+        this._mediator.hideOverview();
+    },
+    
+    /**
+     * @description Launches the button app with the given parameters.
+     * @public
+     * @function
+     */
+    shellWorkspaceLaunch : function(params) {
+        this._launchable.launch(true, params);
+    },
+
+    /**
      * @description A callback which is called on drag begin. It informs the mediator.
      * @private
      * @function
@@ -727,6 +827,12 @@ const ButtonGroup = new Lang.Class({
         this._buttons.push(button);
     },
 
+    activateSelected: function(newWindow, params) {
+        if (this._selectedIdx >= 0) {
+            this._buttons[this._selectedIdx].activate(newWindow, params);
+        }
+    },
+    
     /**
      * @description Selects the first of the button list.
      * @public
@@ -746,10 +852,12 @@ const ButtonGroup = new Lang.Class({
      * @function
      */
     selectNext: function() {
-        let previousIdx = this._selectedIdx;
+        let lastIdx = this._selectedIdx;
         this._selectedIdx = (this._selectedIdx + 1) % this._buttons.length;
         if (this._buttons.length > 0) {
-            this._buttons[previousIdx].deselect();
+            if (lastIdx >= 0 && lastIdx < this._buttons.length) {
+                this._buttons[lastIdx].deselect();
+            }
             this._buttons[this._selectedIdx].select();
         }
     },
@@ -760,13 +868,15 @@ const ButtonGroup = new Lang.Class({
      * @function
      */
     selectPrevious: function() {
-        let previousIdx = this._selectedIdx;
+        let lastIdx = this._selectedIdx;
         this._selectedIdx = this._selectedIdx - 1;
         if (this._selectedIdx < 0) {
             this._selectedIdx = this._buttons.length - 1;
         }
         if (this._buttons.length > 0) {
-            this._buttons[previousIdx].deselect();
+            if (lastIdx >= 0 && lastIdx < this._buttons.length) {
+                this._buttons[lastIdx].deselect();
+            }
             this._buttons[this._selectedIdx].select();
         }
     },

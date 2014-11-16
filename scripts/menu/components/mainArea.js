@@ -194,6 +194,74 @@ const MainArea = new Lang.Class({
      */
     _onKeyboardEvent: function(actor, event) {
         log("MainArea received key event!");
-        return true;
-    },
+        
+        let receiver = null;
+        if (this._resultArea.isVisible()) {
+            receiver = this._resultArea;
+        } else {
+            receiver = this._shortcutArea;
+        }
+
+        let returnVal = Clutter.EVENT_PROPAGATE;
+        if (receiver) {
+            let state = event.get_state();
+            let ctrl_pressed = (state & imports.gi.Clutter.ModifierType.CONTROL_MASK ? true : false);
+            let symbol = event.get_key_symbol();
+
+            switch (symbol) {
+
+                case Clutter.Up:
+                    returnVal = Clutter.EVENT_STOP;
+                    break;
+
+                case Clutter.Down:
+                    returnVal = Clutter.EVENT_STOP;
+                    break;
+
+                case Clutter.w:
+                    if (ctrl_pressed) {
+                        returnVal = Clutter.EVENT_STOP;
+                    }
+                    break;
+
+                case Clutter.s:
+                    if (ctrl_pressed) {
+                        returnVal = Clutter.EVENT_STOP;
+                    }
+                    break;
+
+                case Clutter.Left:
+                    this.mediator.moveKeyFocusLeft(actor, event);
+                    returnVal = Clutter.EVENT_STOP;
+                    break;
+
+                case Clutter.Right:
+                    returnVal = Clutter.EVENT_STOP;
+                    break;
+
+                case Clutter.a:
+                    if (ctrl_pressed) {
+                        this.mediator.moveKeyFocusLeft(actor, event);
+                        returnVal = Clutter.EVENT_STOP;
+                    }
+                    break;
+
+                case Clutter.d:
+                    if (ctrl_pressed) {
+                        returnVal = Clutter.EVENT_STOP;
+                    }
+                    break;
+
+                case Clutter.KEY_Tab:
+                    returnVal = Clutter.EVENT_STOP;
+                    break;
+
+                case Clutter.KEY_Return:
+                    returnVal = Clutter.EVENT_STOP;
+                    break;
+            }
+        }
+
+        return returnVal;
+    }
 });

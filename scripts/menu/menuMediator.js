@@ -231,8 +231,7 @@ const MenuMediator = new Lang.Class({
         // Cleaning up.
         this._searchField.reset();
         this.selectMenuCategory(this.getMenuSettings().getDefaultShortcutAreaCategory());
-        // Sets the focus to the menu for the key controls.
-        global.stage.set_key_focus(this._menu.actor);
+        this.resetKeyFocus();
     },
 
     /**
@@ -269,6 +268,12 @@ const MenuMediator = new Lang.Class({
     onDragEnd: function() {
         this._navigationArea._onDragEnd();
     },
+    
+    resetKeyFocus: function() {
+        // Sets the focus to the menu for the key controls.
+        global.stage.set_key_focus(this._menu.actor);
+        this._focusedComponent = this._menu.actor;
+    },
 
     /**
      * @description Handles the keyboard event. This is the toplevel handler which
@@ -283,90 +288,203 @@ const MenuMediator = new Lang.Class({
         let ctrl_pressed = (state & imports.gi.Clutter.ModifierType.CONTROL_MASK ? true : false);
         let symbol = event.get_key_symbol();
 
+        let ret = Clutter.EVENT_PROPAGATE;
         switch (symbol) {
 
             case Clutter.Up:
-                this.focusNavigation();
-                this._navigationArea._onKeyboardEvent(actor, event);
+                ret = this.moveKeyFocusUp(actor, event);
                 break;
 
             case Clutter.Down:
-                this.focusNavigation();
-                this._navigationArea._onKeyboardEvent(actor, event);
+                ret = this.moveKeyFocusDown(actor, event);
                 break;
 
             case Clutter.w:
                 if (ctrl_pressed) {
-                    this.focusNavigation();
-                    this._navigationArea._onKeyboardEvent(actor, event);
+                    ret = this.moveKeyFocusUp(actor, event);
+                } else {
+                    this._searchField.activateFocus(actor, event);
+                    ret = Clutter.EVENT_STOP
                 }
                 break;
 
             case Clutter.s:
                 if (ctrl_pressed) {
-                    this.focusNavigation();
-                    this._navigationArea._onKeyboardEvent(actor, event);
+                    ret = this.moveKeyFocusDown(actor, event);
+                } else {
+                    this._searchField.activateFocus(actor, event);
+                    ret = Clutter.EVENT_STOP
                 }
                 break;
 
             case Clutter.Left:
-                this.focusSidebar();
-                this._sidebar._onKeyboardEvent(actor, event);
+                ret = this.moveKeyFocusLeft(actor, event);
                 break;
 
             case Clutter.Right:
-                this.focusMainArea();
-                this._mainArea._onKeyboardEvent(actor, event);
+                ret = this.moveKeyFocusRight(actor, event);
                 break;
 
             case Clutter.a:
                 if (ctrl_pressed) {
-                    this.focusSidebar();
-                    this._sidebar._onKeyboardEvent(actor, event);
+                    ret = this.moveKeyFocusLeft(actor, event);
+                } else {
+                    this._searchField.activateFocus(actor, event);
+                    ret = Clutter.EVENT_STOP
                 }
                 break;
 
             case Clutter.d:
                 if (ctrl_pressed) {
-                    this.focusMainArea();
-                    this._mainArea._onKeyboardEvent(actor, event);
+                    ret = this.moveKeyFocusRight(actor, event);
+                } else {
+                    this._searchField.activateFocus(actor, event);
+                    ret = Clutter.EVENT_STOP
                 }
+                break;
+            
+            default:
+                this._searchField.activateFocus(actor, event);
+                ret = Clutter.EVENT_STOP
                 break;
         }
 
-        return Clutter.EVENT_STOP;
+        return ret;
     },
 
-    moveKeyFocusLeft: function() {
-
+    moveKeyFocusLeft: function(actor, event) {
+        let gid = -1;
+        if (this._focusedComponent && this._focusedComponent.get_gid) {
+            gid = this._focusedComponent.get_gid();
+        }
+        
+        let ret = Clutter.EVENT_PROPAGATE;
+        switch (gid) {
+            
+            case this._sidebar.actor.get_gid():
+                ret = Clutter.EVENT_STOP;
+                break;
+            
+            case this._navigationArea.actor.get_gid():
+                global.stage.set_key_focus(this._sidebar.actor);
+                this._focusedComponent = this._sidebar.actor;
+                this._sidebar._onKeyboardEvent(actor, event);
+                ret = Clutter.EVENT_STOP;
+                break;
+            
+            case this._mainArea.actor.get_gid():
+                global.stage.set_key_focus(this._navigationArea.actor);
+                this._focusedComponent = this._navigationArea.actor;
+                ret = Clutter.EVENT_STOP;
+                break;
+            
+            default:
+                global.stage.set_key_focus(this._sidebar.actor);
+                this._focusedComponent = this._sidebar.actor;
+                this._sidebar._onKeyboardEvent(actor, event);
+                ret = Clutter.EVENT_STOP;
+                break;
+        }
+        
+        return ret;
     },
 
-    moveKeyFocusRight: function() {
-
+    moveKeyFocusRight: function(actor, event) {
+        let gid = -1;
+        if (this._focusedComponent && this._focusedComponent.get_gid) {
+            gid = this._focusedComponent.get_gid();
+        }
+        
+        let ret = Clutter.EVENT_PROPAGATE;
+        switch (gid) {
+            
+            case this._sidebar.actor.get_gid():
+                global.stage.set_key_focus(this._navigationArea.actor);
+                this._focusedComponent = this._navigationArea.actor;
+                ret = Clutter.EVENT_STOP;
+                break;
+            
+            case this._navigationArea.actor.get_gid():
+                global.stage.set_key_focus(this._mainArea.actor);
+                this._focusedComponent = this._mainArea.actor;
+                this._mainArea._onKeyboardEvent(actor, event);
+                ret = Clutter.EVENT_STOP;
+                break;
+            
+            case this._mainArea.actor.get_gid():
+                ret = Clutter.EVENT_STOP;
+                break;
+            
+            default:
+                global.stage.set_key_focus(this._mainArea.actor);
+                this._focusedComponent = this._mainArea.actor;
+                this._mainArea._onKeyboardEvent(actor, event);
+                ret = Clutter.EVENT_STOP;
+                break;
+        }
+        
+        return ret;
     },
 
-    moveKeyFocusTop: function() {
-
+    moveKeyFocusUp: function(actor, event) {
+        let gid = -1;
+        if (this._focusedComponent && this._focusedComponent.get_gid) {
+            gid = this._focusedComponent.get_gid();
+        }
+        
+        let ret = Clutter.EVENT_PROPAGATE;
+        switch (gid) {
+            
+            case this._sidebar.actor.get_gid():
+                ret = Clutter.EVENT_STOP;
+                break;
+            
+            case this._navigationArea.actor.get_gid():
+                ret = Clutter.EVENT_STOP;
+                break;
+            
+            case this._mainArea.actor.get_gid():
+                ret = Clutter.EVENT_STOP;
+                break;
+            
+            default:
+                ret = Clutter.EVENT_STOP;
+                break;
+        }
+        
+        return ret;
     },
 
-    moveKeyFocusDown: function() {
-
-    },
-
-    focusNavigation: function() {
-        global.stage.set_key_focus(this._navigationArea.actor);
-    },
-
-    focusSidebar: function() {
-        global.stage.set_key_focus(this._sidebar.actor);
-    },
-
-    focusMainArea: function() {
-        global.stage.set_key_focus(this._mainArea.actor);
-    },
-
-    focusSearch: function() {
-        global.stage.set_key_focus(this._searchField.actor);
+    moveKeyFocusDown: function(actor, event) {
+        let gid = -1;
+        if (this._focusedComponent && this._focusedComponent.get_gid) {
+            gid = this._focusedComponent.get_gid();
+        }
+        
+        let ret = Clutter.EVENT_PROPAGATE;
+        switch (gid) {
+            
+            case this._sidebar.actor.get_gid():
+                ret = Clutter.EVENT_STOP;
+                break;
+            
+            case this._navigationArea.actor.get_gid():
+                ret = Clutter.EVENT_STOP;
+                break;
+            
+            case this._mainArea.actor.get_gid():
+                ret = Clutter.EVENT_STOP;
+                break;
+            
+            default:
+                global.stage.set_key_focus(this._navigationArea.actor);
+                this._focusedComponent = this._navigationArea;
+                this._navigationArea._onKeyboardEvent(actor, event);
+                ret = Clutter.EVENT_STOP;
+                break;
+        }
+        
+        return ret;
     },
 
     // #########################################################################
