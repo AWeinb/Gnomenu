@@ -186,7 +186,10 @@ const SearchField = new Lang.Class({
     _onKeyPress: function(actor, event) {
         let symbolID = event.get_key_symbol();
         
-        if (this._searchEntry.text == '' && symbolID == Clutter.BackSpace) {
+        // I want to focus the other elements again if the search is empty.
+        if (this._searchEntry.text == '' && (symbolID == Clutter.BackSpace ||
+                                            symbolID == Clutter.Delete ||
+                                            symbolID == Clutter.KEY_space)) {
             this.mediator.resetKeyFocus();
         }
         // Refresh the search only if the key is important for the search.

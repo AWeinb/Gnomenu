@@ -200,6 +200,15 @@ const Button = new Lang.Class({
      */
     select: function() {
         this.actor.add_style_pseudo_class('open');
+        
+        if (this._hoverTitleChanger) {
+            this._hoverTitleChanger(this._hoverTitle);
+        }
+
+        if (this._hoverDescriptionChanger) {
+            this._hoverDescriptionChanger(this._hoverDescription);
+        }
+        
         this.isSelected = true;
     },
 

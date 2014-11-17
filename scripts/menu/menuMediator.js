@@ -271,8 +271,8 @@ const MenuMediator = new Lang.Class({
     
     resetKeyFocus: function() {
         // Sets the focus to the menu for the key controls.
-        global.stage.set_key_focus(this._menu.actor);
-        this._focusedComponent = this._menu.actor;
+        global.stage.set_key_focus(this._navigationArea.actor);
+        this._focusedComponent = this._navigationArea.actor;
     },
 
     /**
@@ -285,64 +285,12 @@ const MenuMediator = new Lang.Class({
         log("Mediator received key event!");
 
         let state = event.get_state();
-        let ctrl_pressed = (state & imports.gi.Clutter.ModifierType.CONTROL_MASK ? true : false);
+        let ctrl_pressed = (state & Clutter.ModifierType.CONTROL_MASK ? true : false);
         let symbol = event.get_key_symbol();
 
         let ret = Clutter.EVENT_PROPAGATE;
         switch (symbol) {
 
-            case Clutter.Up:
-                ret = this.moveKeyFocusUp(actor, event);
-                break;
-
-            case Clutter.Down:
-                ret = this.moveKeyFocusDown(actor, event);
-                break;
-
-            case Clutter.w:
-                if (ctrl_pressed) {
-                    ret = this.moveKeyFocusUp(actor, event);
-                } else {
-                    this._searchField.activateFocus(actor, event);
-                    ret = Clutter.EVENT_STOP
-                }
-                break;
-
-            case Clutter.s:
-                if (ctrl_pressed) {
-                    ret = this.moveKeyFocusDown(actor, event);
-                } else {
-                    this._searchField.activateFocus(actor, event);
-                    ret = Clutter.EVENT_STOP
-                }
-                break;
-
-            case Clutter.Left:
-                ret = this.moveKeyFocusLeft(actor, event);
-                break;
-
-            case Clutter.Right:
-                ret = this.moveKeyFocusRight(actor, event);
-                break;
-
-            case Clutter.a:
-                if (ctrl_pressed) {
-                    ret = this.moveKeyFocusLeft(actor, event);
-                } else {
-                    this._searchField.activateFocus(actor, event);
-                    ret = Clutter.EVENT_STOP
-                }
-                break;
-
-            case Clutter.d:
-                if (ctrl_pressed) {
-                    ret = this.moveKeyFocusRight(actor, event);
-                } else {
-                    this._searchField.activateFocus(actor, event);
-                    ret = Clutter.EVENT_STOP
-                }
-                break;
-            
             default:
                 this._searchField.activateFocus(actor, event);
                 ret = Clutter.EVENT_STOP
@@ -362,26 +310,28 @@ const MenuMediator = new Lang.Class({
         switch (gid) {
             
             case this._sidebar.actor.get_gid():
+                // Nothing to the left here.
                 ret = Clutter.EVENT_STOP;
                 break;
             
             case this._navigationArea.actor.get_gid():
                 global.stage.set_key_focus(this._sidebar.actor);
                 this._focusedComponent = this._sidebar.actor;
-                this._sidebar._onKeyboardEvent(actor, event);
+                this._sidebar._onKeyboardEvent(actor, event, true);
                 ret = Clutter.EVENT_STOP;
                 break;
             
             case this._mainArea.actor.get_gid():
                 global.stage.set_key_focus(this._navigationArea.actor);
                 this._focusedComponent = this._navigationArea.actor;
+                this._navigationArea._onKeyboardEvent(actor, event, true);
                 ret = Clutter.EVENT_STOP;
                 break;
             
             default:
                 global.stage.set_key_focus(this._sidebar.actor);
                 this._focusedComponent = this._sidebar.actor;
-                this._sidebar._onKeyboardEvent(actor, event);
+                this._sidebar._onKeyboardEvent(actor, event, true);
                 ret = Clutter.EVENT_STOP;
                 break;
         }
@@ -401,24 +351,26 @@ const MenuMediator = new Lang.Class({
             case this._sidebar.actor.get_gid():
                 global.stage.set_key_focus(this._navigationArea.actor);
                 this._focusedComponent = this._navigationArea.actor;
+                this._navigationArea._onKeyboardEvent(actor, event, true);
                 ret = Clutter.EVENT_STOP;
                 break;
             
             case this._navigationArea.actor.get_gid():
                 global.stage.set_key_focus(this._mainArea.actor);
                 this._focusedComponent = this._mainArea.actor;
-                this._mainArea._onKeyboardEvent(actor, event);
+                this._mainArea._onKeyboardEvent(actor, event, true);
                 ret = Clutter.EVENT_STOP;
                 break;
             
             case this._mainArea.actor.get_gid():
+                // Nothing to the right here.
                 ret = Clutter.EVENT_STOP;
                 break;
             
             default:
                 global.stage.set_key_focus(this._mainArea.actor);
                 this._focusedComponent = this._mainArea.actor;
-                this._mainArea._onKeyboardEvent(actor, event);
+                this._mainArea._onKeyboardEvent(actor, event, true);
                 ret = Clutter.EVENT_STOP;
                 break;
         }
@@ -479,7 +431,7 @@ const MenuMediator = new Lang.Class({
             default:
                 global.stage.set_key_focus(this._navigationArea.actor);
                 this._focusedComponent = this._navigationArea;
-                this._navigationArea._onKeyboardEvent(actor, event);
+                this._navigationArea._onKeyboardEvent(actor, event, true);
                 ret = Clutter.EVENT_STOP;
                 break;
         }

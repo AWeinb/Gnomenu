@@ -184,11 +184,11 @@ const Sidebar = new Lang.Class({
      * @private
      * @function
      */
-    _onKeyboardEvent: function(actor, event) {
+    _onKeyboardEvent: function(actor, event, firstCall) {
         log("Sidebar received key event!");
         
         let state = event.get_state();
-        let ctrl_pressed = (state & imports.gi.Clutter.ModifierType.CONTROL_MASK ? true : false);
+        let ctrl_pressed = (state & Clutter.ModifierType.CONTROL_MASK ? true : false);
         let symbol = event.get_key_symbol();
 
         // If we do not need the event it can bubble up.
@@ -209,6 +209,8 @@ const Sidebar = new Lang.Class({
                 if (ctrl_pressed) {
                     this._buttongroup.selectPrevious();
                     returnVal = Clutter.EVENT_STOP;
+                } else {
+                    this._buttongroup.clearButtonStates();
                 }
                 break;
 
@@ -216,6 +218,8 @@ const Sidebar = new Lang.Class({
                 if (ctrl_pressed) {
                     this._buttongroup.selectNext();
                     returnVal = Clutter.EVENT_STOP;
+                } else {
+                    this._buttongroup.clearButtonStates();
                 }
                 break;
 
@@ -234,6 +238,8 @@ const Sidebar = new Lang.Class({
                 if (ctrl_pressed) {
                     this._buttongroup.selectFirst();
                     returnVal = Clutter.EVENT_STOP;
+                } else {
+                    this._buttongroup.clearButtonStates();
                 }
                 break;
 
@@ -242,6 +248,8 @@ const Sidebar = new Lang.Class({
                     this._buttongroup.clearButtonStates();
                     this.mediator.moveKeyFocusRight(actor, event);
                     returnVal = Clutter.EVENT_STOP;
+                } else {
+                    this._buttongroup.clearButtonStates();
                 }
                 break;
             

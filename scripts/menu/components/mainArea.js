@@ -30,6 +30,9 @@ const UpdateableComponent = Me.imports.scripts.menu.components.component.Updatea
 
 const EEventType = MenuModel.EEventType;
 
+/** @constant */
+const BUTTON_SWITCH_WAIT_TIME = 50;
+
 
 /**
  * @class MainArea: This class creates main shortcut area. This contains also
@@ -152,6 +155,7 @@ const MainArea = new Lang.Class({
 
         this._resultArea.updateSearch(event);
         this._shortcutArea.updateCategory(event);
+        log(event.type)
     },
 
     /**
@@ -192,8 +196,14 @@ const MainArea = new Lang.Class({
      * @private
      * @function
      */
-    _onKeyboardEvent: function(actor, event) {
+    _onKeyboardEvent: function(actor, event, firstCall) {
         log("MainArea received key event!");
+        
+        let currentTime = global.get_current_time();
+		if (currentTime > this._lastScroll && currentTime < this._lastScroll + BUTTON_SWITCH_WAIT_TIME) {
+            return Clutter.EVENT_STOP;
+		}
+		this._lastScroll = currentTime;
         
         let receiver = null;
         if (this._resultArea.isVisible()) {
@@ -205,58 +215,75 @@ const MainArea = new Lang.Class({
         let returnVal = Clutter.EVENT_PROPAGATE;
         if (receiver) {
             let state = event.get_state();
-            let ctrl_pressed = (state & imports.gi.Clutter.ModifierType.CONTROL_MASK ? true : false);
+            let ctrl_pressed = (state & Clutter.ModifierType.CONTROL_MASK ? true : false);
             let symbol = event.get_key_symbol();
 
             switch (symbol) {
 
                 case Clutter.Up:
+                    receiver.selectUp();
                     returnVal = Clutter.EVENT_STOP;
                     break;
 
                 case Clutter.Down:
+                    receiver.selectDown();
                     returnVal = Clutter.EVENT_STOP;
                     break;
 
                 case Clutter.w:
                     if (ctrl_pressed) {
+                        receiver.selectUp();
                         returnVal = Clutter.EVENT_STOP;
                     }
                     break;
 
                 case Clutter.s:
                     if (ctrl_pressed) {
+                        receiver.selectDown();
                         returnVal = Clutter.EVENT_STOP;
                     }
                     break;
 
                 case Clutter.Left:
-                    this.mediator.moveKeyFocusLeft(actor, event);
+                    receiver.selectLeft();
                     returnVal = Clutter.EVENT_STOP;
                     break;
 
                 case Clutter.Right:
+                    if (firstCall) {
+                        receiver.selectFirst();
+                    } else {
+                        receiver.selectRight();
+                    }
                     returnVal = Clutter.EVENT_STOP;
                     break;
 
                 case Clutter.a:
                     if (ctrl_pressed) {
-                        this.mediator.moveKeyFocusLeft(actor, event);
+                        receiver.selectLeft();
                         returnVal = Clutter.EVENT_STOP;
                     }
                     break;
 
                 case Clutter.d:
                     if (ctrl_pressed) {
+                        if (firstCall) {
+                            receiver.selectFirst();
+                        } else {
+                            receiver.selectRight();
+                        }
                         returnVal = Clutter.EVENT_STOP;
                     }
                     break;
 
                 case Clutter.KEY_Tab:
+                    receiver.deselectLastSelectedButton();
+                    this.mediator.moveKeyFocusLeft(actor, event);
                     returnVal = Clutter.EVENT_STOP;
                     break;
 
                 case Clutter.KEY_Return:
+                    receiver.deselectLastSelectedButton();
                     returnVal = Clutter.EVENT_STOP;
                     break;
             }

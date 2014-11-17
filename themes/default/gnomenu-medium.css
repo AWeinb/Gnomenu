@@ -98,7 +98,7 @@
 
 .gnomenu-categories-workspaces-scrollbox {
     border-image: url("sepa-right.png") 12 12 12 12;
-    height: 400px;
+    height: 405px;
     padding: 9px 2px 9px 0px;
 }
 
@@ -135,7 +135,7 @@
 .gnomenu-mainArea-box {
     border-image: url("b-panel-r.png") 12 12 12 12;
     padding: 5px 2px 4px 2px;
-    width: 463px;
+    width: 470px;
 }
 
 .gnomenu-applications-scrollbox {
@@ -154,7 +154,7 @@
 
 .gnomenu-applications-grid-box {
     padding-bottom: 0px;
-    padding-left: 4px;
+    padding-left: 15px;
     padding-right: 4px;
     padding-top: 0px;
 }

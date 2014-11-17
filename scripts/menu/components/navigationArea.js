@@ -192,6 +192,13 @@ const WorkspaceBox = new Lang.Class({
 		} else {
 			return Clutter.EVENT_PROPAGATE;
 		}
+        
+        let currentTime = global.get_current_time();
+		if (currentTime > this._lastScroll && currentTime < this._lastScroll + WORKSPACE_SWITCH_WAIT_TIME) {
+            return Clutter.EVENT_STOP;
+		}
+		this._lastScroll = currentTime;
+        
 		this._switch(diff);
 
         return Clutter.EVENT_STOP;
@@ -223,12 +230,6 @@ const WorkspaceBox = new Lang.Class({
      * @author Mostly scroll-workspaces@gfxmonk.net. Modified by AxP.
      */
     _switch: function(diff) {
-        let currentTime = global.get_current_time();
-		if (currentTime > this._lastScroll && currentTime < this._lastScroll + WORKSPACE_SWITCH_WAIT_TIME) {
-            return;
-		}
-		this._lastScroll = currentTime;
-
 		let newIndex = global.screen.get_active_workspace().index() + diff;
         let metaWorkspace = global.screen.get_workspace_by_index(newIndex);
 		if (metaWorkspace) {
@@ -321,86 +322,6 @@ const CategoryBox = new Lang.Class({
     },
 
     /**
-     * @description Selects the button connected to the category.
-     * @param {Enum} categoryID The category id.
-     * @public
-     * @function
-     */
-    selectCategory: function(categoryID) {
-        for each (let btn in this._categoryButtonMap) {
-            btn.deselect();
-        }
-
-        if (categoryID && this._categoryButtonMap[categoryID]) {
-            this._categoryButtonMap[categoryID].select();
-            this._selected = categoryID;
-        }
-    },
-    
-    activateFirst: function() {
-        let keys = Object.keys(this._categoryButtonMap);
-        let nextID = keys[0];
-
-        this.selectCategory(nextID);
-        this._mediator.selectMenuCategory(nextID);
-    },
-
-    /**
-     * @description Activates the next category.
-     * @public
-     * @function
-     */
-    activateNext: function() {
-        if (!this._selected) {
-            return;
-        }
-
-        // Prevents too fast changes.
-        let currentTime = global.get_current_time();
-		if (this._tLastScroll && currentTime < this._tLastScroll + CATEGORY_SWITCH_WAIT_TIME) {
-            return;
-		}
-		this._tLastScroll = currentTime;
-
-        let keys = Object.keys(this._categoryButtonMap);
-        let selectedIdx = keys.indexOf(this._selected);
-        let nextIdx = (selectedIdx + 1) % keys.length;
-        let nextID = keys[nextIdx];
-
-        this.selectCategory(nextID);
-        this._mediator.selectMenuCategory(nextID);
-    },
-
-    /**
-     * @description Activates the previous category.
-     * @public
-     * @function
-     */
-    activatePrevious: function() {
-        if (!this._selected) {
-            return;
-        }
-
-        // Prevents too fast changes.
-        let currentTime = global.get_current_time();
-		if (this._tLastScroll && currentTime < this._tLastScroll + CATEGORY_SWITCH_WAIT_TIME) {
-            return;
-		}
-		this._tLastScroll = currentTime;
-
-        let keys = Object.keys(this._categoryButtonMap);
-        let selectedIdx = keys.indexOf(this._selected);
-        let previousIdx = selectedIdx - 1;
-        if (previousIdx < 0) {
-            previousIdx += keys.length;
-        }
-        let previousID = keys[previousIdx];
-
-        this.selectCategory(previousID);
-        this._mediator.selectMenuCategory(previousID);
-    },
-
-    /**
      * @description Adds a category button.
      * @param {Enum} categoryID The category id.
      * @param {String} categoryNameID Can be a gettext variable.
@@ -438,6 +359,86 @@ const CategoryBox = new Lang.Class({
         }
         this._categoryButtonMap[categoryID] = btn;
         this.actor.add_actor(btn.actor);
+    },
+
+    /**
+     * @description Selects the button connected to the category.
+     * @param {Enum} categoryID The category id.
+     * @public
+     * @function
+     */
+    selectCategory: function(categoryID) {
+        for each (let btn in this._categoryButtonMap) {
+            btn.deselect();
+        }
+
+        if (categoryID && this._categoryButtonMap[categoryID]) {
+            this._categoryButtonMap[categoryID].select();
+            this._selected = categoryID;
+        }
+    },
+    
+    activateCategory: function(categoryID) {
+        this.selectCategory(categoryID);
+        this._mediator.selectMenuCategory(categoryID);
+    },
+    
+    activateFirst: function() {
+        let keys = Object.keys(this._categoryButtonMap);
+        let nextID = keys[0];
+
+        this.activateCategory(nextID);
+    },
+
+    /**
+     * @description Activates the next category.
+     * @public
+     * @function
+     */
+    activateNext: function() {
+        if (!this._selected) {
+            return;
+        }
+
+        let keys = Object.keys(this._categoryButtonMap);
+        let selectedIdx = keys.indexOf(this._selected);
+        let nextIdx = (selectedIdx + 1) % keys.length;
+        let nextID = keys[nextIdx];
+
+        this.activateCategory(nextID);
+    },
+
+    /**
+     * @description Activates the previous category.
+     * @public
+     * @function
+     */
+    activatePrevious: function() {
+        if (!this._selected) {
+            return;
+        }
+
+        let keys = Object.keys(this._categoryButtonMap);
+        let selectedIdx = keys.indexOf(this._selected);
+        let previousIdx = selectedIdx - 1;
+        if (previousIdx < 0) {
+            previousIdx += keys.length;
+        }
+        let previousID = keys[previousIdx];
+
+        this.activateCategory(previousID);
+    },
+    
+    getSelectedButton: function() {
+        if (!this._selected) {
+            return null;
+        }
+        
+        let btn = null;
+        if (this._categoryButtonMap[this._selected]) {
+            btn = this._categoryButtonMap[this._selected];
+        }
+        return btn;
     },
 
     /**
@@ -671,9 +672,16 @@ const NavigationArea = new Lang.Class({
      * @private
      * @function
      */
-    _onKeyboardEvent: function(actor, event) {
+    _onKeyboardEvent: function(actor, event, firstCall) {
         log("NavigationArea received key event!");
 
+        // Prevents too fast changes.
+        let currentTime = global.get_current_time();
+		if (this._tLastScroll && currentTime < this._tLastScroll + CATEGORY_SWITCH_WAIT_TIME) {
+            return Clutter.EVENT_STOP;
+		}
+		this._tLastScroll = currentTime;
+        
         let receiver = null;
         if (this._workspaceBox.isVisible()) {
             receiver = this._workspaceBox;
@@ -684,7 +692,7 @@ const NavigationArea = new Lang.Class({
         let returnVal = Clutter.EVENT_PROPAGATE;
         if (receiver) {
             let state = event.get_state();
-            let ctrl_pressed = (state & imports.gi.Clutter.ModifierType.CONTROL_MASK ? true : false);
+            let ctrl_pressed = (state & Clutter.ModifierType.CONTROL_MASK ? true : false);
             let symbol = event.get_key_symbol();
 
             switch (symbol) {
@@ -703,6 +711,8 @@ const NavigationArea = new Lang.Class({
                     if (ctrl_pressed) {
                         receiver.activatePrevious();
                         returnVal = Clutter.EVENT_STOP;
+                    } else {
+                        receiver.activateFirst();
                     }
                     break;
 
@@ -710,37 +720,55 @@ const NavigationArea = new Lang.Class({
                     if (ctrl_pressed) {
                         receiver.activateNext();
                         returnVal = Clutter.EVENT_STOP;
+                    } else {
+                        receiver.activateFirst();
                     }
                     break;
 
                 case Clutter.Left:
                     receiver.activateFirst();
-                    this.mediator.moveKeyFocusLeft(actor, event);
+                    if (!firstCall) {
+                        this.mediator.moveKeyFocusLeft(actor, event);
+                    }
                     returnVal = Clutter.EVENT_STOP;
                     break;
 
                 case Clutter.Right:
-                    this.mediator.moveKeyFocusRight(actor, event);
+                    receiver.activateFirst();
+                    if (!firstCall) {
+                        this.mediator.moveKeyFocusRight(actor, event);
+                    }
                     returnVal = Clutter.EVENT_STOP;
                     break;
 
                 case Clutter.a:
                     if (ctrl_pressed) {
                         receiver.activateFirst();
-                        this.mediator.moveKeyFocusLeft(actor, event);
+                        if (!firstCall) {
+                            this.mediator.moveKeyFocusLeft(actor, event);
+                        }
                         returnVal = Clutter.EVENT_STOP;
+                    } else {
+                        receiver.activateFirst();
                     }
                     break;
 
                 case Clutter.d:
                     if (ctrl_pressed) {
-                        this.mediator.moveKeyFocusRight(actor, event);
+                        receiver.activateFirst();
+                        if (!firstCall) {
+                            this.mediator.moveKeyFocusRight(actor, event);
+                        }
                         returnVal = Clutter.EVENT_STOP;
+                    } else {
+                        receiver.activateFirst();
                     }
                     break;
 
                 case Clutter.KEY_Tab:
-                    this.toggleView();
+                    if (!firstCall) {
+                        this.toggleView();
+                    }
                     returnVal = Clutter.EVENT_STOP;
                     break;
 
@@ -755,6 +783,29 @@ const NavigationArea = new Lang.Class({
 
         return returnVal;
     },
+    
+    //_scrollToSelectedButton: function(activeView) {
+    //    let vscroll = this.actor.get_vscroll_bar();
+    //    let btn = activeView.getSelectedButton();
+    //    if (!btn) {
+    //        return;
+    //    }
+    //    let buttonBox = btn.actor.get_allocation_box();
+    //
+    //    var current_scroll_value = vscroll.get_adjustment().get_value();
+    //    var box_height = this.actor.get_allocation_box().y2 - this.actor.get_allocation_box().y1;
+    //    var new_scroll_value = current_scroll_value;
+    //
+    //    if (current_scroll_value > buttonBox.y1 - 20) {
+    //        new_scroll_value = buttonBox.y1 - 20;
+    //    }
+    //    if (box_height + current_scroll_value < buttonBox.y2 + 20) {
+    //        new_scroll_value = buttonBox.y2 - box_height + 20;
+    //    }
+    //    if (new_scroll_value != current_scroll_value) {
+    //        vscroll.get_adjustment().set_value(new_scroll_value);
+    //    }
+    //},
 
     /**
      * @description On drag begin callback function.
