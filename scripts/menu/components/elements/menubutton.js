@@ -622,7 +622,7 @@ const DraggableSearchGridButton = new Lang.Class({
      * @function
      */
     activate: function(newWindow, params) {
-        this._launchable.launch(newWindow, params);
+        this._searchResult.launch(newWindow, params);
         this._mediator.closeMenu();
         this._mediator.hideOverview();
     },
@@ -633,7 +633,7 @@ const DraggableSearchGridButton = new Lang.Class({
      * @function
      */
     shellWorkspaceLaunch : function(params) {
-        this._launchable.launch(true, params);
+        this._searchResult.launch(true, params);
     },
 
     /**
@@ -733,7 +733,7 @@ const DraggableSearchListButton = new Lang.Class({
      * @function
      */
     activate: function(newWindow, params) {
-        this._launchable.launch(newWindow, params);
+        this._searchResult.launch(newWindow, params);
         this._mediator.closeMenu();
         this._mediator.hideOverview();
     },
@@ -744,7 +744,7 @@ const DraggableSearchListButton = new Lang.Class({
      * @function
      */
     shellWorkspaceLaunch : function(params) {
-        this._launchable.launch(true, params);
+        this._searchResult.launch(true, params);
     },
 
     /**
@@ -807,6 +807,10 @@ const ButtonGroup = new Lang.Class({
         this._buttons = [];
         this._selectedIdx = -1;
     },
+    
+    getButtonCount: function() {
+        return this._buttons.length;
+    },
 
     /**
      * @description Adds a new button to the group.
@@ -826,12 +830,6 @@ const ButtonGroup = new Lang.Class({
         }
         this._buttons.push(button);
     },
-
-    activateSelected: function(newWindow, params) {
-        if (this._selectedIdx >= 0) {
-            this._buttons[this._selectedIdx].activate(newWindow, params);
-        }
-    },
     
     /**
      * @description Selects the first of the button list.
@@ -845,6 +843,14 @@ const ButtonGroup = new Lang.Class({
             this._buttons[this._selectedIdx].select();
         }
     },
+    
+    selectLast: function() {
+        this.clearButtonStates();
+        this._selectedIdx = this._buttons.length - 1
+        if (this._buttons.length > 0) {
+            this._buttons[this._selectedIdx].select();
+        }
+    },
 
     /**
      * @description Selects the next of the buttons. It starts with the first button.
@@ -852,14 +858,22 @@ const ButtonGroup = new Lang.Class({
      * @function
      */
     selectNext: function() {
+        let fullCycle = false;
+        
         let lastIdx = this._selectedIdx;
-        this._selectedIdx = (this._selectedIdx + 1) % this._buttons.length;
+        this._selectedIdx += 1;
+        if (this._selectedIdx >= this._buttons.length) {
+            this._selectedIdx %= this._buttons.length;
+            fullCycle = true;
+        }
         if (this._buttons.length > 0) {
             if (lastIdx >= 0 && lastIdx < this._buttons.length) {
                 this._buttons[lastIdx].deselect();
             }
             this._buttons[this._selectedIdx].select();
         }
+        
+        return fullCycle;
     },
 
     /**
@@ -868,10 +882,13 @@ const ButtonGroup = new Lang.Class({
      * @function
      */
     selectPrevious: function() {
+        let fullCycle = false;
+        
         let lastIdx = this._selectedIdx;
         this._selectedIdx = this._selectedIdx - 1;
         if (this._selectedIdx < 0) {
             this._selectedIdx = this._buttons.length - 1;
+            fullCycle = true;
         }
         if (this._buttons.length > 0) {
             if (lastIdx >= 0 && lastIdx < this._buttons.length) {
@@ -879,6 +896,16 @@ const ButtonGroup = new Lang.Class({
             }
             this._buttons[this._selectedIdx].select();
         }
+        
+        return fullCycle;
+    },
+    
+    activateSelected: function(newWindow, params) {
+        if (this._selectedIdx >= 0) {
+            this._buttons[this._selectedIdx].activate(newWindow, params);
+            return true;
+        }
+        return false;
     },
 
     /**

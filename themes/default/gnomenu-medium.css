@@ -134,7 +134,7 @@
 
 .gnomenu-mainArea-box {
     border-image: url("b-panel-r.png") 12 12 12 12;
-    padding: 5px 2px 4px 2px;
+    padding: 5px 2px 5px 2px;
     width: 470px;
 }
 
@@ -165,16 +165,20 @@
 .gnomenu-searchArea-box {
     padding-top: 10px;
     padding-right: 10px;
+    padding-left: 38px;
 }
 
 .gnomenu-searchArea-category-box {
-    padding-left: 20px;
     padding-bottom: 10px;
+}
+
+.gnomenu-searchArea-category-box:open {
+    padding-bottom: 50px;
 }
 
 .gnomenu-searchArea-list-box {
     padding-top: 10px;
-    padding-left: 45px;
+    padding-left: 35px;
     spacing: 5px;
 }
 
@@ -211,7 +215,9 @@
     border-width: 1px;
     height: 22px;
     padding: 0px 10px;
-    border-image: url("b-panel-r.png") 12 12 12 12;
+    background-gradient-direction: vertical;
+    background-gradient-start: rgba(136,138,133,0.2);
+    background-gradient-end: rgba(136,138,133,0.2);
 }
 
 .gnomenu-searchArea-category-button-label {
@@ -221,21 +227,12 @@
 }
 
 .gnomenu-searchArea-category-button:active {
-    background-gradient-direction: vertical;
-    background-gradient-start: rgba(136,138,133,0.1);
-    background-gradient-end: rgba(136,138,133,0.1);
 }
 
 .gnomenu-searchArea-category-button:open {
-    background-gradient-direction: vertical;
-    background-gradient-start: rgba(136,138,133,0.2);
-    background-gradient-end: rgba(136,138,133,0.2);
 }
 
 .gnomenu-searchArea-category-button:pressed {
-    background-gradient-direction: vertical;
-    background-gradient-start: rgba(136,138,133,0.1);
-    background-gradient-end: rgba(136,138,133,0.1);
 }
 
 /*------------------------------*/

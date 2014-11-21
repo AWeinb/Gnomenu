@@ -268,8 +268,8 @@ const Menu = new Lang.Class({
             return true;
         }));
         
-        menuSettings.registerShortcutAreaViewModeCB(Lang.bind(this, function(event) {
-            this._mediator.setViewMode(menuSettings.getShortcutAreaViewMode(), true);
+        menuSettings.registerMainAreaViewModeCB(Lang.bind(this, function(event) {
+            this._mediator.setViewMode(menuSettings.getMainAreaViewMode(), true);
             return true;
         }));
         

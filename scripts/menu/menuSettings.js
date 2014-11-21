@@ -242,12 +242,12 @@ const MenuSettings = new Lang.Class({
 
 
     /**
-     * @description Returns the current shortcutarea category.
-     * @returns {ECategoryID Enum}
+     * @description Returns the default viewmode.
+     * @returns {EViewMode Enum}
      * @public
      * @function
      */
-    getShortcutAreaViewMode: function() {
+    getMainAreaViewMode: function() {
         let viewMode = this._settings.get_enum('menu-viewmode');
         if (!viewMode) {
             viewMode = EViewMode.LIST;
@@ -261,7 +261,7 @@ const MenuSettings = new Lang.Class({
      * @public
      * @function
      */
-    registerShortcutAreaViewModeCB: function(onChangeCallback) {
+    registerMainAreaViewModeCB: function(onChangeCallback) {
         this._changeSettingsCB('changed::menu-viewmode', onChangeCallback);
     },
 

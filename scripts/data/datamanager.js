@@ -16,7 +16,9 @@ const Me = imports.misc.extensionUtils.getCurrentExtension();
 const Log = Me.imports.scripts.misc.log;
 
 
+const MOSTUSED_REFRESH_TICK = 60000;
 const LaunchableType = { App: 11, File: 22 };
+
 
 const Launchable = new Lang.Class({
 
@@ -145,7 +147,6 @@ const AppsManager = new Lang.Class({
         })));
         this._updateAppMap();
 
-        const MOSTUSED_REFRESH_TICK = 60000;
         this._usageTimeoutId = Mainloop.timeout_add(MOSTUSED_REFRESH_TICK, Lang.bind(this, function () {
             this._updateMostUsedApps();
             return true;

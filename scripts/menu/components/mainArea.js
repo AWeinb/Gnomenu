@@ -29,6 +29,7 @@ const ShortcutArea = Me.imports.scripts.menu.components.elements.shortcutArea.Sh
 const UpdateableComponent = Me.imports.scripts.menu.components.component.UpdateableComponent;
 
 const EEventType = MenuModel.EEventType;
+const EViewMode = MenuModel.EViewMode;
 
 /** @constant */
 const BUTTON_SWITCH_WAIT_TIME = 50;
@@ -84,6 +85,9 @@ const MainArea = new Lang.Class({
      * @function
      */
     refresh: function() {
+        this._viewMode = this.mediator.getMenuSettings().getMainAreaViewMode();
+        this.setViewMode(this._viewMode);
+        
         if (this.searchActive) {
             this._resultArea.show();
             this._shortcutArea.hide();
@@ -155,7 +159,6 @@ const MainArea = new Lang.Class({
 
         this._resultArea.updateSearch(event);
         this._shortcutArea.updateCategory(event);
-        log(event.type)
     },
 
     /**
@@ -172,6 +175,8 @@ const MainArea = new Lang.Class({
         this._resultArea.hide();
         this._shortcutArea.show();
         this._shortcutArea.showCategory(categoryID);
+        
+        this.resetSelection();
     },
 
     /**
@@ -185,110 +190,150 @@ const MainArea = new Lang.Class({
             Log.logWarning("Gnomenu.MainArea", "setViewMode", "viewModeID is null!");
         }
 
+        this._viewmode = viewModeID;
         this._resultArea.setViewMode(viewModeID);
         this._shortcutArea.setViewMode(viewModeID);
+        
+        this.resetSelection();
     },
-
-    /**
-     * @description Handles the keyboard input.
-     * @param actor
-     * @param event
-     * @private
-     * @function
-     */
+    
+    toggleViewMode: function() {
+        switch (this._viewmode) {
+            
+            case EViewMode.LIST:
+                this.setViewMode(EViewMode.GRID);
+                break;
+            
+            case EViewMode.GRID:
+                this.setViewMode(EViewMode.LIST);
+                break;
+            
+            default:
+                break;
+        }
+    },
+    
+    selectFirst: function() {
+        this._shortcutArea.selectFirst();
+        this._resultArea.selectFirst();
+    },
+    
+    selectUpper: function() {
+        if (this._resultArea.isVisible()) {
+            this._resultArea.selectUpper();
+        } else {
+            this._shortcutArea.selectUpper();
+        }
+    },
+    
+    selectLower: function() {
+        if (this._resultArea.isVisible()) {
+            this._resultArea.selectLower();
+        } else {
+            this._shortcutArea.selectLower();
+        }
+    },
+    
+    selectNext: function() {
+        if (this._resultArea.isVisible()) {
+            this._resultArea.selectNext();
+        } else {
+            this._shortcutArea.selectNext();
+        }
+    },
+    
+    selectPrevious: function() {
+        if (this._resultArea.isVisible()) {
+            this._resultArea.selectPrevious();
+        } else {
+            this._shortcutArea.selectPrevious();
+        }
+    },
+    
+    activateSelected: function() {
+        if (this._resultArea.isVisible()) {
+            this._resultArea.activateSelected();
+        } else {
+            this._shortcutArea.activateSelected();
+        }
+    },
+    
+    resetSelection: function() {
+        this._shortcutArea.resetSelection();
+        this._resultArea.resetSelection();
+    },
+    
     _onKeyboardEvent: function(actor, event, firstCall) {
         log("MainArea received key event!");
         
+        // Prevents too fast changes.
         let currentTime = global.get_current_time();
-		if (currentTime > this._lastScroll && currentTime < this._lastScroll + BUTTON_SWITCH_WAIT_TIME) {
+		if (this._tLastScroll && currentTime < this._tLastScroll + BUTTON_SWITCH_WAIT_TIME) {
             return Clutter.EVENT_STOP;
 		}
-		this._lastScroll = currentTime;
+		this._tLastScroll = currentTime;
         
-        let receiver = null;
-        if (this._resultArea.isVisible()) {
-            receiver = this._resultArea;
-        } else {
-            receiver = this._shortcutArea;
-        }
+        let state = event.get_state();
+        let ctrl_pressed = (state & Clutter.ModifierType.CONTROL_MASK ? true : false);
+        let symbol = event.get_key_symbol();
 
         let returnVal = Clutter.EVENT_PROPAGATE;
-        if (receiver) {
-            let state = event.get_state();
-            let ctrl_pressed = (state & Clutter.ModifierType.CONTROL_MASK ? true : false);
-            let symbol = event.get_key_symbol();
+        switch (symbol) {
 
-            switch (symbol) {
+            case Clutter.Up:
+                this.selectUpper();
+                returnVal = Clutter.EVENT_STOP;
+                break;
 
-                case Clutter.Up:
-                    receiver.selectUp();
-                    returnVal = Clutter.EVENT_STOP;
-                    break;
-
-                case Clutter.Down:
-                    receiver.selectDown();
-                    returnVal = Clutter.EVENT_STOP;
-                    break;
-
-                case Clutter.w:
-                    if (ctrl_pressed) {
-                        receiver.selectUp();
-                        returnVal = Clutter.EVENT_STOP;
-                    }
-                    break;
-
-                case Clutter.s:
-                    if (ctrl_pressed) {
-                        receiver.selectDown();
-                        returnVal = Clutter.EVENT_STOP;
-                    }
-                    break;
-
-                case Clutter.Left:
-                    receiver.selectLeft();
-                    returnVal = Clutter.EVENT_STOP;
-                    break;
-
-                case Clutter.Right:
-                    if (firstCall) {
-                        receiver.selectFirst();
+            case Clutter.Down:
+                if (!firstCall) {
+                    this.selectLower();
+                } else {
+                    if (this._resultArea.isVisible()) {
+                        this._resultArea.selectFirst();
+                        this._resultArea.cycleForwardInBox();
                     } else {
-                        receiver.selectRight();
+                        this._shortcutArea.selectFirst();
                     }
-                    returnVal = Clutter.EVENT_STOP;
-                    break;
+                }
+                returnVal = Clutter.EVENT_STOP;
+                break;
 
-                case Clutter.a:
-                    if (ctrl_pressed) {
-                        receiver.selectLeft();
-                        returnVal = Clutter.EVENT_STOP;
-                    }
-                    break;
+            case Clutter.Left:
+                this.selectPrevious();
+                returnVal = Clutter.EVENT_STOP;
+                break;
 
-                case Clutter.d:
-                    if (ctrl_pressed) {
-                        if (firstCall) {
-                            receiver.selectFirst();
-                        } else {
-                            receiver.selectRight();
-                        }
-                        returnVal = Clutter.EVENT_STOP;
-                    }
-                    break;
+            case Clutter.Right:
+                if (!firstCall) {
+                    this.selectNext();
+                } else {
+                    this.selectFirst();
+                }
+                returnVal = Clutter.EVENT_STOP;
+                break;
 
-                case Clutter.KEY_Tab:
-                    receiver.deselectLastSelectedButton();
+            case Clutter.KEY_Tab:
+                if (!firstCall) {
+                    this.resetSelection();
                     this.mediator.moveKeyFocusLeft(actor, event);
-                    returnVal = Clutter.EVENT_STOP;
-                    break;
+                } else {
+                    this.selectFirst();
+                }
+                returnVal = Clutter.EVENT_STOP;
+                break;
 
-                case Clutter.KEY_Return:
-                    receiver.deselectLastSelectedButton();
-                    returnVal = Clutter.EVENT_STOP;
-                    break;
-            }
+            case Clutter.KEY_space:
+                this.toggleViewMode();
+                this.selectFirst();
+                returnVal = Clutter.EVENT_STOP;
+                break;
+            
+            case Clutter.KEY_Return:
+                this.activateSelected();
+                break;
         }
 
         return returnVal;
-    }
+    },
 });

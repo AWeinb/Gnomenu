@@ -120,11 +120,18 @@ const ShortcutBoxBase = new Lang.Class({
      * @function
      */
     refresh: function(shownCategory) {
+        if (shownCategory.id == undefined || shownCategory.id == null) {
+            log("ERROR")
+        }
+        if (shownCategory.isAppCategory == undefined || shownCategory.isAppCategory == null) {
+            log("ERROR")
+        }
+        
         this.clear();
-
+        
         // The parameter should only be used intern. It provides the shown category.
         if (shownCategory) {
-            this.showCategory(shownCategory.id, shownCategory.isFromApp);
+            this.showCategory(shownCategory.id, shownCategory.isAppCategory);
             let btn = this.getSelectedButton();
             if (btn) btn.select();
         }
@@ -202,7 +209,7 @@ const ShortcutBoxBase = new Lang.Class({
         if (!this._selectedButtonMap) {
             return;
         }
-        this.deselectLastSelectedButton();
+        this.deselectAll();
         
         let keys = Object.keys(this._selectedButtonMap);
         this._selectedButtonIdx = 0;
@@ -215,10 +222,52 @@ const ShortcutBoxBase = new Lang.Class({
         if (!this._selectedButtonMap) {
             return;
         }
-        this.deselectLastSelectedButton();
+        this.deselectAll();
         
         let keys = Object.keys(this._selectedButtonMap);
         this._selectedButtonIdx = keys.length - 1;
+        let buttonID = keys[this._selectedButtonIdx];
+        let btn = this._selectedButtonMap[buttonID];
+        if (btn) btn.select();
+    },
+
+    selectUpper: function() {
+        if (!this._selectedButtonMap) {
+            return;
+        }
+        
+        this.deselectLastSelectedButton();
+        
+        let colMax = this._mediator.getMenuSettings().getAppGridColumnCount();
+        let keys = Object.keys(this._selectedButtonMap);
+        this._selectedButtonIdx -= colMax;
+        if (this._selectedButtonIdx < 0) {
+            // I swear to BigMac I had something simpler the day before ...
+            this._selectedButtonIdx = keys.length - (keys.length % colMax) + this._selectedButtonIdx - 1;
+            if (this._selectedButtonIdx + colMax < keys.length) {
+                this._selectedButtonIdx = this._selectedButtonIdx + colMax
+            }
+        }
+        
+        let buttonID = keys[this._selectedButtonIdx];
+        let btn = this._selectedButtonMap[buttonID];
+        if (btn) btn.select();
+    },
+    
+    selectLower: function() {
+        if (!this._selectedButtonMap) {
+            return;
+        }
+        
+        this.deselectLastSelectedButton();
+        
+        let colMax = this._mediator.getMenuSettings().getAppGridColumnCount();
+        let keys = Object.keys(this._selectedButtonMap);
+        this._selectedButtonIdx += colMax;
+        if (this._selectedButtonIdx >= keys.length) {
+            this._selectedButtonIdx = (this._selectedButtonIdx + 1) % colMax;
+        }
+        
         let buttonID = keys[this._selectedButtonIdx];
         let btn = this._selectedButtonMap[buttonID];
         if (btn) btn.select();
@@ -267,6 +316,27 @@ const ShortcutBoxBase = new Lang.Class({
         }
     },
     
+    deselectAll: function() {
+        if (!this._selectedButtonMap) {
+            return;
+        }
+        
+        for each (let btn in this._selectedButtonMap) {
+            if (btn) {
+                btn.deselect();
+            }
+        }
+        
+        this._selectedButtonIdx = -1;
+    },
+    
+    activateSelected: function() {
+        let btn = this.getSelectedButton();
+        if (btn) {
+            btn.activate(true);
+        }
+    },
+    
     getSelectedButton: function() {
         if (!this._selectedButtonMap) {
             return null;
@@ -279,16 +349,6 @@ const ShortcutBoxBase = new Lang.Class({
             btn = this._selectedButtonMap[buttonID];
         }
         return btn;
-    },
-    
-    deselectAll: function() {
-        if (!this._selectedButtonMap) {
-            return;
-        }
-        
-        for each (let btn in this._selectedButtonMap) {
-            btn.deselect();
-        }
     },
 
     /**
@@ -413,48 +473,6 @@ const ShortcutGrid = new Lang.Class({
         
         this.actor = new St.Table({ homogeneous: false, reactive: true, style_class: 'gnomenu-applications-grid-box' });
     },
-
-    selectRowUp: function() {
-        if (!this._selectedButtonMap) {
-            return;
-        }
-        
-        this.deselectLastSelectedButton();
-        
-        let colMax = this._mediator.getMenuSettings().getAppGridColumnCount();
-        let keys = Object.keys(this._selectedButtonMap);
-        this._selectedButtonIdx -= colMax;
-        if (this._selectedButtonIdx < 0) {
-            // I swear to BigMac I had something simpler the day before ...
-            this._selectedButtonIdx = keys.length - (keys.length % colMax) + this._selectedButtonIdx - 1;
-            if (this._selectedButtonIdx + colMax < keys.length) {
-                this._selectedButtonIdx = this._selectedButtonIdx + colMax
-            }
-        }
-        
-        let buttonID = keys[this._selectedButtonIdx];
-        let btn = this._selectedButtonMap[buttonID];
-        if (btn) btn.select();
-    },
-    
-    selectRowDown: function() {
-        if (!this._selectedButtonMap) {
-            return;
-        }
-        
-        this.deselectLastSelectedButton();
-        
-        let colMax = this._mediator.getMenuSettings().getAppGridColumnCount();
-        let keys = Object.keys(this._selectedButtonMap);
-        this._selectedButtonIdx += colMax;
-        if (this._selectedButtonIdx > keys.length) {
-            this._selectedButtonIdx = (this._selectedButtonIdx + 1) % colMax;
-        }
-        
-        let buttonID = keys[this._selectedButtonIdx];
-        let btn = this._selectedButtonMap[buttonID];
-        if (btn) btn.select();
-    },
     
     /**
      * @description Adds a button to the final frontier.
@@ -571,8 +589,6 @@ const ShortcutArea = new Lang.Class({
         this._updateTimeoutIds[EEventType.DATA_DEVICES_EVENT] = 0;
         this._updateTimeoutIds[EEventType.DATA_NETDEVICES_EVENT] = 0;
         this._updateTimeoutIds[EEventType.DATA_BOOKMARKS_EVENT] = 0;
-
-        this.refresh();
     },
 
     /**
@@ -583,7 +599,6 @@ const ShortcutArea = new Lang.Class({
     refresh: function() {
         this.updateCategory();
         this.showCategory(this.menuSettings.getDefaultShortcutAreaCategory());
-        this.setViewMode(this.menuSettings.getShortcutAreaViewMode());
     },
 
     /**
@@ -743,140 +758,15 @@ const ShortcutArea = new Lang.Class({
     _updateHelperForStaticCategories: function(categoryID, dataMap) {
         this._shortcutList.clearCategoryStorage(categoryID);
         this._shortcutGrid.clearCategoryStorage(categoryID);
-
+        
         for each (let item in dataMap) {
             this._shortcutList.addCategoryButton(categoryID, item);
             this._shortcutGrid.addCategoryButton(categoryID, item);
         }
-
+        
         if (this._shownCategory.id == categoryID) {
             this._shortcutList.refresh(this._shownCategory);
             this._shortcutGrid.refresh(this._shownCategory);
-        }
-    },
-
-    /**
-     * @description Sets the viewmode of the component.
-     * @param {Enum} id
-     * @public
-     * @function
-     */
-    setViewMode: function(id) {
-        this.selectLeft();
-        this.selectRight();
-        
-        switch (id) {
-
-            case EViewMode.LIST:
-                this._shortcutList.show();
-                this._shortcutGrid.hide();
-                this._shortcutList.refresh(this._shownCategory);
-                break;
-
-            case EViewMode.GRID:
-                this._shortcutList.hide();
-                this._shortcutGrid.show();
-                this._shortcutGrid.refresh(this._shownCategory);
-                break;
-
-            default:
-                Log.logWarning("GnoMenu.shortcutArea.ShortcutArea", "setViewMode", "id is null!");
-                break;
-        }
-    },
-    
-    selectFirst: function() {
-        if (this._shortcutGrid.isVisible()) {
-            this._shortcutGrid.selectFirst();
-            this._scrollToSelectedButton(this._shortcutGrid);
-        } else {
-            this._shortcutList.selectFirst();
-            this._scrollToSelectedButton(this._shortcutList);
-        }
-    },
-    
-    selectLast: function() {
-        if (this._shortcutGrid.isVisible()) {
-            this._shortcutGrid.selectLast();
-            this._scrollToSelectedButton(this._shortcutGrid);
-        } else {
-            this._shortcutList.selectLast();
-            this._scrollToSelectedButton(this._shortcutList);
-        }
-    },
-
-    selectLeft: function() {
-        if (this._shortcutGrid.isVisible()) {
-            this._shortcutGrid.selectPrevious();
-            this._scrollToSelectedButton(this._shortcutGrid);
-        } else {
-            this._shortcutList.selectFirst();
-            this._scrollToSelectedButton(this._shortcutList);
-        }
-    },
-
-    selectRight: function() {
-        if (this._shortcutGrid.isVisible()) {
-            this._shortcutGrid.selectNext();
-            this._scrollToSelectedButton(this._shortcutGrid);
-        } else {
-            this._shortcutList.selectLast();
-            this._scrollToSelectedButton(this._shortcutList);
-        }
-    },
-
-    selectUp: function() {
-        if (this._shortcutGrid.isVisible()) {
-            this._shortcutGrid.selectRowUp();
-            this._scrollToSelectedButton(this._shortcutGrid);
-        } else {
-            this._shortcutList.selectPrevious();
-            this._scrollToSelectedButton(this._shortcutList);
-        }
-    },
-
-    selectDown: function() {
-        if (this._shortcutGrid.isVisible()) {
-            this._shortcutGrid.selectRowDown();
-            this._scrollToSelectedButton(this._shortcutGrid);
-        } else {
-            this._shortcutList.selectNext();
-            this._scrollToSelectedButton(this._shortcutList);
-        }
-    },
-
-    deselectLastSelectedButton: function() {
-        this._shortcutGrid.deselectLastSelectedButton();
-        this._shortcutList.deselectLastSelectedButton();
-        this._scrollToSelectedButton(this._shortcutGrid);
-        this._scrollToSelectedButton(this._shortcutList);
-    },
-    
-    deselectAll: function() {
-        this._shortcutGrid.deselectAll();
-        this._shortcutList.deselectAll();
-    },
-    
-    _scrollToSelectedButton: function(activeView) {
-        let vscroll = this.actor.get_vscroll_bar();
-        let btn = activeView.getSelectedButton();
-        if (!btn) {
-            return;
-        }
-        let buttonBox = btn.actor.get_allocation_box();
-
-        var current_scroll_value = vscroll.get_adjustment().get_value();
-        var box_height = this.actor.get_allocation_box().y2 - this.actor.get_allocation_box().y1;
-        var new_scroll_value = current_scroll_value;
-
-        if (current_scroll_value > buttonBox.y1 - 20) {
-            new_scroll_value = buttonBox.y1 - 20;
-        }
-        if (box_height + current_scroll_value < buttonBox.y2 + 20) {
-            new_scroll_value = buttonBox.y2 - box_height + 20;
-        }
-        if (new_scroll_value != current_scroll_value) {
-            vscroll.get_adjustment().set_value(new_scroll_value);
         }
     },
 
@@ -912,11 +802,132 @@ const ShortcutArea = new Lang.Class({
                 break;
             }
         }
-
+        
         this._shortcutList.showCategory(categoryID, isAppCategory);
         this._shortcutGrid.showCategory(categoryID, isAppCategory);
 
         // Save the data for refreshs and the kind.
         this._shownCategory = { id: categoryID, isAppCategory: isAppCategory };
+    },
+
+    /**
+     * @description Sets the viewmode of the component.
+     * @param {Enum} id
+     * @public
+     * @function
+     */
+    setViewMode: function(id) {
+        switch (id) {
+
+            case EViewMode.LIST:
+                this._shortcutList.show();
+                this._shortcutGrid.hide();
+                this._shortcutList.refresh(this._shownCategory);
+                break;
+
+            case EViewMode.GRID:
+                this._shortcutList.hide();
+                this._shortcutGrid.show();
+                this._shortcutGrid.refresh(this._shownCategory);
+                break;
+
+            default:
+                Log.logWarning("GnoMenu.shortcutArea.ShortcutArea", "setViewMode", "Unknown id!");
+                break;
+        }
+    },
+    
+    selectFirst: function() {
+        this._shortcutGrid.selectFirst();
+        this._scrollToSelectedButton(this._shortcutGrid);
+        this._shortcutList.selectFirst();
+        this._scrollToSelectedButton(this._shortcutList);
+    },
+    
+    selectLast: function() {
+        this._shortcutGrid.selectLast();
+        this._scrollToSelectedButton(this._shortcutGrid);
+        this._shortcutList.selectLast();
+        this._scrollToSelectedButton(this._shortcutList);
+    },
+
+    selectUpper: function() {
+        if (this._shortcutGrid.isVisible()) {
+            this._shortcutGrid.selectUpper();
+            this._scrollToSelectedButton(this._shortcutGrid);
+        } else {
+            this._shortcutList.selectPrevious();
+            this._scrollToSelectedButton(this._shortcutList);
+        }
+    },
+
+    selectLower: function() {
+        if (this._shortcutGrid.isVisible()) {
+            this._shortcutGrid.selectLower();
+            this._scrollToSelectedButton(this._shortcutGrid);
+        } else {
+            this._shortcutList.selectNext();
+            this._scrollToSelectedButton(this._shortcutList);
+        }
+    },
+
+    selectNext: function() {
+        if (this._shortcutGrid.isVisible()) {
+            this._shortcutGrid.selectNext();
+            this._scrollToSelectedButton(this._shortcutGrid);
+        } else {
+            this._shortcutList.selectLast();
+            this._scrollToSelectedButton(this._shortcutList);
+        }
+    },
+
+    selectPrevious: function() {
+        if (this._shortcutGrid.isVisible()) {
+            this._shortcutGrid.selectPrevious();
+            this._scrollToSelectedButton(this._shortcutGrid);
+        } else {
+            this._shortcutList.selectFirst();
+            this._scrollToSelectedButton(this._shortcutList);
+        }
+    },
+
+    resetSelection: function() {
+        this._shortcutGrid.selectFirst();
+        this._shortcutList.selectFirst();
+        this._scrollToSelectedButton(this._shortcutGrid);
+        this._scrollToSelectedButton(this._shortcutList);
+        this._shortcutGrid.deselectAll();
+        this._shortcutList.deselectAll();
+    },
+    
+    activateSelected: function() {
+        if (this._shortcutGrid.isVisible()) {
+            this._shortcutGrid.activateSelected();
+        } else {
+            this._shortcutList.activateSelected();
+        }
+    },
+    
+    _scrollToSelectedButton: function(activeView) {
+        let vscroll = this.actor.get_vscroll_bar();
+        let btn = activeView.getSelectedButton();
+        if (!btn) {
+            return;
+        }
+        let buttonBox = btn.actor.get_allocation_box();
+
+        let current_scroll_value = vscroll.get_adjustment().get_value();
+        let box_height = this.actor.get_allocation_box().y2 - this.actor.get_allocation_box().y1;
+        let new_scroll_value = current_scroll_value;
+
+        if (current_scroll_value > buttonBox.y1 - 20) {
+            new_scroll_value = buttonBox.y1 - 20;
+        }
+        if (box_height + current_scroll_value < buttonBox.y2 + 20) {
+            new_scroll_value = buttonBox.y2 - box_height + 20;
+        }
+        if (new_scroll_value != current_scroll_value) {
+            vscroll.get_adjustment().set_value(new_scroll_value);
+        }
     },
 });

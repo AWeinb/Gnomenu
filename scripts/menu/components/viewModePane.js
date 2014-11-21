@@ -87,7 +87,7 @@ const ViewModePane = new Lang.Class({
      * @function
      */
     refresh: function() {
-        this.selectButton(this.menuSettings.getShortcutAreaViewMode());
+        this.selectButton(this.menuSettings.getMainAreaViewMode());
     },
 
     /**

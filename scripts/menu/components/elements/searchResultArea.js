@@ -26,6 +26,7 @@ const MenuModel = Me.imports.scripts.menu.menuModel;
 const Log = Me.imports.scripts.misc.log;
 const DraggableSearchGridButton = Me.imports.scripts.menu.components.elements.menubutton.DraggableSearchGridButton;
 const DraggableSearchListButton = Me.imports.scripts.menu.components.elements.menubutton.DraggableSearchListButton;
+const ButtonGroup = Me.imports.scripts.menu.components.elements.menubutton.ButtonGroup;
 const Component = Me.imports.scripts.menu.components.component.Component;
 
 const EEventType = MenuModel.EEventType;
@@ -69,6 +70,8 @@ const ProviderResultBoxButton = new Lang.Class({
         this._btnReleaseId = this.actor.connect('button-release-event', Lang.bind(this, this._onRelease));
         this._btnEnterId = this.actor.connect('enter-event', Lang.bind(this, this._onEnter));
         this._btnLeaveId = this.actor.connect('leave-event', Lang.bind(this, this._onLeave));
+        
+        this.actor.connect('notify::destroy', Lang.bind(this, this._onDestroy));
     },
 
     /**
@@ -106,7 +109,7 @@ const ProviderResultBoxButton = new Lang.Class({
      * @public
      * @function
      */
-    destroy: function() {
+    _onDestroy: function() {
         // Prevent unregister errors.
         try {
             this.actor.disconnect(this._btnPressId);
@@ -121,7 +124,6 @@ const ProviderResultBoxButton = new Lang.Class({
         } catch(e) {
             Log.logWarning("GnoMenu.searchResultArea.ProviderResultBoxButton", "destroy", "Unregister error occured!");
         }
-        this.actor.destroy();
     },
 
     /**
@@ -204,30 +206,8 @@ const ProviderResultBoxBase = new Lang.Class({
 
         this.actor = new St.BoxLayout({ style_class: 'gnomenu-searchArea-category-box', vertical: true });
         this.actor.add(this._button.actor);
-        
-        this._buttonCount = 0;
-        this._isBoxShown = true;
-    },
-    
-    /**
-     * @description Shows or hides the elements of the box.
-     * @public
-     * @function
-     */
-    toggleOpenState: function() {
-        if (this._isBoxShown) {
-            this.close();
-            this._isBoxShown = false;
-        } else {
-            this.open();
-            this._isBoxShown = true;
-        }
     },
 
-    open: function() {},
-    
-    close: function() {},
-    
     /**
      * @description Shows the component.
      * @public
@@ -244,16 +224,6 @@ const ProviderResultBoxBase = new Lang.Class({
      */
     hide: function() {
         this.actor.hide();
-    },
-    
-    /**
-     * @description Returns if the button list is empty.
-     * @returns {Boolean}
-     * @public
-     * @function
-     */
-    isEmpty: function() {
-        return this._buttonCount == 0;
     },
 });
 
@@ -281,6 +251,9 @@ const ProviderResultList = new Lang.Class({
         // This box takes the actual buttons.
         this._box = new St.BoxLayout({ vertical:true, style_class: 'gnomenu-searchArea-list-box' });
         this.actor.add(this._box, { x_fill: true, x_align: St.Align.START });
+        
+        this._isBoxShown = true;
+        this._buttonGroup = new ButtonGroup();
     },
 
     /**
@@ -289,6 +262,8 @@ const ProviderResultList = new Lang.Class({
      * @function
      */
     clear: function() {
+        this._buttonGroup.reset();
+        
         let actors = this._box.get_children();
         if (actors) {
             for each (let actor in actors) {
@@ -296,7 +271,6 @@ const ProviderResultList = new Lang.Class({
                 actor.destroy();
             }
         }
-        this._buttonCount = 0;
     },
 
     /**
@@ -307,6 +281,8 @@ const ProviderResultList = new Lang.Class({
     open: function() {
         this._box.show();
         this._button.select();
+        this._isBoxShown = true;
+        this.actor.add_style_pseudo_class('open');
     },
 
     /**
@@ -317,22 +293,31 @@ const ProviderResultList = new Lang.Class({
     close: function() {
         this._box.hide();
         this._button.deselect();
+        this._isBoxShown = false;
+        this.actor.remove_style_pseudo_class('open');
     },
-
+    
     /**
-     * @description .
+     * @description Shows or hides the elements of the box.
      * @public
      * @function
      */
-    selectNext: function() {
+    toggleOpenState: function() {
+        if (this._isBoxShown) {
+            this.close();
+        } else {
+            this.open();
+        }
     },
-
+    
     /**
-     * @description 
+     * @description Returns if the button list is empty.
+     * @returns {Boolean}
      * @public
      * @function
      */
-    selectPrevious: function() {
+    isEmpty: function() {
+        return this._buttonGroup.getButtonCount() == 0;
     },
 
     /**
@@ -350,8 +335,38 @@ const ProviderResultList = new Lang.Class({
         }
 
         let iconSize = this._mediator.getMenuSettings().getAppListIconsize();
-        this._box.add_actor(new DraggableSearchListButton(this._mediator, iconSize, providerSearchResult).actor);
-        this._buttonCount++;
+        let btn = new DraggableSearchListButton(this._mediator, iconSize, providerSearchResult);
+        this._box.add_actor(btn.actor);
+        
+        this._buttonGroup.addButton(btn);
+    },
+    
+    selectFirst: function() {
+        this._buttonGroup.selectFirst();
+    },
+    
+    selectLast: function() {
+        this._buttonGroup.selectLast();
+    },
+    
+    selectNext: function() {
+        return this._buttonGroup.selectNext();
+    },
+
+    selectPrevious: function() {
+        return this._buttonGroup.selectPrevious();
+    },
+    
+    activateSelected: function() {
+        let ret = this._buttonGroup.activateSelected(true);
+        if (!ret) {
+            this.selectFirst();
+            this._buttonGroup.activateSelected(true);
+        }
+    },
+    
+    resetSelection: function() {
+        this._buttonGroup.clearButtonStates();
     },
 
     /**
@@ -360,9 +375,6 @@ const ProviderResultList = new Lang.Class({
      * @function
      */
     destroy: function() {
-        this.clear();
-        this._box.destroy();
-        this._button.destroy();
         this.actor.destroy();
     }
 });
@@ -390,6 +402,8 @@ const ProviderResultGrid = new Lang.Class({
 
         this._table = new St.Table({ homogeneous: false, reactive: true, style_class: 'gnomenu-searchArea-grid-box' });
         this.actor.add(this._table, { x_fill: false, x_align: St.Align.START });
+        
+        this._buttonGroup = new ButtonGroup();
     },
 
     /**
@@ -398,6 +412,8 @@ const ProviderResultGrid = new Lang.Class({
      * @function
      */
     clear: function() {
+        this._buttonGroup.reset();
+        
         let actors = this._table.get_children();
         if (actors) {
             for each (let actor in actors) {
@@ -405,7 +421,6 @@ const ProviderResultGrid = new Lang.Class({
                 actor.destroy();
             }
         }
-        this._buttonCount = 0;
     },
 
     /**
@@ -416,6 +431,8 @@ const ProviderResultGrid = new Lang.Class({
     open: function() {
         this._table.show();
         this._button.select();
+        this._isBoxShown = true;
+        this.actor.add_style_pseudo_class('open');
     },
 
     /**
@@ -426,12 +443,31 @@ const ProviderResultGrid = new Lang.Class({
     close: function() {
         this._table.hide();
         this._button.deselect();
+        this._isBoxShown = false;
+        this.actor.remove_style_pseudo_class('open');
     },
-
-    selectNext: function() {
+    
+    /**
+     * @description Shows or hides the elements of the box.
+     * @public
+     * @function
+     */
+    toggleOpenState: function() {
+        if (this._isBoxShown) {
+            this.close();
+        } else {
+            this.open();
+        }
     },
-
-    selectPrevious: function() {
+    
+    /**
+     * @description Returns if the button list is empty.
+     * @returns {Boolean}
+     * @public
+     * @function
+     */
+    isEmpty: function() {
+        return this._buttonGroup.getButtonCount() == 0;
     },
 
     /**
@@ -453,10 +489,40 @@ const ProviderResultGrid = new Lang.Class({
 
         // The number of items in a row could possibly be handled dynamically..
         let colMax = this._mediator.getMenuSettings().getSearchEntriesPerRow();
-        let rowTmp = parseInt(this._buttonCount / colMax);
-        let colTmp = this._buttonCount % colMax;
+        let buttonCount = this._buttonGroup.getButtonCount();
+        let rowTmp = parseInt(buttonCount / colMax);
+        let colTmp = buttonCount % colMax;
         this._table.add(btn.actor, { row: rowTmp, col: colTmp, x_fill: false });
-        this._buttonCount++;
+        
+        this._buttonGroup.addButton(btn);
+    },
+    
+    selectFirst: function() {
+        this._buttonGroup.selectFirst();
+    },
+    
+    selectLast: function() {
+        this._buttonGroup.selectLast();
+    },
+    
+    selectNext: function() {
+        return this._buttonGroup.selectNext();
+    },
+
+    selectPrevious: function() {
+        return this._buttonGroup.selectPrevious();
+    },
+    
+    activateSelected: function() {
+        let ret = this._buttonGroup.activateSelected(true);
+        if (!ret) {
+            this.selectFirst();
+            this._buttonGroup.activateSelected(true);
+        }
+    },
+    
+    resetSelection: function() {
+        this._buttonGroup.clearButtonStates();
     },
 
     /**
@@ -465,9 +531,6 @@ const ProviderResultGrid = new Lang.Class({
      * @function
      */
     destroy: function() {
-        this.clear();
-        this._table.destroy();
-        this._button.destroy();
         this.actor.destroy();
     }
 });
@@ -502,9 +565,16 @@ const ResultArea = new Lang.Class({
         this.actor.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC);
         this.actor.set_mouse_scrolling(true);
         this.actor.add_actor(this._mainBox);
-
+    
+        this._emptySign = new St.Label();
+        this._emptySign.set_text("No Results!");
+            
         this._viewMode = null;
         this._lastResults = null;
+        
+        this._viewmodeProviderBoxMap = {};
+        this._selectedIdx = 0;
+        this._selectedBox = null;
     },
 
     /**
@@ -513,7 +583,6 @@ const ResultArea = new Lang.Class({
      * @function
      */
     refresh: function() {
-        this._viewMode = this.menuSettings.getShortcutAreaViewMode();
         this._showResults(this._lastResults);
     },
     
@@ -527,19 +596,13 @@ const ResultArea = new Lang.Class({
         if (actors) {
             for each (let actor in actors) {
                 this._mainBox.remove_actor(actor);
+                actor.destroy();
             }
         }
-        
-        // Destroys all little result boxes.
-        for each (let box in this._providerListBoxes) {
-            box.destroy();
-        }
-        for each (let box in this._providerGridBoxes) {
-            box.destroy();
-        }
 
-        this._providerListBoxes = {};
-        this._providerGridBoxes = {};
+        this._viewmodeProviderBoxMap = {};
+        this._selectedIdx = 0;
+        this._selectedBox = null;
     },
 
     /**
@@ -569,12 +632,6 @@ const ResultArea = new Lang.Class({
         }
     },
 
-    selectNext: function() {
-    },
-
-    selectPrevious: function() {
-    },
-
     /**
      * @description Sets the viewmode.
      * @param {Enum} viewMode
@@ -588,7 +645,145 @@ const ResultArea = new Lang.Class({
         this._viewMode = viewMode;
         this._showResults(this._lastResults);
     },
+    
+    selectFirst: function() {
+        this._selectedIdx = 0;
+        let box = this._getVisibleBox(false);
+        if (box) box.selectFirst();
+    },
+    
+    selectLast: function() {
+        this._selectedIdx = -1;
+        let box = this._getVisibleBox(true);
+        if (box) box.selectFirst();
+    },
+    
+    selectUpper: function() {
+        switch (this._viewMode) {
+            
+            case EViewMode.LIST:
+                box = this._selectedBox;
+                if (box) box.selectPrevious();
+                break;
+            
+            case EViewMode.GRID:
+                this._selectedIdx -= 1;
+                let box = this._getVisibleBox(true);
+                if (box) box.selectFirst();
+                break;
+        }
+    },
+    
+    selectLower: function() {
+        switch (this._viewMode) {
+            
+            case EViewMode.LIST:
+                box = this._selectedBox;
+                if (box) box.selectNext();
+                break;
+            
+            case EViewMode.GRID:
+                this._selectedIdx += 1;
+                let box = this._getVisibleBox(false);
+                if (box) box.selectFirst();
+                break;
+        }
+    },
+    
+    selectNext: function() {
+        switch (this._viewMode) {
+            
+            case EViewMode.LIST:
+                this._selectedIdx += 1;
+                let box = this._getVisibleBox(false);
+                if (box) box.selectFirst();
+                break;
+            
+            case EViewMode.GRID:
+                box = this._selectedBox;
+                if (box) box.selectNext();
+                break;
+        }
+    },
 
+    selectPrevious: function() {
+        switch (this._viewMode) {
+            
+            case EViewMode.LIST:
+                this._selectedIdx -= 1;
+                let box = this._getVisibleBox(true);
+                if (box) box.selectFirst();
+                break;
+            
+            case EViewMode.GRID:
+                box = this._selectedBox;
+                if (box) box.selectPrevious();
+                break;
+        }
+    },
+    
+    cycleForwardInBox: function() {
+        let box = this._selectedBox;
+        if (box) box.selectNext();
+    },
+    
+    activateSelected: function() {
+        let box = this._selectedBox;
+        if (box) box.activateSelected();
+    },
+    
+    _getVisibleBox: function(searchUpwards) {
+        if (!this._viewMode || !this._viewmodeProviderBoxMap) {
+            return null;
+        }
+        
+        if (!this._viewmodeProviderBoxMap[this._viewMode]) {
+            return null;
+        }
+        
+        let box = null;
+        let boxMap = this._viewmodeProviderBoxMap[this._viewMode];
+        let keys = Object.keys(boxMap);
+        for (let boxIdx in boxMap) {
+            this._selectedIdx %= keys.length;
+            if (this._selectedIdx < 0) {
+                this._selectedIdx = keys.length - 1;
+            }
+            
+            box = boxMap[keys[this._selectedIdx]];
+            if (box && !box.isEmpty()) {
+                break;
+            }
+            
+            if (searchUpwards) {
+                this._selectedIdx -= 1;
+            } else {
+                this._selectedIdx += 1;
+            }
+        }
+        
+        if (this._selectedBox) {
+            this._selectedBox.resetSelection();
+            this._selectedBox.close();
+        }
+        
+        if (box) {
+            box.open();
+        }
+        
+        this._selectedBox = box;
+        return box;
+    },
+    
+    resetSelection: function() {
+        for each (let box in this._viewmodeProviderBoxMap[this._viewMode]) {
+            box.resetSelection();
+        }
+        
+        this._selectedIdx = 0;
+        this._selectedBox = null;
+    },
+    
     /**
      * @description This function updates or creates the needed result boxes.
      * @param {ProviderID Result Map} resultMetas The provider IDs and their results.
@@ -600,28 +795,20 @@ const ResultArea = new Lang.Class({
             return;
         }
         
-        // Gets the current map and box class. Depends on the viewmode.
-        let boxMap = null;
-        let currentBoxClass = null;
-        switch (this._viewMode) {
-
-            case EViewMode.LIST:
-                boxMap = this._providerListBoxes;
-                currentBoxClass = ProviderResultList;
-                break;
-
-            case EViewMode.GRID:
-                boxMap = this._providerGridBoxes;
-                currentBoxClass = ProviderResultGrid;
-                break;
-
-            default:
-                Log.logWarning("GnoMenu.searchResultArea.ResultArea", "_showResults", "Unknown view mode!");
-                return;
+        if (!this._viewMode) {
+            return;
         }
-
-        if (boxMap) {
-            this.clear();
+        
+        if (!this._viewmodeProviderBoxMap[this._viewMode]) {
+            this._viewmodeProviderBoxMap[this._viewMode] = {};
+        }
+        let boxMap = this._viewmodeProviderBoxMap[this._viewMode];
+        
+        let actors = this._mainBox.get_children();
+        if (actors) {
+            for each (let actor in actors) {
+                this._mainBox.remove_actor(actor);
+            }
         }
         
         // Clean all up and show all boxes.
@@ -630,20 +817,29 @@ const ResultArea = new Lang.Class({
             box.show();
         }
 
+        let currentBoxClass = null;
+        if (this._viewMode == EViewMode.LIST) {
+            currentBoxClass = ProviderResultList;
+        } else if (this._viewMode == EViewMode.GRID) {
+            currentBoxClass = ProviderResultGrid;
+        }
+        
         // Look up if a provider box already exists, if not create it.
         for (let id in resultMetas) {
-            if (id && !boxMap[id]) {
-                boxMap[id] = new currentBoxClass(this.mediator, id);
+            let box = boxMap[id];
+            if (id && !box) {
+                box = new currentBoxClass(this.mediator, id);
+                boxMap[id] = box;
             }
-            this._mainBox.add(boxMap[id].actor);
+            this._mainBox.add(box.actor);
 
             // Add the results to the box.
             let metaList = resultMetas[id];
             for each (let meta in metaList) {
-                boxMap[id].addResultButton(meta);
+                box.addResultButton(meta);
             }
         }
-
+        
         // We dont have much room so just show the first result provider and
         // collapse the rest.
         let isFirstVisible = false;
@@ -657,11 +853,18 @@ const ResultArea = new Lang.Class({
             } else {
                 if (!isFirstVisible) {
                     box.open();
+                    box.selectFirst();
                     isFirstVisible = true;
                 }
             }
         }
+        
+        if (!isFirstVisible) {
+            this._mainBox.add(this._emptySign, { x_fill: false, y_fill: false, expand: true, x_align: St.Align.MIDDLE, y_align: St.Align.MIDDLE });
+        }
 
+        // Ok, it seems that changing the reference does not change the original...
+        this._viewmodeProviderBoxMap[this._viewMode] = boxMap;
         // Store the last results for refreshs.
         this._lastResults = resultMetas;
     },

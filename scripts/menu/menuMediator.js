@@ -272,7 +272,7 @@ const MenuMediator = new Lang.Class({
     resetKeyFocus: function() {
         // Sets the focus to the menu for the key controls.
         global.stage.set_key_focus(this._navigationArea.actor);
-        this._focusedComponent = this._navigationArea.actor;
+        this._focusedComponent = this._navigationArea;
     },
 
     /**
@@ -283,27 +283,56 @@ const MenuMediator = new Lang.Class({
      */
     _onKeyboardEvent: function(actor, event) {
         log("Mediator received key event!");
-
+         let ret = Clutter.EVENT_PROPAGATE;
+         
         let state = event.get_state();
         let ctrl_pressed = (state & Clutter.ModifierType.CONTROL_MASK ? true : false);
-        let symbol = event.get_key_symbol();
+        let symbolID = event.get_key_symbol();
+        
+        // Refresh the search only if the key is important for the search.
+        if (this._searchField.hasText() || this._shouldTriggerSearch(symbolID)) {
+            this._searchField.activateFocus(actor, event);
+            this._focusedComponent = this._searchField;
+            
+            ret = Clutter.EVENT_STOP;
+        }
+        
+        return ret;
+    },
 
-        let ret = Clutter.EVENT_PROPAGATE;
-        switch (symbol) {
-
-            default:
-                this._searchField.activateFocus(actor, event);
-                ret = Clutter.EVENT_STOP
-                break;
+    /**
+     * @description This function determines wether an input was important for the search.
+     * @param {Integer} symbolID The Clutter symbol ID.
+     * @returns {Boolean}
+     * @private
+     * @function
+     */
+    _shouldTriggerSearch: function(symbolID) {
+        // This keys are important because they delete chars.
+        if (( symbolID == Clutter.BackSpace ||
+              symbolID == Clutter.Delete ||
+              symbolID == Clutter.KEY_space) &&
+              this._searchActive) {
+            return true;
         }
 
-        return ret;
+        // It should be an char you would write into a searchbox.
+        let unicode = Clutter.keysym_to_unicode(symbolID);
+        if (unicode == 0) {
+            return false;
+        }
+
+        if (this._searchField._getTermsForSearchString(String.fromCharCode(unicode)).length > 0) {
+            return true;
+        }
+
+        return false;
     },
 
     moveKeyFocusLeft: function(actor, event) {
         let gid = -1;
-        if (this._focusedComponent && this._focusedComponent.get_gid) {
-            gid = this._focusedComponent.get_gid();
+        if (this._focusedComponent && this._focusedComponent.actor) {
+            gid = this._focusedComponent.actor.get_gid();
         }
         
         let ret = Clutter.EVENT_PROPAGATE;
@@ -316,21 +345,27 @@ const MenuMediator = new Lang.Class({
             
             case this._navigationArea.actor.get_gid():
                 global.stage.set_key_focus(this._sidebar.actor);
-                this._focusedComponent = this._sidebar.actor;
+                this._focusedComponent = this._sidebar;
                 this._sidebar._onKeyboardEvent(actor, event, true);
                 ret = Clutter.EVENT_STOP;
                 break;
             
             case this._mainArea.actor.get_gid():
+                this._searchField.reset();
+                
                 global.stage.set_key_focus(this._navigationArea.actor);
-                this._focusedComponent = this._navigationArea.actor;
+                this._focusedComponent = this._navigationArea;
                 this._navigationArea._onKeyboardEvent(actor, event, true);
+                ret = Clutter.EVENT_STOP;
+                break;
+            
+            case this._searchField.actor.get_gid():
                 ret = Clutter.EVENT_STOP;
                 break;
             
             default:
                 global.stage.set_key_focus(this._sidebar.actor);
-                this._focusedComponent = this._sidebar.actor;
+                this._focusedComponent = this._sidebar;
                 this._sidebar._onKeyboardEvent(actor, event, true);
                 ret = Clutter.EVENT_STOP;
                 break;
@@ -341,8 +376,8 @@ const MenuMediator = new Lang.Class({
 
     moveKeyFocusRight: function(actor, event) {
         let gid = -1;
-        if (this._focusedComponent && this._focusedComponent.get_gid) {
-            gid = this._focusedComponent.get_gid();
+        if (this._focusedComponent && this._focusedComponent.actor) {
+            gid = this._focusedComponent.actor.get_gid();
         }
         
         let ret = Clutter.EVENT_PROPAGATE;
@@ -350,14 +385,14 @@ const MenuMediator = new Lang.Class({
             
             case this._sidebar.actor.get_gid():
                 global.stage.set_key_focus(this._navigationArea.actor);
-                this._focusedComponent = this._navigationArea.actor;
+                this._focusedComponent = this._navigationArea;
                 this._navigationArea._onKeyboardEvent(actor, event, true);
                 ret = Clutter.EVENT_STOP;
                 break;
             
             case this._navigationArea.actor.get_gid():
                 global.stage.set_key_focus(this._mainArea.actor);
-                this._focusedComponent = this._mainArea.actor;
+                this._focusedComponent = this._mainArea;
                 this._mainArea._onKeyboardEvent(actor, event, true);
                 ret = Clutter.EVENT_STOP;
                 break;
@@ -367,9 +402,13 @@ const MenuMediator = new Lang.Class({
                 ret = Clutter.EVENT_STOP;
                 break;
             
+            case this._searchField.actor.get_gid():
+                ret = Clutter.EVENT_STOP;
+                break;
+            
             default:
                 global.stage.set_key_focus(this._mainArea.actor);
-                this._focusedComponent = this._mainArea.actor;
+                this._focusedComponent = this._mainArea;
                 this._mainArea._onKeyboardEvent(actor, event, true);
                 ret = Clutter.EVENT_STOP;
                 break;
@@ -380,8 +419,8 @@ const MenuMediator = new Lang.Class({
 
     moveKeyFocusUp: function(actor, event) {
         let gid = -1;
-        if (this._focusedComponent && this._focusedComponent.get_gid) {
-            gid = this._focusedComponent.get_gid();
+        if (this._focusedComponent && this._focusedComponent.actor) {
+            gid = this._focusedComponent.actor.get_gid();
         }
         
         let ret = Clutter.EVENT_PROPAGATE;
@@ -396,6 +435,10 @@ const MenuMediator = new Lang.Class({
                 break;
             
             case this._mainArea.actor.get_gid():
+                ret = Clutter.EVENT_STOP;
+                break;
+            
+            case this._searchField.actor.get_gid():
                 ret = Clutter.EVENT_STOP;
                 break;
             
@@ -409,8 +452,8 @@ const MenuMediator = new Lang.Class({
 
     moveKeyFocusDown: function(actor, event) {
         let gid = -1;
-        if (this._focusedComponent && this._focusedComponent.get_gid) {
-            gid = this._focusedComponent.get_gid();
+        if (this._focusedComponent && this._focusedComponent.actor) {
+            gid = this._focusedComponent.actor.get_gid();
         }
         
         let ret = Clutter.EVENT_PROPAGATE;
@@ -425,6 +468,13 @@ const MenuMediator = new Lang.Class({
                 break;
             
             case this._mainArea.actor.get_gid():
+                ret = Clutter.EVENT_STOP;
+                break;
+            
+            case this._searchField.actor.get_gid():
+                global.stage.set_key_focus(this._mainArea.actor);
+                this._focusedComponent = this._mainArea;
+                this._mainArea._onKeyboardEvent(actor, event, true);
                 ret = Clutter.EVENT_STOP;
                 break;
             

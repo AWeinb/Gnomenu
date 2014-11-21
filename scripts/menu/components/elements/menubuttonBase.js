@@ -228,6 +228,7 @@ const Button = new Lang.Class({
      * @function
      */
     activate: function() {
+        ;
     },
 
     /**

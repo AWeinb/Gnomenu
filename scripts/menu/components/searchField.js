@@ -184,49 +184,42 @@ const SearchField = new Lang.Class({
      * @function
      */
     _onKeyPress: function(actor, event) {
-        let symbolID = event.get_key_symbol();
+        let returnVal = Clutter.EVENT_PROPAGATE;
         
-        // I want to focus the other elements again if the search is empty.
-        if (this._searchEntry.text == '' && (symbolID == Clutter.BackSpace ||
-                                            symbolID == Clutter.Delete ||
-                                            symbolID == Clutter.KEY_space)) {
-            this.mediator.resetKeyFocus();
-        }
-        // Refresh the search only if the key is important for the search.
-        if (this._shouldTriggerSearch(symbolID)) {
-            this._onTextChanged();
-            return true;
-        }
-        return false;
-    },
+        let symbolID = event.get_key_symbol();
+        switch (symbolID) {
+            
+            case Clutter.Down:
+                this.mediator.moveKeyFocusDown(actor, event);
+                returnVal = Clutter.EVENT_STOP;
+                break;
 
-    /**
-     * @description This function determines wether an input was important for the search.
-     * @param {Integer} symbolID The Clutter symbol ID.
-     * @returns {Boolean}
-     * @private
-     * @function
-     */
-    _shouldTriggerSearch: function(symbolID) {
-        // This keys are important because they delete chars.
-        if (( symbolID == Clutter.BackSpace ||
-              symbolID == Clutter.Delete ||
-              symbolID == Clutter.KEY_space) &&
-              this._searchActive) {
-            return true;
+            case Clutter.KEY_Tab:
+                this.mediator.moveKeyFocusDown(actor, event);
+                returnVal = Clutter.EVENT_STOP;
+                break;
+            
+            case Clutter.KEY_Return:
+                this.mediator.moveKeyFocusDown(actor, event);
+                returnVal = Clutter.EVENT_STOP;
+                break;
+            
+            default:
+                // I want to focus the other elements again if the search is empty.
+                if (this._searchEntry.text == '' && (symbolID == Clutter.BackSpace ||
+                                                    symbolID == Clutter.Delete ||
+                                                    symbolID == Clutter.KEY_space)) {
+                    this._stopSearch();
+                    this.mediator.resetKeyFocus();
+                    returnVal = Clutter.EVENT_STOP;
+                } else {
+                    this._onTextChanged();
+                    returnVal = Clutter.EVENT_STOP;
+                }
+                break;
         }
-
-        // It should be an char you would write into a searchbox.
-        let unicode = Clutter.keysym_to_unicode(symbolID);
-        if (unicode == 0) {
-            return false;
-        }
-
-        if (this._getTermsForSearchString(String.fromCharCode(unicode)).length > 0) {
-            return true;
-        }
-
-        return false;
+        
+        return returnVal;
     },
 
     /**
@@ -335,10 +328,10 @@ const SearchField = new Lang.Class({
     _getTermsForSearchString: function(searchString) {
         // Extracts the words/terms.
         searchString = searchString.replace(/^\s+/g, '').replace(/\s+$/g, '');
-        if (searchString == '')
+        if (searchString == '') {
             return [];
+        }
 
-        let terms = searchString.split(/\s+/);
-        return terms;
+        return searchString.split(/\s+/);
     },
 });

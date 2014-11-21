@@ -34,7 +34,6 @@ const DRAGGING_WINDOW_OPACITY = 100;
 // placeholder exactly.
 const WORKSPACE_CUT_SIZE = 10;
 const WORKSPACE_KEEP_ALIVE_TIME = 100;
-const OVERRIDE_SCHEMA = 'org.gnome.shell.overrides';
 
 const ThumbnailState = {
     NEW   :         0,
@@ -578,17 +577,11 @@ const GnoMenuThumbnailsBox = new Lang.Class({
             this._stateCounts[ThumbnailState[key]] = 0;
         }
 
+        this.activeThumbnail = null;
         this._thumbnails = [];
 
         this.actor.connect('button-press-event', function() { return Clutter.EVENT_STOP; });
         this.actor.connect('button-release-event', Lang.bind(this, this._onButtonRelease));
-
-        this._settings = new Gio.Settings({ schema: OVERRIDE_SCHEMA });
-        this._settings.connect('changed::dynamic-workspaces', Lang.bind(this, this._updateSwitcherVisibility));
-    },
-
-    _updateSwitcherVisibility: function() {
-        this.actor.visible = this._settings.get_boolean('dynamic-workspaces') || global.screen.n_workspaces > 1;
     },
 
     _onButtonRelease: function(actor, event) {
@@ -794,8 +787,6 @@ const GnoMenuThumbnailsBox = new Lang.Class({
         this._porthole = Main.layoutManager.getWorkAreaForMonitor(Main.layoutManager.primaryIndex);
 
         this._addThumbnails(0, global.screen.n_workspaces);
-
-        this._updateSwitcherVisibility();
     },
 
     destroyThumbnails: function() {
@@ -815,7 +806,42 @@ const GnoMenuThumbnailsBox = new Lang.Class({
 
         for (let w = 0; w < this._thumbnails.length; w++)
             this._thumbnails[w].destroy();
+            
+        this._activeThumbnail = null;
         this._thumbnails = [];
+    },
+    
+    getActiveThumbnailBounds: function() {
+        if (!this._activeThumbnail) {
+            return null;
+        }
+        
+        let elemBox = this._activeThumbnail.actor.get_allocation_box();
+        let newX1 = elemBox.x1;
+        let newX2 = elemBox.x1 + (elemBox.x2 - elemBox.x1) * this._scale;
+        let newY1 = elemBox.y1;
+        let newY2 = elemBox.y1 + (elemBox.y2 - elemBox.y1) * this._scale;
+        
+        let themeNode = this.actor.get_theme_node();
+        let spacing = themeNode.get_length('spacing');
+        
+        return { x1: newX1, x2: newX2, y1: newY1, y2: newY2 + spacing };  
+    },
+    
+    getEstimatedHeight: function() {
+        if (this._thumbnails.length == 0) {
+            return 0;
+        }
+        
+        let thumbnailHeight = this._porthole.height;
+        
+        let themeNode = this.actor.get_theme_node();
+        let spacing = themeNode.get_length('spacing');
+
+        let nWorkspaces = global.screen.n_workspaces;
+        let totalHeight = (nWorkspaces - 1) * spacing + nWorkspaces * thumbnailHeight;
+
+        return totalHeight;
     },
 
     _activeWorkspaceChanged: function(wm, from, to, direction) {
@@ -832,6 +858,7 @@ const GnoMenuThumbnailsBox = new Lang.Class({
             return;
         }
 
+        this._activeThumbnail = thumbnail;
         this._animatingIndicator = true;
         let indicatorThemeNode = this._indicator.get_theme_node();
         let indicatorTopFullBorder = indicatorThemeNode.get_padding(St.Side.TOP) + indicatorThemeNode.get_border_width(St.Side.TOP);
@@ -869,8 +896,6 @@ const GnoMenuThumbnailsBox = new Lang.Class({
 
             this._removeThumbnails(removedIndex, removedNum);
         }
-
-        this._updateSwitcherVisibility();
     },
 
     _syncStacking: function(overview, stackIndices) {

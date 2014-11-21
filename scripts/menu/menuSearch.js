@@ -35,14 +35,22 @@ const MenuSearch = new Lang.Class({
         this._searchSystem = new SearchSystem();
         
         this._appProvider = new AppSearchProvider();
+        this._appProvider2 = new AppSearchProvider();
+        this._appProvider2.id="asaasaasd";
+        this._appProvider3 = new AppSearchProvider();
+        this._appProvider3.id="asaasasafdsdfasd";
         this._gnoProvider = new GnoSearchProvider();
         
         this._searchSystem.registerProvider(this._appProvider);
+        this._searchSystem.registerProvider(this._appProvider2);
+        this._searchSystem.registerProvider(this._appProvider3);
         this._searchSystem.registerProvider(this._gnoProvider);
     },
     
     destroy: function() {
         this._searchSystem.unregisterProvider(this._appProvider);
+        this._searchSystem.unregisterProvider(this._appProvider2);
+        this._searchSystem.unregisterProvider(this._appProvider3);
         this._searchSystem.unregisterProvider(this._gnoProvider);
     },
     

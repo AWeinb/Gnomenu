@@ -63,25 +63,21 @@ const NavigationBox = new Lang.Class({
     },
 
     /**
-     * @description Hides the component.
-     * @public
-     * @function
-     */
-    hide: function() {
-        if (this.actor.visible) {
-            this.actor.hide();
-        }
-    },
-
-    /**
      * @description Shows the component.
      * @public
      * @function
      */
     show: function() {
-        if (!this.actor.visible) {
-            this.actor.show();
-        }
+        this.actor.show();
+    },
+    
+    /**
+     * @description Hides the component.
+     * @public
+     * @function
+     */
+    hide: function() {
+        this.actor.hide();
     },
 
     /**
@@ -140,70 +136,34 @@ const WorkspaceBox = new Lang.Class({
          */
         this._thumbnailsBox = new GnoMenuThumbnailsBox(mediator);
         this.actor.add(this._thumbnailsBox.actor);
-
-        // I want the boxes to react on scroll events.
-		this._thumbnailsBox.actor.connect('scroll-event', Lang.bind(this, this._onScrollEvent));
+        
+        this._thumbnailsBox.createThumbnails();
+        // Because the size of the windows does not affect the actor we fix the height.
+        this._allocationID = this.actor.connect('notify::allocation', Lang.bind(this, function() {
+            // This needs to happen after allocation to prevent St errors.
+            this.actor.height = this._thumbnailsBox.getEstimatedHeight();
+            this.actor.disconnect(this._allocationID);
+            this._allocationID = undefined;
+        }));
     },
-
-    /**
-     * @description Hides the component.
-     * @public
-     * @function
-     */
-    hide: function() {
-        if (this.actor.visible) {
-            this.actor.hide();
-
-            this._thumbnailsBox.destroyThumbnails();
-        }
-    },
-
-    /**
-     * @description Shows the component.
-     * @public
-     * @function
-     */
+    
     show: function() {
-        if (!this.actor.visible) {
-            this.actor.show();
-
-            this._thumbnailsBox.createThumbnails();
-            // Because the size of the windows does not affect the actor
-            // (probably) we need to fix the height. This all is not perfect.
-            this.actor.height = this._thumbnailsBox._getPreferredHeight();
-        }
+        this._thumbnailsBox.createThumbnails();
+        this.actor.show();
+    },
+    
+    hide: function() {
+        this._thumbnailsBox.destroyThumbnails();
+        this.actor.hide();
     },
 
-    /**
-     * @description Handles the scroll events.
-     * @param actor
-     * @param event
-     * @public
-     * @function
-     * @author Mostly scroll-workspaces@gfxmonk.net. Modified by AxP.
-     */
-	_onScrollEvent : function(actor, event) {
-		let diff = 0;
-		let direction = event.get_scroll_direction();
-		if (direction == Clutter.ScrollDirection.DOWN) {
-			diff = 1;
-		} else if (direction == Clutter.ScrollDirection.UP) {
-			diff = -1;
-		} else {
-			return Clutter.EVENT_PROPAGATE;
-		}
-        
-        let currentTime = global.get_current_time();
-		if (currentTime > this._lastScroll && currentTime < this._lastScroll + WORKSPACE_SWITCH_WAIT_TIME) {
-            return Clutter.EVENT_STOP;
-		}
-		this._lastScroll = currentTime;
-        
-		this._switch(diff);
-
-        return Clutter.EVENT_STOP;
-	},
-
+    activateFirst: function() {
+        let metaWorkspace = global.screen.get_workspace_by_index(0);
+		if (metaWorkspace) {
+            metaWorkspace.activate(true);
+        }
+    },
+    
     /**
      * @description Activates the next workspace window.
      * @public
@@ -220,6 +180,10 @@ const WorkspaceBox = new Lang.Class({
      */
     activatePrevious: function() {
         this._switch(-1);
+    },
+    
+    getActivatedElementBounds: function() {
+        return this._thumbnailsBox.getActiveThumbnailBounds();
     },
 
     /**
@@ -273,6 +237,7 @@ const WorkspaceBox = new Lang.Class({
         if (this._actorLeaveEventID) {
             this.actor.disconnect(this._actorLeaveEventID);
         }
+        this._thumbnailsBox.destroyThumbnails();
         this.actor.destroy();
     }
 });
@@ -307,18 +272,65 @@ const CategoryBox = new Lang.Class({
         this._categoryButtonMap = {};
         this._selected = null;
     },
+    
+    activateFirst: function() {
+        let keys = Object.keys(this._categoryButtonMap);
+        let nextID = keys[0];
+
+        this.activateCategory(nextID);
+    },
 
     /**
-     * @description Clears the buttons from the component.
+     * @description Activates the next category.
      * @public
      * @function
      */
-    clear: function() {
-        for each (let btn in this._categoryButtonMap) {
-            btn.actor.destroy();
+    activateNext: function() {
+        if (!this._selected) {
+            return;
         }
-        this._categoryButtonMap = {};
-        this._selected = null;
+
+        let keys = Object.keys(this._categoryButtonMap);
+        let selectedIdx = keys.indexOf(this._selected);
+        let nextIdx = (selectedIdx + 1) % keys.length;
+        let nextID = keys[nextIdx];
+
+        this.activateCategory(nextID);
+    },
+
+    /**
+     * @description Activates the previous category.
+     * @public
+     * @function
+     */
+    activatePrevious: function() {
+        if (!this._selected) {
+            return;
+        }
+
+        let keys = Object.keys(this._categoryButtonMap);
+        let selectedIdx = keys.indexOf(this._selected);
+        let previousIdx = selectedIdx - 1;
+        if (previousIdx < 0) {
+            previousIdx += keys.length;
+        }
+        let previousID = keys[previousIdx];
+
+        this.activateCategory(previousID);
+    },
+    
+    getActivatedElementBounds: function() {
+        if (!this._selected) {
+            return null;
+        }
+        
+        let btnBox = null;
+        if (this._categoryButtonMap[this._selected]) {
+            let btn = this._categoryButtonMap[this._selected];
+            btnBox = btn.actor.get_allocation_box();
+        }
+        
+        return btnBox;
     },
 
     /**
@@ -382,63 +394,18 @@ const CategoryBox = new Lang.Class({
         this.selectCategory(categoryID);
         this._mediator.selectMenuCategory(categoryID);
     },
-    
-    activateFirst: function() {
-        let keys = Object.keys(this._categoryButtonMap);
-        let nextID = keys[0];
-
-        this.activateCategory(nextID);
-    },
 
     /**
-     * @description Activates the next category.
+     * @description Clears the buttons from the component.
      * @public
      * @function
      */
-    activateNext: function() {
-        if (!this._selected) {
-            return;
+    clear: function() {
+        for each (let btn in this._categoryButtonMap) {
+            btn.actor.destroy();
         }
-
-        let keys = Object.keys(this._categoryButtonMap);
-        let selectedIdx = keys.indexOf(this._selected);
-        let nextIdx = (selectedIdx + 1) % keys.length;
-        let nextID = keys[nextIdx];
-
-        this.activateCategory(nextID);
-    },
-
-    /**
-     * @description Activates the previous category.
-     * @public
-     * @function
-     */
-    activatePrevious: function() {
-        if (!this._selected) {
-            return;
-        }
-
-        let keys = Object.keys(this._categoryButtonMap);
-        let selectedIdx = keys.indexOf(this._selected);
-        let previousIdx = selectedIdx - 1;
-        if (previousIdx < 0) {
-            previousIdx += keys.length;
-        }
-        let previousID = keys[previousIdx];
-
-        this.activateCategory(previousID);
-    },
-    
-    getSelectedButton: function() {
-        if (!this._selected) {
-            return null;
-        }
-        
-        let btn = null;
-        if (this._categoryButtonMap[this._selected]) {
-            btn = this._categoryButtonMap[this._selected];
-        }
-        return btn;
+        this._categoryButtonMap = {};
+        this._selected = null;
     },
 
     /**
@@ -488,7 +455,8 @@ const NavigationArea = new Lang.Class({
         this._mainbox.add(this._workspaceBox.actor, { expand: true, x_fill: true });
         this._mainbox.add(this._categoryBox.actor, { expand: true, x_fill: true });
 
-        let scrollBox = new St.ScrollView({ reactive: true, style_class: 'gnomenu-categories-workspaces-scrollbox' });
+        // Atm the scrolling of the view is handled manually to prevent glitches.
+        let scrollBox = new St.ScrollView({ reactive: true, enable_mouse_scrolling: false, style_class: 'gnomenu-categories-workspaces-scrollbox' });
         scrollBox.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.NEVER);
         scrollBox.set_mouse_scrolling(true);
         scrollBox.add_actor(this._mainbox, { expand: true, x_fill: true });
@@ -509,7 +477,9 @@ const NavigationArea = new Lang.Class({
 
         // Listen for keyboard events to control the views with the keyboard.
         this._keyPressID = this.actor.connect('key_press_event', Lang.bind(this, this._onKeyboardEvent));
-
+        // I want the boxes to react on scroll events.
+		this._scrollID = this.actor.connect('scroll-event', Lang.bind(this, this._onScrollEvent));
+        
         this.refresh();
     },
 
@@ -564,6 +534,16 @@ const NavigationArea = new Lang.Class({
      * @function
      */
     destroy: function() {
+        if (this._keyPressID > 0) {
+            this.actor.disconnect(this._keyPressID);
+            this._keyPressID = undefined;
+        }
+        
+        if (this._scrollID > 0) {
+            this.actor.disconnect(this._scrollID);
+            this._scrollID = undefined;
+        }
+        
         this._workspaceBox.destroy();
         this._categoryBox.destroy();
 
@@ -664,17 +644,90 @@ const NavigationArea = new Lang.Class({
         this._workspaceBox.hide();
         this._categoryBox.show();
     },
+    
+    activateFirst: function() {
+        if (this._workspaceBox.isVisible()) {
+            this._workspaceBox.activateFirst();
+            this._scrollToSelectedElement(this._workspaceBox);
+        } else {
+            this._categoryBox.activateFirst();
+            this._scrollToSelectedElement(this._categoryBox);
+        }
+    },
+    
+    activateNext: function() {
+        if (this._workspaceBox.isVisible()) {
+            this._workspaceBox.activateNext();
+            this._scrollToSelectedElement(this._workspaceBox);
+        } else {
+            this._categoryBox.activateNext();
+            this._scrollToSelectedElement(this._categoryBox);
+        }
+    },
+    
+    activatePrevious: function() {
+        if (this._workspaceBox.isVisible()) {
+            this._workspaceBox.activatePrevious();
+            this._scrollToSelectedElement(this._workspaceBox);
+        } else {
+            this._categoryBox.activatePrevious();
+            this._scrollToSelectedElement(this._categoryBox);
+        }
+    },
+    
+    _scrollToSelectedElement: function(activeView) {
+        let vscroll = this.actor.get_vscroll_bar();
+        let elemBox = activeView.getActivatedElementBounds();
+        if (!elemBox) {
+            return;
+        }
+    
+        let currentScrollValue = vscroll.get_adjustment().get_value();
+        let boxHeight = this.actor.get_allocation_box().y2 - this.actor.get_allocation_box().y1;
+        let newScrollValue = currentScrollValue;
+    
+        if (currentScrollValue > elemBox.y1 - 20) {
+            newScrollValue = elemBox.y1 - 20;
+        }
+        if (boxHeight + currentScrollValue < elemBox.y2 + 20) {
+            newScrollValue = elemBox.y2 - boxHeight + 20;
+        }
+        
+        if (newScrollValue != currentScrollValue) {
+            vscroll.get_adjustment().set_value(newScrollValue);
+        }
+    },
 
     /**
-     * @description Handles the keyboard input.
+     * @description Handles the scroll events.
      * @param actor
      * @param event
-     * @private
+     * @public
      * @function
+     * @author Mostly scroll-workspaces@gfxmonk.net. Modified by AxP.
      */
+	_onScrollEvent : function(actor, event) {
+		let direction = event.get_scroll_direction();
+        switch (direction) {
+            
+            case Clutter.ScrollDirection.UP:
+                this.activatePrevious();
+                break;
+            
+            case Clutter.ScrollDirection.DOWN:
+                this.activateNext();
+                break;
+            
+            default:
+                break;
+        }
+
+        return Clutter.EVENT_STOP;
+	},
+    
     _onKeyboardEvent: function(actor, event, firstCall) {
         log("NavigationArea received key event!");
-
+        
         // Prevents too fast changes.
         let currentTime = global.get_current_time();
 		if (this._tLastScroll && currentTime < this._tLastScroll + CATEGORY_SWITCH_WAIT_TIME) {
@@ -682,130 +735,60 @@ const NavigationArea = new Lang.Class({
 		}
 		this._tLastScroll = currentTime;
         
-        let receiver = null;
-        if (this._workspaceBox.isVisible()) {
-            receiver = this._workspaceBox;
-        } else {
-            receiver = this._categoryBox;
-        }
+        let state = event.get_state();
+        let ctrl_pressed = (state & Clutter.ModifierType.CONTROL_MASK ? true : false);
+        let symbol = event.get_key_symbol();
 
         let returnVal = Clutter.EVENT_PROPAGATE;
-        if (receiver) {
-            let state = event.get_state();
-            let ctrl_pressed = (state & Clutter.ModifierType.CONTROL_MASK ? true : false);
-            let symbol = event.get_key_symbol();
+        switch (symbol) {
 
-            switch (symbol) {
+            case Clutter.Up:
+                this.activatePrevious();
+                returnVal = Clutter.EVENT_STOP;
+                break;
 
-                case Clutter.Up:
-                    receiver.activatePrevious();
+            case Clutter.Down:
+                this.activateNext();
+                returnVal = Clutter.EVENT_STOP;
+                break;
+
+            case Clutter.Left:
+                this._categoryBox.activateFirst();
+                if (!firstCall) {
+                    this.mediator.moveKeyFocusLeft(actor, event);
+                }
+                returnVal = Clutter.EVENT_STOP;
+                break;
+
+            case Clutter.Right:
+                if (!firstCall) {
+                    this.mediator.moveKeyFocusRight(actor, event);
+                }
+                returnVal = Clutter.EVENT_STOP;
+                break;
+
+            case Clutter.KEY_Tab:
+                if (!firstCall) {
+                    this.mediator.moveKeyFocusRight(actor, event);
+                }
+                returnVal = Clutter.EVENT_STOP;
+                break;
+
+            case Clutter.KEY_space:
+                this.toggleView();
+                returnVal = Clutter.EVENT_STOP;
+                break;
+            
+            case Clutter.KEY_Return:
+                if (this._workspaceBox.isVisible()) {
+                    this.mediator.closeMenu();
                     returnVal = Clutter.EVENT_STOP;
-                    break;
-
-                case Clutter.Down:
-                    receiver.activateNext();
-                    returnVal = Clutter.EVENT_STOP;
-                    break;
-
-                case Clutter.w:
-                    if (ctrl_pressed) {
-                        receiver.activatePrevious();
-                        returnVal = Clutter.EVENT_STOP;
-                    } else {
-                        receiver.activateFirst();
-                    }
-                    break;
-
-                case Clutter.s:
-                    if (ctrl_pressed) {
-                        receiver.activateNext();
-                        returnVal = Clutter.EVENT_STOP;
-                    } else {
-                        receiver.activateFirst();
-                    }
-                    break;
-
-                case Clutter.Left:
-                    receiver.activateFirst();
-                    if (!firstCall) {
-                        this.mediator.moveKeyFocusLeft(actor, event);
-                    }
-                    returnVal = Clutter.EVENT_STOP;
-                    break;
-
-                case Clutter.Right:
-                    receiver.activateFirst();
-                    if (!firstCall) {
-                        this.mediator.moveKeyFocusRight(actor, event);
-                    }
-                    returnVal = Clutter.EVENT_STOP;
-                    break;
-
-                case Clutter.a:
-                    if (ctrl_pressed) {
-                        receiver.activateFirst();
-                        if (!firstCall) {
-                            this.mediator.moveKeyFocusLeft(actor, event);
-                        }
-                        returnVal = Clutter.EVENT_STOP;
-                    } else {
-                        receiver.activateFirst();
-                    }
-                    break;
-
-                case Clutter.d:
-                    if (ctrl_pressed) {
-                        receiver.activateFirst();
-                        if (!firstCall) {
-                            this.mediator.moveKeyFocusRight(actor, event);
-                        }
-                        returnVal = Clutter.EVENT_STOP;
-                    } else {
-                        receiver.activateFirst();
-                    }
-                    break;
-
-                case Clutter.KEY_Tab:
-                    if (!firstCall) {
-                        this.toggleView();
-                    }
-                    returnVal = Clutter.EVENT_STOP;
-                    break;
-
-                case Clutter.KEY_Return:
-                    if (this._workspaceBox.isVisible()) {
-                        this.mediator.closeMenu();
-                        returnVal = Clutter.EVENT_STOP;
-                    }
-                    break;
-            }
+                }
+                break;
         }
 
         return returnVal;
     },
-    
-    //_scrollToSelectedButton: function(activeView) {
-    //    let vscroll = this.actor.get_vscroll_bar();
-    //    let btn = activeView.getSelectedButton();
-    //    if (!btn) {
-    //        return;
-    //    }
-    //    let buttonBox = btn.actor.get_allocation_box();
-    //
-    //    var current_scroll_value = vscroll.get_adjustment().get_value();
-    //    var box_height = this.actor.get_allocation_box().y2 - this.actor.get_allocation_box().y1;
-    //    var new_scroll_value = current_scroll_value;
-    //
-    //    if (current_scroll_value > buttonBox.y1 - 20) {
-    //        new_scroll_value = buttonBox.y1 - 20;
-    //    }
-    //    if (box_height + current_scroll_value < buttonBox.y2 + 20) {
-    //        new_scroll_value = buttonBox.y2 - box_height + 20;
-    //    }
-    //    if (new_scroll_value != current_scroll_value) {
-    //        vscroll.get_adjustment().set_value(new_scroll_value);
-    //    }
-    //},
 
     /**
      * @description On drag begin callback function.
