@@ -68,7 +68,7 @@ const SearchField = new Lang.Class({
          * The textfield has two optional icons/buttons at its borders.
          */
         this.actor = new St.BoxLayout({ style_class: 'gnomenu-search-box' });
-        this._searchEntry = new St.Entry({ name: 'searchEntry', style_class: 'search-entry-icon gnomenu-search-searchEntry', hint_text: _('Type to search…'), track_hover: true, can_focus: true });
+        this._searchEntry = new St.Entry({ name: 'searchEntry', style_class: 'search-entry-icon gnomenu-search-searchEntry', hint_text: _('Type to Search'), track_hover: true, can_focus: true });
         this.actor.add(this._searchEntry, { expand: true, x_align: St.Align.START, y_align: St.Align.START });
         this._searchEntryText = this._searchEntry.clutter_text;
 
@@ -83,6 +83,7 @@ const SearchField = new Lang.Class({
 
         // To search we need the keyboard events.
         this._keyPressID = this._searchEntryText.connect('key_release_event', Lang.bind(this, this._onKeyPress));
+        this._btnPressID = this._searchEntryText.connect('button-press-event', Lang.bind(this, this._onButtonPress));
     },
     
     /**
@@ -116,8 +117,10 @@ const SearchField = new Lang.Class({
         if (this._searchEntryText) {
             this._searchEntryText.disconnect(this._keyPressID);
             this._keyPressID = 0;
+            this._searchEntryText.disconnect(this._btnPressID);
+            this._btnPressID = 0;
         }
-
+        
         if (this._iconClickedId > 0) {
             this._searchEntry.disconnect(this._iconClickedId);
             this._iconClickedId = 0;
@@ -141,6 +144,16 @@ const SearchField = new Lang.Class({
         this._searchEntry.text = '';
         this._onTextChanged();
     },
+    
+    /**
+     * @description Returns if the textfield has more than zero chars.
+     * @returns {Boolean}
+     * @public
+     * @function
+     */
+    hasText: function() {
+        return this._searchEntry.text != '';
+    },
 
     /**
      * @description This function sets the focus on to the search entry. Also it is possible
@@ -153,6 +166,7 @@ const SearchField = new Lang.Class({
      */
     activateFocus: function(actor, event) {
         global.stage.set_key_focus(this._searchEntryText);
+        
         if (event) {
             // I can only use valid chars as input.
             let symbolID = event.get_key_symbol();
@@ -165,14 +179,9 @@ const SearchField = new Lang.Class({
         }
     },
     
-    /**
-     * @description Returns if the textfield has more than zero chars.
-     * @returns {Boolean}
-     * @public
-     * @function
-     */
-    hasText: function() {
-        return this._searchEntry.text != '';
+    _onButtonPress: function(actor, event) {
+        // I dont want to send on the mouse event into the keyboard world.
+        this.mediator.activateSearchfieldKeyFocus(actor, null);
     },
 
     /**

@@ -28,6 +28,8 @@ const DraggableIconButton = Me.imports.scripts.menu.components.elements.menubutt
 const ButtonGroup = Me.imports.scripts.menu.components.elements.menubutton.ButtonGroup;
 const UpdateableComponent = Me.imports.scripts.menu.components.component.UpdateableComponent;
 
+const MOUSEBUTTON = Me.imports.scripts.menu.components.elements.menubutton.MOUSEBUTTON;
+
 const ECategoryID = MenuModel.ECategoryID;
 const EEventType = MenuModel.EEventType;
 
@@ -205,24 +207,6 @@ const Sidebar = new Lang.Class({
                 returnVal = Clutter.EVENT_STOP;
                 break;
 
-            case Clutter.w:
-                if (ctrl_pressed) {
-                    this._buttongroup.selectPrevious();
-                    returnVal = Clutter.EVENT_STOP;
-                } else {
-                    this._buttongroup.clearButtonStates();
-                }
-                break;
-
-            case Clutter.s:
-                if (ctrl_pressed) {
-                    this._buttongroup.selectNext();
-                    returnVal = Clutter.EVENT_STOP;
-                } else {
-                    this._buttongroup.clearButtonStates();
-                }
-                break;
-
             case Clutter.Left:
                 this._buttongroup.selectFirst();
                 returnVal = Clutter.EVENT_STOP;
@@ -233,42 +217,19 @@ const Sidebar = new Lang.Class({
                 this.mediator.moveKeyFocusRight(actor, event);
                 returnVal = Clutter.EVENT_STOP;
                 break;
-
-            case Clutter.a:
-                if (ctrl_pressed) {
-                    this._buttongroup.selectFirst();
-                    returnVal = Clutter.EVENT_STOP;
-                } else {
-                    this._buttongroup.clearButtonStates();
-                }
-                break;
-
-            case Clutter.d:
-                if (ctrl_pressed) {
-                    this._buttongroup.clearButtonStates();
-                    this.mediator.moveKeyFocusRight(actor, event);
-                    returnVal = Clutter.EVENT_STOP;
-                } else {
-                    this._buttongroup.clearButtonStates();
-                }
-                break;
             
             case Clutter.KEY_Tab:
                 this._buttongroup.clearButtonStates();
-                if (ctrl_pressed) {
-                    this._buttongroup.activateSelected(true);
-                } else {
-                    this._buttongroup.activateSelected(false);
-                }
+                this.mediator.moveKeyFocusRight(actor, event);
                 returnVal = Clutter.EVENT_STOP;
                 break;
                 
             case Clutter.KEY_Return:
                 this._buttongroup.clearButtonStates();
                 if (ctrl_pressed) {
-                    this._buttongroup.activateSelected(false);
+                    this._buttongroup.activateSelected(MOUSEBUTTON.MOUSE_MIDDLE);
                 } else {
-                    this._buttongroup.activateSelected(true);
+                    this._buttongroup.activateSelected(MOUSEBUTTON.MOUSE_LEFT);
                 }
                 returnVal = Clutter.EVENT_STOP;
                 break;

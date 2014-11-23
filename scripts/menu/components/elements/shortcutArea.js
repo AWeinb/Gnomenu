@@ -120,13 +120,6 @@ const ShortcutBoxBase = new Lang.Class({
      * @function
      */
     refresh: function(shownCategory) {
-        if (shownCategory.id == undefined || shownCategory.id == null) {
-            log("ERROR")
-        }
-        if (shownCategory.isAppCategory == undefined || shownCategory.isAppCategory == null) {
-            log("ERROR")
-        }
-        
         this.clear();
         
         // The parameter should only be used intern. It provides the shown category.
@@ -330,10 +323,10 @@ const ShortcutBoxBase = new Lang.Class({
         this._selectedButtonIdx = -1;
     },
     
-    activateSelected: function() {
+    activateSelected: function(button, params) {
         let btn = this.getSelectedButton();
         if (btn) {
-            btn.activate(true);
+            btn.activate(button, params);
         }
     },
     
@@ -900,11 +893,11 @@ const ShortcutArea = new Lang.Class({
         this._shortcutList.deselectAll();
     },
     
-    activateSelected: function() {
+    activateSelected: function(button, params) {
         if (this._shortcutGrid.isVisible()) {
-            this._shortcutGrid.activateSelected();
+            this._shortcutGrid.activateSelected(button, params);
         } else {
-            this._shortcutList.activateSelected();
+            this._shortcutList.activateSelected(button, params);
         }
     },
     

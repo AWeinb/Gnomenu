@@ -25,10 +25,6 @@ const St = imports.gi.St;
 const DND = imports.ui.dnd;
 const Main = imports.ui.main;
 
-const Me = imports.misc.extensionUtils.getCurrentExtension();
-const Gettext = imports.gettext.domain(Me.metadata['gettext-domain']);
-const _ = Gettext.gettext;
-
 //params parameter example:
 //
 //let params = {
@@ -39,7 +35,13 @@ const _ = Gettext.gettext;
 //    label_add_params: {  },
 //};
 
-
+const MOUSEBUTTON = {
+    
+    MOUSE_LEFT:   1,
+    MOUSE_MIDDLE: 2,
+    MOUSE_RIGHT:  3,
+    
+};
 
 /**
  * @class Button: This is the base class for all buttons.
@@ -60,21 +62,9 @@ const Button = new Lang.Class({
     Name: 'Gnomenu.menubuttonBase.Button',
 
 
-    _init: function(icon, iconSize, labelTextID, hoverTitleID, hoverDescriptionID, params) {
+    _init: function(icon, iconSize, labelTextID, params) {
         this._btnHandlers = [null, null, null, null];
         this._btnHoverHandler = null;
-        this._hoverTitleChanger = null;
-        this._hoverDescriptionChanger = null;
-
-        this._hoverTitle = null;
-        if (hoverTitleID) {
-            this._hoverTitle = _(hoverTitleID);
-        }
-
-        this._hoverDescription = null;
-        if (hoverDescriptionID) {
-            this._hoverDescription = _(hoverDescriptionID);
-        }
 
         let buttonbox = new St.BoxLayout(params.container_params);
 
@@ -110,7 +100,7 @@ const Button = new Lang.Class({
         this._btnEnterId = this.actor.connect('enter-event', Lang.bind(this, this._onEnter));
         this._btnLeaveId = this.actor.connect('leave-event', Lang.bind(this, this._onLeave));
 
-        this.isSelected = false;
+        this._isSelected = false;
         this.id = undefined;
     },
 
@@ -133,54 +123,10 @@ const Button = new Lang.Class({
         return this.id;
     },
 
-    /**
-     * @description Sets a callback which changes a label on hover.
-     * @param {function} changer
-     * @public
-     * @function
-     */
-    setTitleChanger: function(changer) {
-        this._hoverTitleChanger = changer;
-    },
-
-    /**
-     * @description Sets a callback which changes a label on hover.
-     * @param {function} changer
-     * @public
-     * @function
-     */
-    setDescriptionChanger: function(changer) {
-        this._hoverDescriptionChanger = changer;
-    },
-
-    /**
-     * @description Sets a left click handler.
-     * @param {function} handler
-     * @public
-     * @function
-     */
-    setOnLeftClickHandler: function(handler) {
-        this._btnHandlers[1] = handler;
-    },
-
-    /**
-     * @description Sets a middle click handler.
-     * @param {function} handler
-     * @public
-     * @function
-     */
-    setOnMiddleClickHandler: function(handler) {
-        this._btnHandlers[2] = handler;
-    },
-
-    /**
-     * @description Sets a right click handler.
-     * @param {function} handler
-     * @public
-     * @function
-     */
-    setOnRightClickHandler: function(handler) {
-        this._btnHandlers[3] = handler;
+    setHandlerForButton: function(button, handler) {
+        if (handler && button && button > 0 && button <= 3) {
+            this._btnHandlers[button] = handler;
+        }
     },
 
     /**
@@ -192,6 +138,14 @@ const Button = new Lang.Class({
     setOnHoverHandler: function(handler) {
         this._btnHoverHandler = handler;
     },
+    
+    getButtonInfoTitle: function() {
+        return this.buttonInfoTitle;
+    },
+    
+    getButtonInfoDescription: function() {
+        return this.buttonInfoDescription;
+    },
 
     /**
      * @description Marks the button as selected.
@@ -200,16 +154,7 @@ const Button = new Lang.Class({
      */
     select: function() {
         this.actor.add_style_pseudo_class('open');
-        
-        if (this._hoverTitleChanger) {
-            this._hoverTitleChanger(this._hoverTitle);
-        }
-
-        if (this._hoverDescriptionChanger) {
-            this._hoverDescriptionChanger(this._hoverDescription);
-        }
-        
-        this.isSelected = true;
+        this._isSelected = true;
     },
 
     /**
@@ -219,18 +164,43 @@ const Button = new Lang.Class({
      */
     deselect: function() {
         this.reset();
-        this.isSelected = false;
     },
-    
+
     /**
-     * @description Activates the button. Not implemented.
+     * @description Returns wether the button is selected.
+     * @returns {Boolean}
      * @public
      * @function
      */
-    activate: function() {
-        ;
+    isSelected: function() {
+        return this._isSelected;
     },
 
+    /**
+     * @description This function does the same as a normal click would do.
+     * @param {Integer} button The button id.
+     * @param {Object} params Some parametersy.
+     * @public
+     * @function
+     */
+    activate: function(button, params) {
+        if (button >= 0 && this._btnHandlers[button]) {
+            this._btnHandlers[button](this.actor, null);
+            this._notifyActivation(this.actor, null);
+        } else {
+            for each (let button in MOUSEBUTTON) {
+                if (this._btnHandlers[button]) {
+                    this._btnHandlers[button](this.actor, null);
+                    this._notifyActivation(this.actor, null);
+                    break;
+                }
+            }
+        }
+    },
+    
+    _notifyActivation: function(actor, event) {
+    },
+    
     /**
      * @description Resets the button.
      * @public
@@ -240,13 +210,8 @@ const Button = new Lang.Class({
         this.actor.remove_style_pseudo_class('open');
         this.actor.remove_style_pseudo_class('pressed');
         this.actor.remove_style_pseudo_class('active');
-
-        if (this._hoverTitleChanger) {
-            this._hoverTitleChanger(null);
-        }
-        if (this._hoverDescriptionChanger) {
-            this._hoverDescriptionChanger(null);
-        }
+        
+        this._isSelected = false;
     },
 
     /**
@@ -278,14 +243,6 @@ const Button = new Lang.Class({
         let button = event.get_button();
 
         if (this._btnHandlers[button]) {
-            if (this._hoverTitleChanger) {
-                this._hoverTitleChanger(null);
-            }
-
-            if (this._hoverDescriptionChanger) {
-                this._hoverDescriptionChanger(null);
-            }
-
             this.actor.remove_style_pseudo_class('pressed');
             this.actor.remove_style_pseudo_class('active');
             
@@ -306,20 +263,14 @@ const Button = new Lang.Class({
      */
     _onEnter: function(actor, event) {
         this.actor.add_style_pseudo_class('active');
-
-        if (this._hoverTitleChanger) {
-            this._hoverTitleChanger(this._hoverTitle);
-        }
-
-        if (this._hoverDescriptionChanger) {
-            this._hoverDescriptionChanger(this._hoverDescription);
-        }
+        this._notifyHovered(actor, event, true);
 
         if (this._btnHoverHandler) {
             this._btnHoverHandler(actor, event);
-
+            
             return Clutter.EVENT_STOP;
         }
+            
         return Clutter.EVENT_PROPAGATE;
     },
 
@@ -333,16 +284,12 @@ const Button = new Lang.Class({
      */
     _onLeave: function(actor, event) {
         this.actor.remove_style_pseudo_class('active');
-
-        if (this._hoverTitleChanger) {
-            this._hoverTitleChanger(null);
-        }
-
-        if (this._hoverDescriptionChanger) {
-            this._hoverDescriptionChanger(null);
-        }
-
+        this._notifyHovered(actor, event, false);
+        
         return Clutter.EVENT_STOP;
+    },
+    
+    _notifyHovered: function(actor, event, entered) {
     },
 
     /**
@@ -355,6 +302,7 @@ const Button = new Lang.Class({
         if (this._btnReleaseId) this.actor.disconnect(this._btnReleaseId);
         if (this._btnEnterId) this.actor.disconnect(this._btnEnterId);
         if (this._btnLeaveId) this.actor.disconnect(this._btnLeaveId);
+        
         this._btnPressId = undefined;
         this._btnReleaseId = undefined;
         this._btnEnterId = undefined;
@@ -388,75 +336,11 @@ const ToggleButton = new Lang.Class({
     Extends: Button,
 
 
-    _init: function(icon, iconSize, labelTextID, hoverTitleID, hoverDescriptionID, params) {
-        this.parent(icon, iconSize, labelTextID, hoverTitleID, hoverDescriptionID, params);
+    _init: function(icon, iconSize, labelTextID, params) {
+        this.parent(icon, iconSize, labelTextID, params);
         this.actor._delegate = this;
 
-        this.active = false;
-        this.id = null;
         this._stateToggledCallback = null;
-    },
-
-    /**
-     * @description Marks the button as selected.
-     * @public
-     * @function
-     */
-    select: function() {
-        this.actor.add_style_pseudo_class('open');
-        this.isSelected = true;
-        this.active = true;
-    },
-
-    /**
-     * @description Removes the selection mark.
-     * @public
-     * @function
-     */
-    deselect: function() {
-        this.reset();
-        this.isSelected = false;
-        this.active = false;
-    },
-    
-    /**
-     * @description Returns wether the button is selected.
-     * @returns {Boolean}
-     * @public
-     * @function
-     */
-    isSelected: function() {
-        return this.active;
-    },
-
-    /**
-     * @description Toggles the selection state of the button. This triggers
-     *              a stateToggledCallback if this was provided.
-     * @public
-     * @function
-     */
-    toggleState: function() {
-        this.setState(!this.active);
-        if (this._stateToggledCallback) {
-            this._stateToggledCallback(this, this.active);
-        }
-    },
-
-    /**
-     * @description Sets the state of the button.
-     * @param {Boolean} active
-     * @public
-     * @function
-     */
-    setState: function(active) {
-        if (active) {
-            this.actor.add_style_pseudo_class('open');
-            this.active = true;
-
-        } else {
-            this.actor.remove_style_pseudo_class('open');
-            this.active = false;
-        }
     },
 
     /**
@@ -467,6 +351,34 @@ const ToggleButton = new Lang.Class({
      */
     setStateToggledCallback: function(callback) {
         this._stateToggledCallback = callback;
+    },
+
+    /**
+     * @description Toggles the selection state of the button. This triggers
+     *              a stateToggledCallback if this was provided.
+     * @public
+     * @function
+     */
+    toggleState: function() {
+        this.setState(!this.isSelected());
+        
+        if (this._stateToggledCallback) {
+            this._stateToggledCallback(this, this.isSelected());
+        }
+    },
+
+    /**
+     * @description Sets the state of the button.
+     * @param {Boolean} selected
+     * @public
+     * @function
+     */
+    setState: function(active) {
+        if (active) {
+            this.select();
+        } else {
+            this.deselect();
+        }
     },
 
     /**
@@ -481,20 +393,14 @@ const ToggleButton = new Lang.Class({
      */
     _onPress: function(actor, event) {
         this.toggleState();
-        if (this._hoverTitleChanger) {
-            this._hoverTitleChanger(null);
-        }
-
-        if (this._hoverDescriptionChanger) {
-            this._hoverDescriptionChanger(null);
-        }
 
         let button = event.get_button();
         if (this._btnHandlers[button]) {
-            this._btnHandlers[button](this.active);
             this.actor.remove_style_pseudo_class('pressed');
             this.actor.remove_style_pseudo_class('active');
 
+            this._btnHandlers[button](this.isSelected());
+            
             return Clutter.EVENT_STOP;
         }
 
@@ -527,8 +433,8 @@ const DraggableButton = new Lang.Class({
     Extends: Button,
 
 
-    _init: function(icon, iconSize, labelTextID, hoverTitleID, hoverDescriptionID, params) {
-        this.parent(icon, iconSize, labelTextID, hoverTitleID, hoverDescriptionID, params);
+    _init: function(icon, iconSize, labelTextID, params) {
+        this.parent(icon, iconSize, labelTextID, params);
         this.actor._delegate = this;
 
         // This needs to get sorted out to create the right drag icon.
@@ -548,16 +454,11 @@ const DraggableButton = new Lang.Class({
         this._iconSize = iconSize;
 
         this._draggable = DND.makeDraggable(this.actor);
-
         this._dragMonitor = null;
         this._dragIds = [];
-        let id = 0;
-        id = this._draggable.connect('drag-begin', Lang.bind(this, this._onDragBegin));
-        this._dragIds.push(id);
-        id = this._draggable.connect('drag-cancelled', Lang.bind(this, this._onDragCancelled));
-        this._dragIds.push(id);
-        id = this._draggable.connect('drag-end', Lang.bind(this, this._onDragEnd));
-        this._dragIds.push(id);
+        this._dragIds.push(this._draggable.connect('drag-begin', Lang.bind(this, this._onDragBegin)));
+        this._dragIds.push(this._draggable.connect('drag-cancelled', Lang.bind(this, this._onDragCancelled)));
+        this._dragIds.push(this._draggable.connect('drag-end', Lang.bind(this, this._onDragEnd)));
     },
 
     /**
@@ -596,14 +497,6 @@ const DraggableButton = new Lang.Class({
     _onRelease: function(actor, event) {
         let button = event.get_button();
         if (this._btnHandlers[button]) {
-            if (this._hoverTitleChanger) {
-                this._hoverTitleChanger(null);
-            }
-
-            if (this._hoverDescriptionChanger) {
-                this._hoverDescriptionChanger(null);
-            }
-
             this.actor.remove_style_pseudo_class('pressed');
             this.actor.remove_style_pseudo_class('active');
 
@@ -639,7 +532,7 @@ const DraggableButton = new Lang.Class({
      * @private
      * @function
      */
-    _onDragBegin: function() {
+    _onDragBegin: function(draggable, id) {
         this.reset();
         // Fades out the button.
         this.actor.opacity = 55;
@@ -650,11 +543,7 @@ const DraggableButton = new Lang.Class({
 
         DND.addDragMonitor(this._dragMonitor);
 
-        this._onDragBeginCB();
-    },
-
-    _onDragBeginCB: function() {
-        // Implement this for it to be useful.
+        this._notifyDragBegin(draggable, id);
     },
 
     /**
@@ -671,14 +560,10 @@ const DraggableButton = new Lang.Class({
      * @private
      * @function
      */
-    _onDragCancelled: function() {
+    _onDragCancelled: function(draggable, id) {
         DND.removeDragMonitor(this._dragMonitor);
 
-        this._onDragCancelledCB();
-    },
-
-    _onDragCancelledCB: function() {
-        // Implement this for it to be useful.
+        this._notifyDragCancelled(draggable, id);
     },
 
     /**
@@ -686,18 +571,23 @@ const DraggableButton = new Lang.Class({
      * @private
      * @function
      */
-    _onDragEnd: function() {
+    _onDragEnd: function(draggable, id) {
         this.reset();
         // Fades in the button.
         this.actor.opacity = 255;
 
         DND.removeDragMonitor(this._dragMonitor);
 
-        this._onDragEndCB();
+        this._notifyDragEnd(draggable, id);
     },
 
-    _onDragEndCB: function() {
-        // Implement this for it to be useful.
+    _notifyDragBegin: function(draggable, id) {
+    },
+    
+    _notifyDragCancelled: function(draggable, id) {
+    },
+    
+    _notifyDragEnd: function(draggable, id) {
     },
 
     /**
@@ -710,6 +600,7 @@ const DraggableButton = new Lang.Class({
         if (this._btnReleaseId) this.actor.disconnect(this._btnReleaseId);
         if (this._btnEnterId) this.actor.disconnect(this._btnEnterId);
         if (this._btnLeaveId) this.actor.disconnect(this._btnLeaveId);
+        
         this._btnPressId = undefined;
         this._btnReleaseId = undefined;
         this._btnEnterId = undefined;
@@ -722,6 +613,6 @@ const DraggableButton = new Lang.Class({
                 this._draggable.disconnect(id);
             }
         }
-        this._dragIds = [];
+        this._dragIds = undefined;
     },
 });

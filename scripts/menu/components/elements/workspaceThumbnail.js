@@ -854,7 +854,7 @@ const GnoMenuThumbnailsBox = new Lang.Class({
             }
         }
         
-        if (!thumbnail.actor) {
+        if (!thumbnail || !thumbnail.actor) {
             return;
         }
 

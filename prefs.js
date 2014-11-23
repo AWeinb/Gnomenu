@@ -58,7 +58,7 @@ const SignalHandlers = new Lang.Class({
             this._settings.set_strv('menu-shortcut-key', [shortcut]);
         } else {
             entry["secondary-icon-name"] = "dialog-warning-symbolic";
-            entry["secondary-icon-tooltip-text"] = _("Invalid accelerator. Try F12, <Super>space, <Ctrl><Alt><Shift>a, etc.");
+            entry["secondary-icon-tooltip-text"] = _("Invalid Accelerator. Try F12, <Super>space, <Ctrl><Alt><Shift>a, etc.");
         }
     },
     

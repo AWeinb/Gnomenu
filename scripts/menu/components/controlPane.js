@@ -25,6 +25,7 @@ const Component = Me.imports.scripts.menu.components.component.Component;
 const IconButton = Me.imports.scripts.menu.components.elements.menubutton.IconButton;
 const ButtonGroup = Me.imports.scripts.menu.components.elements.menubutton.ButtonGroup;
 
+const MOUSEBUTTON = Me.imports.scripts.menu.components.elements.menubutton.MOUSEBUTTON;
 
 /**
  * @class ControlPane: This creates the controls at the bottom of the menu. With
@@ -50,7 +51,7 @@ const ControlPane = new Lang.Class({
     _init: function(model, mediator) {
         this.parent(model, mediator);
 
-        this.actor = new St.BoxLayout({ style_class: 'gnomenu-controlPane-box'});
+        this.actor = new St.BoxLayout({ style_class: 'gnomenu-controlPane-box' });
         this._buttonGroup = new ButtonGroup();
         
         this.refresh();
@@ -65,42 +66,43 @@ const ControlPane = new Lang.Class({
         this.clear();
         
         let iconSize = this.menuSettings.getLayoutDependendIconsize();
-        let systemRestart = new IconButton(this.mediator, 'refresh-symbolic', iconSize, 'Restart Shell', null);
-        systemRestart.setOnLeftClickHandler(Lang.bind(this, function() {
+        
+        let systemShutdownBtn = new IconButton(this.mediator, 'shutdown-symbolic', iconSize, 'Power Off', 'PowerOff Description');
+        systemShutdownBtn.setHandlerForButton(MOUSEBUTTON.MOUSE_LEFT, Lang.bind(this, function() {
+            this.mediator.shutdownComputer();
+        }));
+        
+        let systemSuspendBtn = new IconButton(this.mediator, 'suspend-symbolic', iconSize, 'Suspend', 'Suspend Description');
+        systemSuspendBtn.setHandlerForButton(MOUSEBUTTON.MOUSE_LEFT, Lang.bind(this, function() {
+            this.mediator.suspendComputer();
+        }));
+        
+        let logoutUserBtn = new IconButton(this.mediator, 'user-logout-symbolic', iconSize, 'Log Out', 'Log Out Description');
+        logoutUserBtn.setHandlerForButton(MOUSEBUTTON.MOUSE_LEFT, Lang.bind(this, function() {
+            this.mediator.logoutSession();
+        }));
+        
+        let lockScreenBtn = new IconButton(this.mediator, 'user-lock-symbolic', iconSize, 'Lock', 'Lock Description');
+        lockScreenBtn.setHandlerForButton(MOUSEBUTTON.MOUSE_LEFT, Lang.bind(this, function() {
+            this.mediator.lockSession();
+        }));
+        
+        let shellRestartBtn = new IconButton(this.mediator, 'refresh-symbolic', iconSize, 'Restart Shell', 'Restart Shell Description');
+        shellRestartBtn.setHandlerForButton(MOUSEBUTTON.MOUSE_LEFT, Lang.bind(this, function() {
             this.mediator.restartShell();
         }));
 
-        let systemSuspend = new IconButton(this.mediator, 'suspend-symbolic', iconSize, 'Suspend', null);
-        systemSuspend.setOnLeftClickHandler(Lang.bind(this, function() {
-            this.mediator.suspendComputer();
-        }));
+        this._buttonGroup.addButton(systemShutdownBtn);
+        this._buttonGroup.addButton(systemSuspendBtn);
+        this._buttonGroup.addButton(logoutUserBtn);
+        this._buttonGroup.addButton(lockScreenBtn);
+        this._buttonGroup.addButton(shellRestartBtn);
 
-        let systemShutdown = new IconButton(this.mediator, 'shutdown-symbolic', iconSize, 'Shutdown', null);
-        systemShutdown.setOnLeftClickHandler(Lang.bind(this, function() {
-            this.mediator.shutdownComputer();
-        }));
-
-        let logoutUser = new IconButton(this.mediator, 'user-logout-symbolic', iconSize, 'Logout User', null);
-        logoutUser.setOnLeftClickHandler(Lang.bind(this, function() {
-            this.mediator.logoutSession();
-        }));
-
-        let lockScreen = new IconButton(this.mediator, 'user-lock-symbolic', iconSize, 'Lock Screen', null);
-        lockScreen.setOnLeftClickHandler(Lang.bind(this, function() {
-            this.mediator.lockSession();
-        }));
-
-        this._buttonGroup.addButton(systemRestart);
-        this._buttonGroup.addButton(systemSuspend);
-        this._buttonGroup.addButton(systemShutdown);
-        this._buttonGroup.addButton(logoutUser);
-        this._buttonGroup.addButton(lockScreen);
-
-        this.actor.add(systemRestart.actor,  { expand: true, x_fill: true, y_fill: false, x_align: St.Align.MIDDLE, y_align: St.Align.MIDDLE, margin_right: 1 });
-        this.actor.add(systemSuspend.actor,  { expand: true, x_fill: true, y_fill: false, x_align: St.Align.MIDDLE, y_align: St.Align.MIDDLE, margin_right: 1 });
-        this.actor.add(systemShutdown.actor, { expand: true, x_fill: true, y_fill: false, x_align: St.Align.MIDDLE, y_align: St.Align.MIDDLE, margin_right: 1 });
-        this.actor.add(logoutUser.actor,     { expand: true, x_fill: true, y_fill: false, x_align: St.Align.MIDDLE, y_align: St.Align.MIDDLE, margin_right: 1 });
-        this.actor.add(lockScreen.actor,     { expand: true, x_fill: true, y_fill: false, x_align: St.Align.MIDDLE, y_align: St.Align.MIDDLE, margin_right: 1 });
+        this.actor.add(systemShutdownBtn.actor);
+        this.actor.add(systemSuspendBtn.actor);
+        this.actor.add(logoutUserBtn.actor);   
+        this.actor.add(lockScreenBtn.actor);
+        this.actor.add(shellRestartBtn.actor);
     },
 
     /**

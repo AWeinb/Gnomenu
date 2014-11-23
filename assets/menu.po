@@ -1,0 +1,213 @@
+# Localization of the GnoMenu. This data is only for the menu, not the preferences.
+# Copyright (C) 2014 THE PANACEA PROJECTS
+# This file is distributed under the same license as the GnoMenu package.
+# AxP <Der_AxP@t-online.de>, 2014.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: 1.0\n"
+"Report-Msgid-Bugs-To: The GnoMenu GitHub Page\n"
+"POT-Creation-Date: 2014-11-23 18:13+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: AxP <Der_AxP@t-online.de>\n"
+"Language-Team: ?? <LL@li.org>\n"
+"Language: ??\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. Translation for the ALL APPS Category Button.
+#: menuModel.js:60
+msgid "All-Apps"
+msgstr ""
+
+#. Translation for the MOST USED Category Button.
+#: menuModel.js:60
+msgid "Most-Used"
+msgstr ""
+
+#. Translation for the FAVORITES Category Button.
+#: menuModel.js:60
+msgid "Favorites"
+msgstr ""
+
+#. Translation for the RECENT FILES Category Button.
+#: menuModel.js:60
+msgid "Recent"
+msgstr ""
+
+#. Translation for the PLACES Category Button.
+#: menuModel.js:60
+msgid "Places"
+msgstr ""
+
+#. Translation for the DEVICES Category Button.
+#: menuModel.js:60
+msgid "Devices"
+msgstr ""
+
+#. Translation for the NETWORK DEVICES Category Button.
+#: menuModel.js:60
+msgid "Network"
+msgstr ""
+
+#. Translation for the BOOKMARKS Category Button.
+#: menuModel.js:60
+msgid "Bookmarks"
+msgstr ""
+
+#. Translation for the WEB BOOKMARKS Category Button.
+#: menuModel.js:60
+msgid "Web"
+msgstr ""
+
+# -------------------------------------------------------
+
+
+#. Translation for the ALL APPS Category Description.
+#: menuModel.js:70
+msgid "All-Apps Description"
+msgstr ""
+
+#. Translation for the MOST USED Category Description.
+#: menuModel.js:70
+msgid "Most-Used Description"
+msgstr ""
+
+#. Translation for the FAVORITES Category Description.
+#: menuModel.js:70
+msgid "Favorites Description"
+msgstr ""
+
+#. Translation for the RECENT FILES Category Description.
+#: menuModel.js:70
+msgid "Recent-Files Description"
+msgstr ""
+
+#. Translation for the PLACES Category Description.
+#: menuModel.js:70
+msgid "Places Description"
+msgstr ""
+
+#. Translation for the DEVICES Category Description.
+#: menuModel.js:70
+msgid "Devices Description"
+msgstr ""
+
+#. Translation for the NETWORK DEVICES Category Description.
+#: menuModel.js:70
+msgid "Network-Devices Description"
+msgstr ""
+
+#. Translation for the BOOKMARKS Category Description.
+#: menuModel.js:70
+msgid "Bookmarks Description"
+msgstr ""
+
+#. Translation for the WEB BOOKMARKS Category Description.
+#: menuModel.js:70
+msgid "Web-Bookmarks Description"
+msgstr ""
+
+# -------------------------------------------------------
+
+
+#. Translation for the VIEWMODE LIST Button.
+#: viewmodePane.js:60
+msgid "List Viewmode"
+msgstr ""
+
+#. Translation for the VIEWMODE LIST Button Description.
+#: viewmodePane.js:60
+msgid "List Viewmode Description"
+msgstr ""
+
+#. Translation for the VIEWMODE GRID Button.
+#: viewmodePane.js:60
+msgid "Grid Viewmode"
+msgstr ""
+
+#. Translation for the VIEWMODE GRID Button Description.
+#: viewmodePane.js:60
+msgid "Grid Viewmode Description"
+msgstr ""
+
+# -------------------------------------------------------
+
+
+#. Translation for the POWER-OFF CONTROL Button.
+#: controlPane.js:70
+msgid "Power Off"
+msgstr ""
+
+#. Translation for the POWER-OFF CONTROL Button Description.
+#: controlPane.js:70
+msgid "PowerOff Description"
+msgstr ""
+
+#. Translation for the POWER-OFF CONTROL Button.
+#: controlPane.js:70
+msgid "Suspend"
+msgstr ""
+
+#. Translation for the POWER-OFF CONTROL Button Description.
+#: controlPane.js:70
+msgid "Suspend Description"
+msgstr ""
+
+#. Translation for the POWER-OFF CONTROL Button.
+#: controlPane.js:70
+msgid "Log Out"
+msgstr ""
+
+#. Translation for the POWER-OFF CONTROL Button Description.
+#: controlPane.js:70
+msgid "Log Out Description"
+msgstr ""
+
+#. Translation for the POWER-OFF CONTROL Button.
+#: controlPane.js:70
+msgid "Lock"
+msgstr ""
+
+#. Translation for the POWER-OFF CONTROL Button Description.
+#: controlPane.js:70
+msgid "Lock Description"
+msgstr ""
+
+#. Translation for the POWER-OFF CONTROL Button.
+#: controlPane.js:70
+msgid "Restart Shell"
+msgstr ""
+
+#. Translation for the POWER-OFF CONTROL Button Description.
+#: controlPane.js:70
+msgid "Restart Shell Description"
+msgstr ""
+
+# -------------------------------------------------------
+
+
+#. Translation for the Search Hint.
+#: searchField.js:70
+msgid "Type to Search"
+msgstr ""
+
+#. Translation for the Search "No-Result" Hint.
+#: searchField.js:70
+msgid "No Result"
+msgstr ""
+
+# -------------------------------------------------------
+
+
+#. Translation for the Settings Button.
+#: searchField.js:70
+msgid "Settings"
+msgstr ""
+
+#. Translation for the Settings Button Description.
+#: searchField.js:70
+msgid "Settings Description"
+msgstr ""

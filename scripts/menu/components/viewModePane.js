@@ -27,6 +27,7 @@ const MenuModel = Me.imports.scripts.menu.menuModel;
 const IconToggleButton = Me.imports.scripts.menu.components.elements.menubutton.IconToggleButton;
 const ButtonGroup = Me.imports.scripts.menu.components.elements.menubutton.ButtonGroup;
 
+const MOUSEBUTTON = Me.imports.scripts.menu.components.elements.menubutton.MOUSEBUTTON;
 const EViewMode = MenuModel.EViewMode;
 
 
@@ -55,23 +56,22 @@ const ViewModePane = new Lang.Class({
         this.actor = new St.BoxLayout({ style_class: 'gnomenu-viewMode-box' });
         let iconSize = this.menuSettings.getLayoutDependendIconsize();
 
-        let listViewBtn = new IconToggleButton(mediator, 'view-list-symbolic', iconSize, 'List View', null);
+        let listViewBtn = new IconToggleButton(mediator, 'view-list-symbolic', iconSize, 'List Viewmode', 'List Viewmode Description');
         listViewBtn.setID(EViewMode.LIST);
-        listViewBtn.setOnLeftClickHandler(Lang.bind(this, function(active) {
-                this.selectButton(EViewMode.LIST);
-                this.mediator.setViewMode(EViewMode.LIST);
+        listViewBtn.setHandlerForButton(MOUSEBUTTON.MOUSE_LEFT, Lang.bind(this, function(active) {
+                this.mediator.notifyViewModeChange(EViewMode.LIST);
             }
         ));
 
-        let gridViewBtn = new IconToggleButton(mediator, 'view-grid-symbolic', iconSize, 'Grid View', null);
+        let gridViewBtn = new IconToggleButton(mediator, 'view-grid-symbolic', iconSize, 'Grid Viewmode', 'Grid Viewmode Description');
         gridViewBtn.setID(EViewMode.GRID);
-        gridViewBtn.setOnLeftClickHandler(Lang.bind(this, function(active) {
-                this.selectButton(EViewMode.GRID);
-                this.mediator.setViewMode(EViewMode.GRID);
+        gridViewBtn.setHandlerForButton(MOUSEBUTTON.MOUSE_LEFT, Lang.bind(this, function(active) {
+                this.mediator.notifyViewModeChange(EViewMode.GRID);
             }
         ));
 
         this._buttonGroup = new ButtonGroup();
+        this._buttonGroup.deactivateDeselection();
         this._buttonGroup.addButton(listViewBtn);
         this._buttonGroup.addButton(gridViewBtn);
 
@@ -122,7 +122,6 @@ const ViewModePane = new Lang.Class({
             Log.logError("Gnomenu.ViewModePane", "selectButton", "shortcutAreaViewModeID is null!");
         }
 
-        this._buttonGroup.clearButtonStates();
         this._buttonGroup.selectByID(shortcutAreaViewModeID);
     },
 });

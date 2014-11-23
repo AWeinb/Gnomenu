@@ -87,10 +87,10 @@ const Menu = new Lang.Class({
         // I want to know when the menu is closed and opened.
         this._onOpenStateId = this._section.connect('open-state-changed', Lang.bind(this, function() {
             if (this.isOpen) {
-                this._mediator._onMenuOpened();
+                this._mediator.notifyMenuOpened();
                 
             } else {
-                this._mediator._onMenuClosed();
+                this._mediator.notifyMenuClosed();
             }
             return true;
         }));
@@ -134,20 +134,19 @@ const Menu = new Lang.Class({
         topPane.add(new St.Label({ text: '' }), { expand: true, x_align: St.Align.MIDDLE, y_align: St.Align.MIDDLE });
         topPane.add(this._viewModePane.actor);
         topPane.add(new St.Label({ text: '' }), { expand: true, x_align: St.Align.MIDDLE, y_align: St.Align.MIDDLE });
-        topPane.add(this._searchField.actor, { expand: true, x_align: St.Align.END, y_align: St.Align.MIDDLE });
+        topPane.add(this._searchField.actor,    { expand: true, x_align: St.Align.END, y_align: St.Align.MIDDLE });
         
-        middlePane.add(this._sidebar.actor, { x_fill:false, y_fill: false, x_align: St.Align.START, y_align: St.Align.START });
-        middlePane.add(this._navigationArea.actor, { x_fill:false, y_fill: false, x_align: St.Align.START, y_align: St.Align.START });
-        middlePane.add(this._mainArea.actor, { x_fill:false, y_fill: false, x_align: St.Align.START, y_align: St.Align.START });
+        middlePane.add(this._sidebar.actor,        { x_fill: false, y_fill: false, x_align: St.Align.START, y_align: St.Align.START });
+        middlePane.add(this._navigationArea.actor, { x_fill: false, y_fill: false, x_align: St.Align.START, y_align: St.Align.START });
+        middlePane.add(this._mainArea.actor,       { x_fill: false, y_fill: false, x_align: St.Align.START, y_align: St.Align.START });
         
-        bottomPane.add(this._controlPane.actor, { x_fill:false, y_fill: false, x_align: St.Align.START, y_align: St.Align.START });
-        bottomPane.add(new St.Label({ text: '' }), { expand: true, x_align: St.Align.MIDDLE, y_align: St.Align.MIDDLE });
-        bottomPane.add(this._descriptionBox.actor, { expand: true, x_align: St.Align.END, y_align: St.Align.MIDDLE });
-        bottomPane.add(this._extensionPrefButton.actor, { x_fill:false, y_fill: false, x_align: St.Align.END, y_align: St.Align.MIDDLE });
+        bottomPane.add(this._controlPane.actor,         { x_fill: false, y_fill: false, x_align: St.Align.START, y_align: St.Align.MIDDLE });
+        bottomPane.add(this._descriptionBox.actor,      { x_fill: true, y_fill: false, x_align: St.Align.END, y_align: St.Align.MIDDLE, expand: true });
+        bottomPane.add(this._extensionPrefButton.actor, { x_fill: false, y_fill: false, x_align: St.Align.END, y_align: St.Align.MIDDLE });
         
-        mainBox.add(topPane, {x_fill:true, y_fill: false, expand: false});
-        mainBox.add(middlePane, {x_fill:true, y_fill: true, expand: true});
-        mainBox.add(bottomPane, {x_fill:true, y_fill: false, expand: false});
+        mainBox.add(topPane,    { x_fill: true, y_fill: false });
+        mainBox.add(middlePane, { x_fill: true, y_fill: true });
+        mainBox.add(bottomPane, { x_fill: true, y_fill: false });
         
         this._section.actor.add(mainBox);
         

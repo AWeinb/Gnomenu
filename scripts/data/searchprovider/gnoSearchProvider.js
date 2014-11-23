@@ -10,7 +10,7 @@ const Main = imports.ui.main;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const Log = Me.imports.scripts.misc.log;
 const AbstractSearchProvider = Me.imports.scripts.data.searchprovider.abstractSearchProvider.AbstractSearchProvider;
-const ProviderSearchResult = Me.imports.scripts.data.searchSystem.ProviderSearchResult;
+const SearchLaunchable = Me.imports.scripts.data.launchable.SearchLaunchable;
 
 
 const GNO_NAME = 'Gno the Gnominator';
@@ -82,7 +82,6 @@ const GnoSearchProvider = new Lang.Class({
 
     getResultMetas: function(gno) {
         if (gno && gno.length > 0) {
-            let id = gno[0];
             let name = gno[0];
             let description = "";
             let getIconFunc = function() {
@@ -95,7 +94,7 @@ const GnoSearchProvider = new Lang.Class({
                 this._dialog = new FortuneDialog(str, GNO_COMMAND);
             });
             
-            let res = new ProviderSearchResult(id, name, description, getIconFunc, launchFunc);
+            let res = new SearchLaunchable(name, description, getIconFunc, launchFunc);
             return [res];
         }
         return [];

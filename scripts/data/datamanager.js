@@ -7,109 +7,13 @@ const GLib = imports.gi.GLib;
 const GMenu = imports.gi.GMenu;
 const Gtk = imports.gi.Gtk;
 const Shell = imports.gi.Shell;
-const St = imports.gi.St;
-
-const Main = imports.ui.main;
-const Params = imports.misc.params;
 
 const Me = imports.misc.extensionUtils.getCurrentExtension();
+const Launchable = Me.imports.scripts.data.launchable.Launchable;
 const Log = Me.imports.scripts.misc.log;
 
 
 const MOSTUSED_REFRESH_TICK = 60000;
-const LaunchableType = { App: 11, File: 22 };
-
-
-const Launchable = new Lang.Class({
-
-    Name: 'GnoMenu.Launchable',
-
-
-    _init: function(appOrPath, name, icon, description) {
-        if (!appOrPath || !name || !icon) {
-            Log.logError("GnoMenu.Launchable", "_init", "Illegal Launchable Argument!");
-        }
-
-        if (typeof appOrPath == 'string') {
-            this._type = LaunchableType.File;
-            if (appOrPath.startsWith('file:///')) {
-                this._appOrFile = Gio.File.new_for_uri(appOrPath);
-            } else {
-                this._appOrFile = Gio.File.new_for_path(appOrPath);
-            }
-
-        } else {
-            this._type = LaunchableType.App;
-            this._appOrFile = appOrPath;
-        }
-
-        this._name = name;
-        this._icon = icon;
-        this._description = description;
-    },
-
-    getName: function() {
-        return this._name;
-    },
-
-    getIcon: function() {
-        return this._icon;
-    },
-
-    getStIcon: function(iconSize) {
-        return new St.Icon({ gicon: this._icon, icon_size: iconSize });
-    },
-
-    getDescription: function() {
-        return this._description;
-    },
-
-    getApp: function() {
-        let ret = null;
-        if (this._type == LaunchableType.App) {
-            ret = this._appOrFile;
-        }
-        return ret;
-    },
-
-    getUri: function() {
-        let ret = null;
-        if (this._type == LaunchableType.File) {
-            ret = this._appOrFile.get_uri();
-        }
-        return ret;
-    },
-
-    launch: function(openNew, params) {
-        params = Params.parse(params, { workspace: -1, timestamp: 0 });
-        
-        let launchContext = global.create_app_launch_context();
-        launchContext.set_timestamp(params.timestamp);
-
-        try {
-            if (this._type == LaunchableType.App) {
-                if (openNew) {
-                    this._appOrFile.open_new_window(params.workspace);
-                } else {
-                    this._appOrFile.activate_full(-1, params.timestamp);
-                }
-
-            } else if (this._type == LaunchableType.File) {
-                try {
-                    Gio.AppInfo.launch_default_for_uri(this._appOrFile.get_uri(), launchContext);
-
-                } catch (e if e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.NOT_MOUNTED)) {
-                    this._appOrFile.mount_enclosing_volume(0, null, null, function(file, result) {
-                        file.mount_enclosing_volume_finish(result);
-                        Gio.AppInfo.launch_default_for_uri(file.get_uri(), launchContext);
-                    });
-                }
-            }
-        } catch(e) {
-            Log.logError("GnoMenu.Launchable", "launch", e.message);
-        }
-    },
-});
 
 
 

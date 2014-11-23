@@ -3,7 +3,7 @@ const Lang = imports.lang;
 
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const Log = Me.imports.scripts.misc.log;
-const ProviderSearchResult = Me.imports.scripts.data.searchSystem.ProviderSearchResult;
+const SearchLaunchable = Me.imports.scripts.data.launchable.SearchLaunchable;
 
 
 const AbstractSearchProvider = new Lang.Class({
@@ -33,7 +33,7 @@ const AbstractSearchProvider = new Lang.Class({
     },
 
     getResultMetas: function(rawResults) {
-        return [];
+        return []; // SearchLaunchable
     },
 
     filterResults: function(results) {

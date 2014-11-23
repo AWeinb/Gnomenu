@@ -27,7 +27,9 @@ const MenuModel = Me.imports.scripts.menu.menuModel;
 const TextToggleButton = Me.imports.scripts.menu.components.elements.menubutton.TextToggleButton;
 const ButtonGroup = Me.imports.scripts.menu.components.elements.menubutton.ButtonGroup;
 
+const MOUSEBUTTON = Me.imports.scripts.menu.components.elements.menubutton.MOUSEBUTTON;
 const ECategoryID = MenuModel.ECategoryID;
+const ECategoryDescriptionID = MenuModel.ECategoryDescriptionID;
 
 
 /**
@@ -68,29 +70,29 @@ const CategoryPane = new Lang.Class({
         this.clear();
         
         // Creates the recent category button.
-        let recentCategoryBtn = new TextToggleButton(this.mediator, 'Recent', 'Recent', null);
+        let recentCategoryBtn = new TextToggleButton(this.mediator, ECategoryID.RECENTFILES, ECategoryID.RECENTFILES, ECategoryDescriptionID.RECENTFILES);
         recentCategoryBtn.setID(ECategoryID.RECENTFILES);
-        recentCategoryBtn.setOnLeftClickHandler(this._getCallback(ECategoryID.RECENTFILES));
+        recentCategoryBtn.setHandlerForButton(MOUSEBUTTON.MOUSE_LEFT, this._getCallback(ECategoryID.RECENTFILES));
 
         // Creates the web category button.
-        let webBookmarksCategoryBtn = new TextToggleButton(this.mediator, 'Web', 'Web', null);
+        let webBookmarksCategoryBtn = new TextToggleButton(this.mediator, ECategoryID.WEB, ECategoryID.WEB, ECategoryDescriptionID.WEB);
         webBookmarksCategoryBtn.setID(ECategoryID.WEB);
-        webBookmarksCategoryBtn.setOnLeftClickHandler(this._getCallback(ECategoryID.WEB));
+        webBookmarksCategoryBtn.setHandlerForButton(MOUSEBUTTON.MOUSE_LEFT, this._getCallback(ECategoryID.WEB));
 
         // Creates either the favorites category or the places category button.
         let tmpCategoryBtn = null;
         switch (this.menuSettings.getSidebarCategory()) {
 
             case ECategoryID.FAVORITES:
-                tmpCategoryBtn = new TextToggleButton(this.mediator, 'Places', 'Places', null);
+                tmpCategoryBtn = new TextToggleButton(this.mediator, ECategoryID.PLACES, ECategoryID.PLACES, ECategoryDescriptionID.PLACES);
                 tmpCategoryBtn.setID(ECategoryID.PLACES);
-                tmpCategoryBtn.setOnLeftClickHandler(this._getCallback(ECategoryID.PLACES));
+                tmpCategoryBtn.setHandlerForButton(MOUSEBUTTON.MOUSE_LEFT, this._getCallback(ECategoryID.PLACES));
                 break;
 
             case ECategoryID.PLACES:
-                tmpCategoryBtn = new TextToggleButton(this.mediator, 'Favorites', 'Favorites', null);
+                tmpCategoryBtn = new TextToggleButton(this.mediator, ECategoryID.FAVORITES, ECategoryID.FAVORITES, ECategoryDescriptionID.FAVORITES);
                 tmpCategoryBtn.setID(ECategoryID.FAVORITES);
-                tmpCategoryBtn.setOnLeftClickHandler(this._getCallback(ECategoryID.FAVORITES));
+                tmpCategoryBtn.setHandlerForButton(MOUSEBUTTON.MOUSE_LEFT, this._getCallback(ECategoryID.FAVORITES));
                 break;
 
             default:
@@ -115,11 +117,12 @@ const CategoryPane = new Lang.Class({
      */
     _getCallback: function(categoryID) {
         return Lang.bind(this, function(isSelected) {
+            log(categoryID, isSelected)
             let cat = this.menuSettings.getDefaultShortcutAreaCategory();
             if (isSelected) {
                 cat = categoryID;
             }
-            this.mediator.selectMenuCategory(cat);
+            this.mediator.notifyCategoryChange(cat);
 
             return true;
         });
@@ -160,7 +163,6 @@ const CategoryPane = new Lang.Class({
      * @function
      */
     selectCategory: function(categoryID) {
-        this._buttonGroup.clearButtonStates();
         // For this to work the buttons need to have their category id.
         this._buttonGroup.selectByID(categoryID);
     },

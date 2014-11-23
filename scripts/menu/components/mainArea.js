@@ -24,12 +24,14 @@ const St = imports.gi.St;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const Log = Me.imports.scripts.misc.log;
 const MenuModel = Me.imports.scripts.menu.menuModel;
-const ResultArea = Me.imports.scripts.menu.components.elements.searchResultArea.ResultArea;
+const ResultArea = Me.imports.scripts.menu.components.elements.searchresultArea.ResultArea;
 const ShortcutArea = Me.imports.scripts.menu.components.elements.shortcutArea.ShortcutArea;
 const UpdateableComponent = Me.imports.scripts.menu.components.component.UpdateableComponent;
 
 const EEventType = MenuModel.EEventType;
 const EViewMode = MenuModel.EViewMode;
+
+const MOUSEBUTTON = Me.imports.scripts.menu.components.elements.menubutton.MOUSEBUTTON;
 
 /** @constant */
 const BUTTON_SWITCH_WAIT_TIME = 50;
@@ -250,11 +252,11 @@ const MainArea = new Lang.Class({
         }
     },
     
-    activateSelected: function() {
+    activateSelected: function(button, params) {
         if (this._resultArea.isVisible()) {
-            this._resultArea.activateSelected();
+            this._resultArea.activateSelected(button, params);
         } else {
-            this._shortcutArea.activateSelected();
+            this._shortcutArea.activateSelected(button, params);
         }
     },
     
@@ -330,7 +332,12 @@ const MainArea = new Lang.Class({
                 break;
             
             case Clutter.KEY_Return:
-                this.activateSelected();
+                if (firstCall) {
+                    this.selectFirst();
+                    this.activateSelected(MOUSEBUTTON.MOUSE_LEFT);
+                } else {
+                    this.activateSelected(MOUSEBUTTON.MOUSE_LEFT);
+                }
                 break;
         }
 

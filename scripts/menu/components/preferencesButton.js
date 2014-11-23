@@ -25,6 +25,7 @@ const MenuModel = Me.imports.scripts.menu.menuModel;
 const Component = Me.imports.scripts.menu.components.component.Component;
 const IconButton = Me.imports.scripts.menu.components.elements.menubutton.IconButton;
 
+const MOUSEBUTTON = Me.imports.scripts.menu.components.elements.menubutton.MOUSEBUTTON;
 
 /**
  * @class PreferencesButton: This Class create the preferences button in the top right corner.
@@ -62,21 +63,21 @@ const PreferencesButton = new Lang.Class({
         this.clear();
         
         let iconSize = this.menuSettings.getLayoutDependendIconsize();
-        let extensionPreferencesBtn = new IconButton(this.mediator, 'control-center-alt-symbolic', iconSize, 'Preferences', null);
+        let extensionPreferencesBtn = new IconButton(this.mediator, 'control-center-alt-symbolic', iconSize, 'Settings', 'Settings Description');
 
         // The normal user would probably expect that the button opens the system controls.
         // So now a left click opens the main controls and a middle click the extension prefs.
-        extensionPreferencesBtn.setOnLeftClickHandler(Lang.bind(this, function() {
+        extensionPreferencesBtn.setHandlerForButton(MOUSEBUTTON.MOUSE_LEFT, Lang.bind(this, function() {
             this.mediator.showSystemPreferences();
         }));
 
-        extensionPreferencesBtn.setOnMiddleClickHandler(Lang.bind(this, function() {
+        extensionPreferencesBtn.setHandlerForButton(MOUSEBUTTON.MOUSE_MIDDLE, Lang.bind(this, function() {
             this.mediator.showPreferences();
         }));
 
         // I dont think we need a button group for this one.
 
-        this.actor.set_child(extensionPreferencesBtn.actor, { x_fill: false, y_fill: false, x_align: St.Align.MIDDLE, y_align: St.Align.MIDDLE });
+        this.actor.set_child(extensionPreferencesBtn.actor);
     },
 
     /**

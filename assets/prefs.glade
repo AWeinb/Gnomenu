@@ -50,7 +50,7 @@
                         <property name="can_focus">False</property>
                         <property name="halign">start</property>
                         <property name="margin_bottom">5</property>
-                        <property name="label" translatable="yes" context="headlabel_nb1_misc" comments="Label for a settings area for general panel and menu settings.">headlabel_nb1_misc</property>
+                        <property name="label" translatable="yes" context="label" comments="Label for a settings area for general panel and menu settings.">Common Options</property>
                         <attributes>
                           <attribute name="style" value="normal"/>
                           <attribute name="weight" value="bold"/>
@@ -82,7 +82,7 @@
                             <property name="can_focus">False</property>
                             <property name="halign">start</property>
                             <property name="xalign">0</property>
-                            <property name="label" translatable="yes" context="label_nb1_disableMainCorner" comments="Label for a switch to deactivate the main hot corner.">label_nb1_disableMainCorner</property>
+                            <property name="label" translatable="yes" context="label" comments="Label for a switch to deactivate the main hot corner.">Disable Main-Hotcorner</property>
                           </object>
                           <packing>
                             <property name="left_attach">0</property>
@@ -108,7 +108,7 @@
                         </child>
                         <child>
                           <object class="GtkCheckButton" id="nb1_miscSettingsBox_grid_label3">
-                            <property name="label" translatable="yes" context="label_nb1_menuShorcutKey" comments="A label of a checkbutton and a textfield to set the shortcut key.">label_nb1_menuShorcutKey</property>
+                            <property name="label" translatable="yes" context="label" comments="A label of a checkbutton and a textfield to set the shortcut key.">Menu Shorcut-Key</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">False</property>
@@ -130,7 +130,7 @@
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
                             <property name="halign">start</property>
-                            <property name="label" translatable="yes" context="label_nb1_disableMenuHotspot" comments="Label for a switch to deactivate the menu button hotspot.">label_nb1_disableMenuHotspot</property>
+                            <property name="label" translatable="yes" context="label" comments="Label for a switch to deactivate the menu button hotspot.">Disable Menu-Hotspot</property>
                           </object>
                           <packing>
                             <property name="left_attach">0</property>
@@ -204,7 +204,7 @@
                           <object class="GtkLabel" id="nb1_menuSettingsBox_label">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
-                            <property name="label" translatable="yes" context="headlabel_nb1_menu" comments="A label for a checkbutton and an area for settings for a specific panel button. (menu)">headlabel_nb1_menu</property>
+                            <property name="label" translatable="yes" context="label" comments="A label for a checkbutton and an area for settings for a specific panel button. (menu)">Menubutton Options</property>
                             <attributes>
                               <attribute name="style" value="normal"/>
                               <attribute name="weight" value="bold"/>
@@ -238,7 +238,7 @@
                             <property name="can_focus">False</property>
                             <property name="halign">start</property>
                             <property name="xalign">0</property>
-                            <property name="label" translatable="yes" context="label_nb1_setMenuBtnText" comments="Label for a textfield to set the menu button text.">label_nb1_setMenuBtnText</property>
+                            <property name="label" translatable="yes" context="label" comments="Label for a textfield to set the menu button text.">Menubutton Text</property>
                           </object>
                           <packing>
                             <property name="left_attach">0</property>
@@ -249,7 +249,7 @@
                         </child>
                         <child>
                           <object class="GtkCheckButton" id="nb1_menuSettingsBox_grid_label2">
-                            <property name="label" translatable="yes" context="label_nb1_menuBtnIcon" comments="A label of a checkbutton and a textfield for setting the menu button icon name.">label_nb1_menuBtnIcon</property>
+                            <property name="label" translatable="yes" context="label" comments="A label of a checkbutton and a textfield for setting the menu button icon name.">Menubutton Icon</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">False</property>
@@ -330,7 +330,7 @@
                           <object class="GtkLabel" id="nb1_appsSettingsBox_label">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
-                            <property name="label" translatable="yes" context="headlabel_nb1_apps" comments="A label for a checkbutton and an area for settings for a specific panel button. (apps)">headlabel_nb1_apps</property>
+                            <property name="label" translatable="yes" context="label" comments="A label for a checkbutton and an area for settings for a specific panel button. (apps)">Appsbutton Options</property>
                             <attributes>
                               <attribute name="style" value="normal"/>
                               <attribute name="weight" value="bold"/>
@@ -364,7 +364,7 @@
                             <property name="can_focus">False</property>
                             <property name="halign">start</property>
                             <property name="xalign">0</property>
-                            <property name="label" translatable="yes" context="label_nb1_setAppsBtnText" comments="Label for a textfield to set the apps button text.">label_nb1_setAppsBtnText</property>
+                            <property name="label" translatable="yes" context="label" comments="Label for a textfield to set the apps button text.">Appsbutton Text</property>
                           </object>
                           <packing>
                             <property name="left_attach">0</property>
@@ -375,7 +375,7 @@
                         </child>
                         <child>
                           <object class="GtkCheckButton" id="nb1_appsSettingsBox_grid_label2">
-                            <property name="label" translatable="yes" context="label_nb1_appsBtnIcon" comments="A label of a checkbutton and a textfield for setting the apps button icon name.">label_nb1_appsBtnIcon</property>
+                            <property name="label" translatable="yes" context="label" comments="A label of a checkbutton and a textfield for setting the apps button icon name.">Appsbutton Icon</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">False</property>
@@ -456,7 +456,7 @@
                           <object class="GtkLabel" id="nb1_workspaceSettingsBox_label">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
-                            <property name="label" translatable="yes" context="headlabel_nb1_workspace" comments="A label for a checkbutton and an area for settings for a specific panel button. (workspace)">headlabel_nb1_workspace</property>
+                            <property name="label" translatable="yes" context="label" comments="A label for a checkbutton and an area for settings for a specific panel button. (workspace)">Workspacebutton Options</property>
                             <attributes>
                               <attribute name="style" value="normal"/>
                               <attribute name="weight" value="bold"/>
@@ -517,7 +517,7 @@
                             <property name="can_focus">False</property>
                             <property name="halign">start</property>
                             <property name="xalign">0</property>
-                            <property name="label" translatable="yes" context="label_nb1_setWorkspaceBtnText" comments="Label for a textfield to set the workspace button text.">label_nb1_setWorkspaceBtnText</property>
+                            <property name="label" translatable="yes" context="label" comments="Label for a textfield to set the workspace button text.">Workspacebutton Text</property>
                           </object>
                           <packing>
                             <property name="left_attach">0</property>
@@ -528,7 +528,7 @@
                         </child>
                         <child>
                           <object class="GtkCheckButton" id="nb1_workspaceSettingsBox_grid_label2">
-                            <property name="label" translatable="yes" context="label_nb1_workspaceBtnIcon" comments="A label of a checkbutton and a textfield for setting the workspace button icon name.">label_nb1_workspaceBtnIcon</property>
+                            <property name="label" translatable="yes" context="label" comments="A label of a checkbutton and a textfield for setting the workspace button icon name.">Workspacebutton Icon</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">False</property>
@@ -574,7 +574,7 @@
         <property name="margin_right">5</property>
         <property name="xalign">0.05000000074505806</property>
         <property name="ypad">10</property>
-        <property name="label" translatable="yes" context="nb_label_panelsettings" comments="Notebook label 1">nb_label_panelsettings</property>
+        <property name="label" translatable="yes" context="button" comments="Notebook label 1">Panel Settings</property>
         <property name="single_line_mode">True</property>
       </object>
       <packing>
@@ -611,7 +611,7 @@
                         <property name="can_focus">False</property>
                         <property name="halign">start</property>
                         <property name="margin_bottom">5</property>
-                        <property name="label" translatable="yes" context="headlabel_nb2_sidebar" comments="head of elements to modify sidebar options.">headlabel_nb2_sidebar</property>
+                        <property name="label" translatable="yes" context="label" comments="head of elements to modify sidebar options.">Sidebar Options</property>
                         <attributes>
                           <attribute name="style" value="normal"/>
                           <attribute name="weight" value="bold"/>
@@ -643,7 +643,7 @@
                             <property name="can_focus">False</property>
                             <property name="halign">start</property>
                             <property name="xalign">0</property>
-                            <property name="label" translatable="yes" context="label_nb2_activateSidebar" comments="Label for switch to activate sidebar.">label_nb2_activateSidebar</property>
+                            <property name="label" translatable="yes" context="label" comments="Label for switch to activate sidebar.">Activate Sidebar</property>
                           </object>
                           <packing>
                             <property name="left_attach">0</property>
@@ -672,7 +672,7 @@
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
                             <property name="halign">start</property>
-                            <property name="label" translatable="yes" context="label_nb2_sidebarCategory" comments="Label for combobox to set default sidebar category.">label_nb2_sidebarCategory</property>
+                            <property name="label" translatable="yes" context="label" comments="Label for combobox to set default sidebar category.">Default Sidebar Category</property>
                           </object>
                           <packing>
                             <property name="left_attach">0</property>
@@ -686,7 +686,7 @@
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
                             <property name="halign">start</property>
-                            <property name="label" translatable="yes" context="label_nb2_sidebarIconsize" comments="Label for combobox to set sidebar iconsize.">label_nb2_sidebarIconsize</property>
+                            <property name="label" translatable="yes" context="label" comments="Label for combobox to set sidebar iconsize.">Sidebar Iconsize</property>
                           </object>
                           <packing>
                             <property name="left_attach">0</property>
@@ -703,8 +703,8 @@
                             <property name="halign">end</property>
                             <property name="active">0</property>
                             <items>
-                              <item translatable="yes" comments="Entry of a combobox. Name of a category." context="category_favorites">category_favorites</item>
-                              <item translatable="yes" comments="Entry of a combobox. Name of a category." context="category_places">category_places</item>
+                              <item translatable="yes" comments="Entry of a combobox. Name of a category." context="combobox">Favorites</item>
+                              <item translatable="yes" comments="Entry of a combobox. Name of a category." context="combobox">Places</item>
                             </items>
                             <signal name="changed" handler="_changeSidebarCategory" swapped="no"/>
                           </object>
@@ -768,7 +768,7 @@
                         <property name="can_focus">False</property>
                         <property name="halign">start</property>
                         <property name="margin_bottom">5</property>
-                        <property name="label" translatable="yes" context="headlabel_nb2_menuSettings" comments="head of menu settings.">headlabel_nb2_menuSettings</property>
+                        <property name="label" translatable="yes" context="label" comments="head of menu settings.">Menu Options</property>
                         <attributes>
                           <attribute name="style" value="normal"/>
                           <attribute name="weight" value="bold"/>
@@ -800,7 +800,7 @@
                             <property name="can_focus">False</property>
                             <property name="halign">start</property>
                             <property name="xalign">0</property>
-                            <property name="label" translatable="yes" context="label_nb2_menuLayout" comments="Label for combobox to set menu layout.">label_nb2_menuLayout</property>
+                            <property name="label" translatable="yes" context="label" comments="Label for combobox to set menu layout.">Menu Layout</property>
                           </object>
                           <packing>
                             <property name="left_attach">0</property>
@@ -814,7 +814,7 @@
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
                             <property name="halign">start</property>
-                            <property name="label" translatable="yes" context="label_nb2_menuStartCategory" comments="Label for combobox to set menu startup category.">label_nb2_menuStartCategory</property>
+                            <property name="label" translatable="yes" context="label" comments="Label for combobox to set menu startup category.">Default Menu Category</property>
                           </object>
                           <packing>
                             <property name="left_attach">0</property>
@@ -828,7 +828,7 @@
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
                             <property name="halign">start</property>
-                            <property name="label" translatable="yes" context="label_nb2_menuDefaultViewMode" comments="Label for combobox to set the default viewmode.">label_nb2_menuDefaultViewMode</property>
+                            <property name="label" translatable="yes" context="label" comments="Label for combobox to set the default viewmode.">Menu View-Mode</property>
                           </object>
                           <packing>
                             <property name="left_attach">0</property>
@@ -842,7 +842,7 @@
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
                             <property name="halign">start</property>
-                            <property name="label" translatable="yes" context="label_nb2_menuCatSelectMethod" comments="Label for combobox to set the category selection method.">label_nb2_menuCatSelectMethod</property>
+                            <property name="label" translatable="yes" context="label" comments="Label for combobox to set the category selection method.">Category Selection Method</property>
                           </object>
                           <packing>
                             <property name="left_attach">0</property>
@@ -856,7 +856,7 @@
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
                             <property name="halign">start</property>
-                            <property name="label" translatable="yes" context="label_nb2_applistIconsize" comments="Label for combobox to set the iconsize of the applist.">label_nb2_applistIconsize</property>
+                            <property name="label" translatable="yes" context="label" comments="Label for combobox to set the iconsize of the applist.">Applist Iconsize</property>
                           </object>
                           <packing>
                             <property name="left_attach">0</property>
@@ -870,7 +870,7 @@
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
                             <property name="halign">start</property>
-                            <property name="label" translatable="yes" context="label_nb2_appgridIconsize" comments="Label for combobox to set the iconsize of the appgrid.">label_nb2_appgridIconsize</property>
+                            <property name="label" translatable="yes" context="label" comments="Label for combobox to set the iconsize of the appgrid.">Appgrid Iconsize</property>
                           </object>
                           <packing>
                             <property name="left_attach">0</property>
@@ -887,9 +887,9 @@
                             <property name="halign">end</property>
                             <property name="active">0</property>
                             <items>
-                              <item translatable="yes" comments="Entry of a combobox." context="menuLayout_large">menuLayout_large</item>
-                              <item translatable="yes" comments="Entry of a combobox." context="menuLayout_medium">menuLayout_medium</item>
-                              <item translatable="yes" comments="Entry of a combobox." context="menuLayout_small">menuLayout_small</item>
+                              <item translatable="yes" comments="Entry of a combobox." context="combobox">Large</item>
+                              <item translatable="yes" comments="Entry of a combobox." context="combobox">Medium</item>
+                              <item translatable="yes" comments="Entry of a combobox." context="combobox">Small</item>
                             </items>
                             <signal name="changed" handler="_changeMenuLayout" swapped="no"/>
                           </object>
@@ -908,8 +908,8 @@
                             <property name="halign">end</property>
                             <property name="active">0</property>
                             <items>
-                              <item translatable="yes" comments="Entry of a combobox." context="category_mostUsed">category_mostUsed</item>
-                              <item translatable="yes" comments="Entry for a combobox." context="category_allApps">category_allApps</item>
+                              <item translatable="yes" comments="Entry of a combobox." context="combobox">Most Used</item>
+                              <item translatable="yes" comments="Entry for a combobox." context="combobox">All Apps</item>
                             </items>
                             <signal name="changed" handler="_changeMenuStartCategory" swapped="no"/>
                           </object>
@@ -928,8 +928,8 @@
                             <property name="halign">end</property>
                             <property name="active">0</property>
                             <items>
-                              <item translatable="yes" comments="Entry of a combobox." context="viewMode_list">viewMode_list</item>
-                              <item translatable="yes" comments="Entry of a combobox." context="viewMode_grid">viewMode_grid</item>
+                              <item translatable="yes" comments="Entry of a combobox." context="combobox">List Mode</item>
+                              <item translatable="yes" comments="Entry of a combobox." context="combobox">Grid Mode</item>
                             </items>
                             <signal name="changed" handler="_changeMenuDefaultViewMode" swapped="no"/>
                           </object>
@@ -948,8 +948,8 @@
                             <property name="halign">end</property>
                             <property name="active">0</property>
                             <items>
-                              <item translatable="yes" comments="Entry of a combobox." context="selectionMethod_click">selectionMethod_click</item>
-                              <item translatable="yes" comments="Entry of a combobox." context="selectionMethod_hover">selectionMethod_hover</item>
+                              <item translatable="yes" comments="Entry of a combobox." context="combobox">Left Click</item>
+                              <item translatable="yes" comments="Entry of a combobox." context="combobox">Mouse Hover</item>
                             </items>
                             <signal name="changed" handler="_changeMenuCatSelectMethod" swapped="no"/>
                           </object>
@@ -1037,7 +1037,7 @@
                         <property name="can_focus">False</property>
                         <property name="halign">start</property>
                         <property name="margin_bottom">5</property>
-                        <property name="label" translatable="yes" context="headlabel_nb2_sidebar" comments="head of elements to modify sidebar options.">headlabel_nb2_sidebar</property>
+                        <property name="label" translatable="yes" context="label" comments="head of elements to modify sidebar options.">Search Options</property>
                         <attributes>
                           <attribute name="style" value="normal"/>
                           <attribute name="weight" value="bold"/>
@@ -1069,7 +1069,7 @@
                             <property name="can_focus">False</property>
                             <property name="halign">start</property>
                             <property name="xalign">0</property>
-                            <property name="label" translatable="yes" context="label_nb2_searchResultCount" comments="Label for a spintextbox to set the number of shown search results.">label_nb2_searchResultCount</property>
+                            <property name="label" translatable="yes" context="label" comments="Label for a spintextbox to set the number of shown search results.">Max. Resultcount</property>
                           </object>
                           <packing>
                             <property name="left_attach">0</property>
@@ -1135,7 +1135,7 @@
         <property name="margin_right">5</property>
         <property name="xalign">0.05000000074505806</property>
         <property name="ypad">10</property>
-        <property name="label" translatable="yes" context="nb_label_menusettings" comments="Notebook label 2">nb_label_menusettings</property>
+        <property name="label" translatable="yes" context="button" comments="Notebook label 2">Menu Settings</property>
         <property name="single_line_mode">True</property>
       </object>
       <packing>
@@ -1197,7 +1197,7 @@
         <property name="margin_right">5</property>
         <property name="xalign">0.05000000074505806</property>
         <property name="ypad">10</property>
-        <property name="label" translatable="yes" context="nb_label_about" comments="Notebook label 3">nb_label_about</property>
+        <property name="label" translatable="yes" context="button" comments="Notebook label 3">About</property>
         <property name="single_line_mode">True</property>
       </object>
       <packing>

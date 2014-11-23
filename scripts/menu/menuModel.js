@@ -40,17 +40,46 @@ const EEventType = {
     
 };
 
+const ECategoryNum = {
+        
+    ALL_APPS:    50,
+    MOST_USED:   51,
+    FAVORITES:   52,
+    RECENTFILES: 53,
+    PLACES:      54,
+    DEVICES:     55,
+    NETDEVICES:  56,
+    BOOKMARKS:   57,
+    WEB:         58,
+    
+};
+
 const ECategoryID = {
         
-    ALL_APPS:    "category_allApps",
-    MOST_USED:   "category_mostUsed",
-    FAVORITES:   "category_favorites",
-    RECENTFILES: "category_recent",
-    PLACES:      "category_places",
-    DEVICES:     "category_devices",
-    NETDEVICES:  "category_netdevices",
-    BOOKMARKS:   "category_bookmarks",
-    WEB:         "category_web",
+    ALL_APPS:    "All Apps",
+    MOST_USED:   "Most-Used",
+    FAVORITES:   "Favorites",
+    RECENTFILES: "Recent",
+    PLACES:      "Places",
+    DEVICES:     "Devices",
+    NETDEVICES:  "Network",
+    BOOKMARKS:   "Bookmarks",
+    WEB:         "Web",
+    
+};
+
+const ECategoryDescriptionID = {
+        
+    ALL_APPS:    "All-Apps Description",
+    MOST_USED:   "Most-Used Description",
+    FAVORITES:   "Favorites Description",
+    RECENTFILES: "Recent-Files Description",
+    PLACES:      "Places Description",
+    DEVICES:     "Devices Description",
+    NETDEVICES:  "Network-Devices Description",
+    BOOKMARKS:   "Bookmarks Description",
+    WEB:         "Web-Bookmarks Description",
+    OTHER:       "Category Description",
     
 };
 
@@ -73,20 +102,6 @@ const EMenuLayout = {
     LARGE:  40,
     MEDIUM: 41,
     SMALL:  42,
-    
-};
-
-const ECategoryNum = {
-        
-    ALL_APPS:    50,
-    MOST_USED:   51,
-    FAVORITES:   52,
-    RECENTFILES: 53,
-    PLACES:      54,
-    DEVICES:     55,
-    NETDEVICES:  56,
-    BOOKMARKS:   57,
-    WEB:         58,
     
 };
 

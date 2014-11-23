@@ -6,7 +6,7 @@ const Params = imports.misc.params;
 
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const AbstractSearchProvider = Me.imports.scripts.data.searchprovider.abstractSearchProvider.AbstractSearchProvider;
-const ProviderSearchResult = Me.imports.scripts.data.searchSystem.ProviderSearchResult;
+const SearchLaunchable = Me.imports.scripts.data.launchable.SearchLaunchable;
 
 
 const AppSearchProvider = new Lang.Class({
@@ -57,7 +57,7 @@ const AppSearchProvider = new Lang.Class({
                     }
                 };
                 
-                let res = new ProviderSearchResult(app, app.get_name(), app.get_description(), getIconFunc, launchFunc);
+                let res = new SearchLaunchable(app.get_name(), app.get_description(), getIconFunc, launchFunc);
                 metas.push(res);
             }
         }

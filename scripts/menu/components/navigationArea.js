@@ -28,12 +28,15 @@ const MenuModel = Me.imports.scripts.menu.menuModel;
 const Log = Me.imports.scripts.misc.log;
 const GnoMenuThumbnailsBox = Me.imports.scripts.menu.components.elements.workspaceThumbnail.GnoMenuThumbnailsBox;
 const TextButton = Me.imports.scripts.menu.components.elements.menubutton.TextButton;
+const ButtonGroup = Me.imports.scripts.menu.components.elements.menubutton.ButtonGroup;
 const UpdateableComponent = Me.imports.scripts.menu.components.component.UpdateableComponent;
 
 const ECategoryID = MenuModel.ECategoryID;
+const ECategoryDescriptionID = MenuModel.ECategoryDescriptionID;
 const EEventType = MenuModel.EEventType;
 const ESelectionMethod = MenuModel.ESelectionMethod;
 
+const MOUSEBUTTON = Me.imports.scripts.menu.components.elements.menubutton.MOUSEBUTTON;
 /** @constant */
 const WORKSPACE_SWITCH_WAIT_TIME = 200;
 /** @constant */
@@ -137,7 +140,6 @@ const WorkspaceBox = new Lang.Class({
         this._thumbnailsBox = new GnoMenuThumbnailsBox(mediator);
         this.actor.add(this._thumbnailsBox.actor);
         
-        this._thumbnailsBox.createThumbnails();
         // Because the size of the windows does not affect the actor we fix the height.
         this._allocationID = this.actor.connect('notify::allocation', Lang.bind(this, function() {
             // This needs to happen after allocation to prevent St errors.
@@ -148,13 +150,17 @@ const WorkspaceBox = new Lang.Class({
     },
     
     show: function() {
-        this._thumbnailsBox.createThumbnails();
-        this.actor.show();
+        if (!this.isVisible()) {
+            this._thumbnailsBox.createThumbnails();
+            this.actor.show();
+        }
     },
     
     hide: function() {
-        this._thumbnailsBox.destroyThumbnails();
-        this.actor.hide();
+        if (this.isVisible()) {
+            this._thumbnailsBox.destroyThumbnails();
+            this.actor.hide();
+        }
     },
 
     activateFirst: function() {
@@ -269,70 +275,46 @@ const CategoryBox = new Lang.Class({
 
         this._mediator = mediator;
         this._model = model;
-        this._categoryButtonMap = {};
-        this._selected = null;
+        
+        this._buttonGroup = new ButtonGroup();
+        this._buttonGroup.deactivateDeselection();
     },
     
     activateFirst: function() {
-        let keys = Object.keys(this._categoryButtonMap);
-        let nextID = keys[0];
-
-        this.activateCategory(nextID);
+        this._buttonGroup.selectFirst();
+        this._buttonGroup.activateSelected(null);
     },
-
-    /**
-     * @description Activates the next category.
-     * @public
-     * @function
-     */
+    
     activateNext: function() {
-        if (!this._selected) {
-            return;
-        }
-
-        let keys = Object.keys(this._categoryButtonMap);
-        let selectedIdx = keys.indexOf(this._selected);
-        let nextIdx = (selectedIdx + 1) % keys.length;
-        let nextID = keys[nextIdx];
-
-        this.activateCategory(nextID);
+        this._buttonGroup.selectNext();
+        this._buttonGroup.activateSelected(null);
     },
-
-    /**
-     * @description Activates the previous category.
-     * @public
-     * @function
-     */
+    
     activatePrevious: function() {
-        if (!this._selected) {
-            return;
-        }
-
-        let keys = Object.keys(this._categoryButtonMap);
-        let selectedIdx = keys.indexOf(this._selected);
-        let previousIdx = selectedIdx - 1;
-        if (previousIdx < 0) {
-            previousIdx += keys.length;
-        }
-        let previousID = keys[previousIdx];
-
-        this.activateCategory(previousID);
+        this._buttonGroup.selectPrevious();
+        this._buttonGroup.activateSelected(null);
+    },
+    
+    activateCategory: function(categoryID) {
+        this._buttonGroup.selectByID(categoryID);
+        this._buttonGroup.activateSelected(null);
+    },
+    
+    selectCategory: function(categoryID) {
+        this._buttonGroup.selectByID(categoryID);
     },
     
     getActivatedElementBounds: function() {
-        if (!this._selected) {
-            return null;
-        }
+        let btn = this._buttonGroup.getSelectedButton();
         
         let btnBox = null;
-        if (this._categoryButtonMap[this._selected]) {
-            let btn = this._categoryButtonMap[this._selected];
+        if (btn && btn.actor) {
             btnBox = btn.actor.get_allocation_box();
         }
         
         return btnBox;
     },
-
+    
     /**
      * @description Adds a category button.
      * @param {Enum} categoryID The category id.
@@ -342,57 +324,33 @@ const CategoryBox = new Lang.Class({
      * @function
      */
     addCategory: function(categoryID, categoryNameID, categoryDescriptionID) {
-        if (this._categoryButtonMap[categoryID]) {
-            return;
-        }
-
         if (!categoryNameID) {
             categoryNameID = categoryID;
         }
 
         // The button can be activated with click or hover actions.
         let btn = new TextButton(this._mediator, categoryNameID, categoryNameID, categoryDescriptionID);
+        btn.setID(categoryID);
         switch (this._mediator.getMenuSettings().getCategorySelectionMethod()) {
 
             case ESelectionMethod.CLICK:
-                btn.setOnLeftClickHandler(Lang.bind(this, function() {
-                    this._mediator.selectMenuCategory(categoryID);
+                btn.setHandlerForButton(MOUSEBUTTON.MOUSE_LEFT, Lang.bind(this, function() {
+                    this._mediator.notifyCategoryChange(categoryID);
                 }));
                 break;
 
             case ESelectionMethod.HOVER:
                 btn.setOnHoverHandler(Lang.bind(this, function() {
-                    this._mediator.selectMenuCategory(categoryID);
+                    this._mediator.notifyCategoryChange(categoryID);
                 }));
                 break;
 
             default:
                 break;
         }
-        this._categoryButtonMap[categoryID] = btn;
+        
+        this._buttonGroup.addButton(btn);
         this.actor.add_actor(btn.actor);
-    },
-
-    /**
-     * @description Selects the button connected to the category.
-     * @param {Enum} categoryID The category id.
-     * @public
-     * @function
-     */
-    selectCategory: function(categoryID) {
-        for each (let btn in this._categoryButtonMap) {
-            btn.deselect();
-        }
-
-        if (categoryID && this._categoryButtonMap[categoryID]) {
-            this._categoryButtonMap[categoryID].select();
-            this._selected = categoryID;
-        }
-    },
-    
-    activateCategory: function(categoryID) {
-        this.selectCategory(categoryID);
-        this._mediator.selectMenuCategory(categoryID);
     },
 
     /**
@@ -401,11 +359,13 @@ const CategoryBox = new Lang.Class({
      * @function
      */
     clear: function() {
-        for each (let btn in this._categoryButtonMap) {
-            btn.actor.destroy();
+        let children = this.actor.get_children();
+        for each (let btn in children) {
+            btn.destroy();
         }
-        this._categoryButtonMap = {};
-        this._selected = null;
+        
+        this._buttonGroup.reset();
+        this._buttonGroup.deactivateDeselection();
     },
 
     /**
@@ -496,13 +456,13 @@ const NavigationArea = new Lang.Class({
         switch (this.menuSettings.getDefaultShortcutAreaCategory()) {
 
             case ECategoryID.MOST_USED:
-                this._categoryBox.addCategory(ECategoryID.MOST_USED, ECategoryID.MOST_USED, null);
-                this._categoryBox.addCategory(ECategoryID.ALL_APPS, ECategoryID.ALL_APPS, null);
+                this._categoryBox.addCategory(ECategoryID.MOST_USED, ECategoryID.MOST_USED, ECategoryDescriptionID.MOST_USED);
+                this._categoryBox.addCategory(ECategoryID.ALL_APPS, ECategoryID.ALL_APPS, ECategoryDescriptionID.ALL_APPS);
                 break;
 
             case ECategoryID.ALL_APPS:
-                this._categoryBox.addCategory(ECategoryID.ALL_APPS, ECategoryID.ALL_APPS, null);
-                this._categoryBox.addCategory(ECategoryID.MOST_USED, ECategoryID.MOST_USED, null);
+                this._categoryBox.addCategory(ECategoryID.ALL_APPS, ECategoryID.ALL_APPS, ECategoryDescriptionID.ALL_APPS);
+                this._categoryBox.addCategory(ECategoryID.MOST_USED, ECategoryID.MOST_USED, ECategoryDescriptionID.MOST_USED);
                 break;
 
             default:
@@ -512,7 +472,7 @@ const NavigationArea = new Lang.Class({
         let categories = this.model.getApplicationCategories();
         for (let categoryID in categories) {
             let categoryNameID = categories[categoryID];
-            this._categoryBox.addCategory(categoryID, categoryNameID, null);
+            this._categoryBox.addCategory(categoryID, categoryNameID, ECategoryDescriptionID.OTHER);
         }
 
         // I dont expect the update method to be called while the user uses the menu.
@@ -641,8 +601,8 @@ const NavigationArea = new Lang.Class({
      */
     selectCategory: function(categoryID) {
         this._categoryBox.selectCategory(categoryID);
-        this._workspaceBox.hide();
         this._categoryBox.show();
+        this._workspaceBox.hide();
     },
     
     activateFirst: function() {
@@ -753,7 +713,7 @@ const NavigationArea = new Lang.Class({
                 break;
 
             case Clutter.Left:
-                this._categoryBox.activateFirst();
+                this.activateFirst();
                 if (!firstCall) {
                     this.mediator.moveKeyFocusLeft(actor, event);
                 }

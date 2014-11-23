@@ -49,9 +49,9 @@ const MenuMediator = new Lang.Class({
         this._menu = menu;
 
         this._menuSettings = new MenuSettings(settings);
-        
         this._session = new GnomeSession.SessionManager();
 
+        // Scroll down for getters/setters.
         this._categoryPane = null;
         this._viewModePane = null;
         this._searchField = null;
@@ -76,111 +76,38 @@ const MenuMediator = new Lang.Class({
         return this._menuSettings;
     },
 
-    // #########################################################################
-    // --
-    // Setter
-
-    /**
-     * @description This setter sets the category pane, the component above the
-     *              category list.
-     * @param {CategoryPane} component
-     * @public
-     * @function
-     */
-    setCategoryPane: function(component) {
-        this._categoryPane = component;
-    },
-
-    /**
-     * @description This setter sets the viewmode pane, the component above the
-     *              shortcut area.
-     * @param {ViewModePane} component
-     * @public
-     * @function
-     */
-    setViewModePane: function(component) {
-        this._viewModePane = component;
-    },
-
-    /**
-     * @description This setter sets the searchfield, the component above the
-     *              shortcut area.
-     * @param {SearchField} component
-     * @public
-     * @function
-     */
-    setSearchField: function(component) {
-        this._searchField = component;
-    },
-
-    /**
-     * @description This setter sets the sidebar.
-     * @param {Sidebar} component
-     * @public
-     * @function
-     */
-    setSidebar: function(component) {
-        this._sidebar = component;
-    },
-
-    /**
-     * @description This setter sets the navigation area, the component with the
-     *              category list.
-     * @param {NavigationArea} component
-     * @public
-     * @function
-     */
-    setNavigationArea: function(component) {
-        this._navigationArea = component;
-    },
-
-    /**
-     * @description This setter sets the main area, the component with the
-     *              shortcuts or searchresults.
-     * @param {MainArea} component
-     * @public
-     * @function
-     */
-    setMainArea: function(component) {
-        this._mainArea = component;
-    },
-
-    /**
-     * @description This setter sets the control pane, the component with
-     *              shutdown and logout buttons.
-     * @param {ControlPane} component
-     * @public
-     * @function
-     */
-    setControlPane: function(component) {
-        this._controlPane = component;
-    },
-
-    /**
-     * @description This setter sets the description box, the component which
-     *              provides information about hovered buttons.
-     * @param {DescriptionBox} component
-     * @public
-     * @function
-     */
-    setDescriptionBox: function(component) {
-        this._descriptionBox = component;
-    },
-
-    /**
-     * @description This setter sets the Settings button, the component right corner.
-     * @param {ExtensionPrefButton} component
-     * @public
-     * @function
-     */
-    setExtensionPrefButton: function(component) {
-        this._extensionPrefButton = component;
-    },
-
 
     // #########################################################################
     // ---
-    // Mediator <-> Menu
+    // Manuel controls.
+
+    /**
+     * @description This method selects a category by ID. It changes all affected
+     *              components.
+     * @param {Enum} categoryID
+     * @public
+     * @function
+     */
+    selectMenuCategory: function(categoryID) {
+        this._searchField.reset();
+        this._categoryPane.selectCategory(categoryID);
+        this._navigationArea.selectCategory(categoryID);
+        this._mainArea.showCategory(categoryID);
+    },
+
+    /**
+     * @description This method sets the viewmode. It changes all affected
+     *              components.
+     * @param {Enum} viewMode
+     * @public
+     * @function
+     */
+    setViewMode: function(viewMode) {
+        if (viewMode) {
+            this._mainArea.setViewMode(viewMode);
+            this._viewModePane.selectButton(viewMode);
+        }
+    },
 
     /**
      * @description Method to close the menu.
@@ -221,58 +148,235 @@ const MenuMediator = new Lang.Class({
             this.open();
         }
     },
+    
+    // #########################################################################
+    // ---
+    // Mediator <-> System
 
     /**
-     * @description Open event callback.
-     * @private
+     * @description This method restarts the shell.
+     * @public
      * @function
      */
-    _onMenuOpened: function() {
+    restartShell: function() {
+        // code to refresh shell
+        this.closeMenu();
+        global.reexec_self();
+    },
+
+    /**
+     * @description This method suspends the computer.
+     * @public
+     * @function
+     */
+    suspendComputer: function() {
+        // code to suspend
+        this.closeMenu();
+        //NOTE: alternate is to check if (Main.panel.statusArea.userMenu._haveSuspend) is true
+        loginManager.canSuspend(
+            function(result) {
+                if (result) {
+                    Main.overview.hide();
+                    LoginManager.getLoginManager().suspend();
+                }
+            }
+        );
+    },
+
+    /**
+     * @description This method shuts the computer down.
+     * @public
+     * @function
+     */
+    shutdownComputer: function() {
+        // code to shutdown (power off)
+        // ToDo: GS38 iterates through SystemLoginSession to check for open sessions
+        // and displays an openSessionWarnDialog
+        this.closeMenu();
+        this._session.ShutdownRemote();
+    },
+
+    /**
+     * @description This method logs the user out.
+     * @public
+     * @function
+     */
+    logoutSession: function() {
+        // code to logout user
+        this.closeMenu();
+        this._session.LogoutRemote(0);
+    },
+
+    /**
+     * @description This method locks the session.
+     * @public
+     * @function
+     */
+    lockSession: function() {
+        // code for lock options
+        this.closeMenu();
+        Main.overview.hide();
+        Main.screenShield.lock(true);
+    },
+
+    /**
+     * @description This method opens the gnome control center.
+     * @public
+     * @function
+     */
+    showSystemPreferences: function() {
+        this.closeMenu();
+        let app = Shell.AppSystem.get_default().lookup_app('gnome-control-center.desktop');
+        app.activate();
+    },
+
+    /**
+     * @description This method opens the extension settings.
+     * @public
+     * @function
+     */
+    showPreferences: function() {
+        this.closeMenu();
+        Main.Util.trySpawnCommandLine('gnome-shell-extension-prefs ' + Me.metadata['uuid']);
+    },
+
+    /**
+     * @description This method hides the overview.
+     * @public
+     * @function
+     */
+    hideOverview: function() {
+        Main.overview.hide();
+    },
+
+
+    // #########################################################################
+    // ---
+    // Mediator <-> Search
+
+    /**
+     * @description Setter to set the searchsystem.
+     * @param {SearchSystem} system
+     * @public
+     * @function
+     */
+    setSearchSystem: function(system) {
+        this._searchSystem = system;
+    },
+
+    /**
+     * @description This method starts a search run. After the start continue with
+     *              the continueSearch method.
+     * @param {List} terms
+     * @public
+     * @function
+     */
+    startSearch: function(terms) {
+        this._searchSystem.updateSearchResults(terms);
+    },
+
+    /**
+     * @description This method continues a search run. To end the search call
+     *              stopSearch.
+     * @param {List} terms
+     * @public
+     * @function
+     */
+    continueSearch: function(terms) {
+        this._searchSystem.updateSearchResults(terms);
+    },
+
+    /**
+     * @description This method stops a search run.
+     * @public
+     * @function
+     */
+    stopSearch: function() {
+        this._searchSystem.stopSearch();
+    },
+    
+    
+    // #########################################################################
+    // ---
+    // Mediator Notifications
+    
+    notifyMenuOpened: function() {
         // Cleaning up.
         this._searchField.reset();
         this.selectMenuCategory(this.getMenuSettings().getDefaultShortcutAreaCategory());
         this.resetKeyFocus();
     },
-
-    /**
-     * @description Close event callback.
-     * @private
-     * @function
-     */
-    _onMenuClosed: function() {
+    
+    notifyMenuClosed: function() {
     },
-
-    /**
-     * @description drag begin inform. Called by the buttons.
-     * @public
-     * @function
-     */
-    onDragBegin: function() {
+    
+    notifyActivation: function(actor, event) {
+        this.closeMenu();
+        this.hideOverview();
+    },
+    
+    notifyHover: function(actor, event, entered) {
+        if (entered && actor._delegate) {
+            if (actor._delegate.getButtonInfoTitle && actor._delegate.getButtonInfoTitle()) {
+                let title = _(actor._delegate.getButtonInfoTitle());
+                this._descriptionBox.setTitle(title);
+            } else {
+                this._descriptionBox.setTitle(null);
+            }
+            
+            if (actor._delegate.getButtonInfoDescription && actor._delegate.getButtonInfoDescription()) {
+                let desc = _(actor._delegate.getButtonInfoDescription());
+                this._descriptionBox.setDescription(desc);
+            } else {
+                this._descriptionBox.setDescription(null);
+            }
+            
+        } else {
+            this._descriptionBox.setTitle(null);
+            this._descriptionBox.setDescription(null);
+        }
+    },
+    
+    notifyDragBegin: function() {
         this._navigationArea._onDragBegin();
     },
 
-    /**
-     * @description drag cancel inform. Called by the buttons.
-     * @public
-     * @function
-     */
-    onDragCancelled: function() {
+    notifyDragCancelled: function() {
         this._navigationArea._onDragCancelled();
     },
 
-    /**
-     * @description drag end inform. Called by the buttons.
-     * @public
-     * @function
-     */
-    onDragEnd: function() {
+    notifyDragEnd: function() {
         this._navigationArea._onDragEnd();
     },
+    
+    notifyCategoryChange: function(categoryID) {
+        if (categoryID) {
+            this._searchField.reset();
+            this._navigationArea.selectCategory(categoryID);
+            this._categoryPane.selectCategory(categoryID);
+            this._mainArea.showCategory(categoryID);
+        }
+    },
+    
+    notifyViewModeChange: function(viewMode) {
+        if (viewMode) {
+            this._mainArea.setViewMode(viewMode);
+        }
+    },
+    
+    // #########################################################################
+    // ---
+    // Mediator Keyboard Handling
     
     resetKeyFocus: function() {
         // Sets the focus to the menu for the key controls.
         global.stage.set_key_focus(this._navigationArea.actor);
         this._focusedComponent = this._navigationArea;
+    },
+    
+    activateSearchfieldKeyFocus: function(actor, event) {
+        this._searchField.activateFocus(actor, event);
+        this._focusedComponent = this._searchField;
     },
 
     /**
@@ -290,7 +394,7 @@ const MenuMediator = new Lang.Class({
         let symbolID = event.get_key_symbol();
         
         // Refresh the search only if the key is important for the search.
-        if (this._searchField.hasText() || this._shouldTriggerSearch(symbolID)) {
+        if (this._shouldTriggerSearch(symbolID)) {
             this._searchField.activateFocus(actor, event);
             this._focusedComponent = this._searchField;
             
@@ -310,7 +414,7 @@ const MenuMediator = new Lang.Class({
     _shouldTriggerSearch: function(symbolID) {
         // This keys are important because they delete chars.
         if (( symbolID == Clutter.BackSpace ||
-              symbolID == Clutter.Delete ||
+              symbolID == Clutter.Delete    ||
               symbolID == Clutter.KEY_space) &&
               this._searchActive) {
             return true;
@@ -488,253 +592,106 @@ const MenuMediator = new Lang.Class({
         
         return ret;
     },
+    
 
     // #########################################################################
-    // ---
-    // Mediator <-> System
+    // --
+    // Component Setter.
 
     /**
-     * @description This method restarts the shell.
+     * @description This setter sets the category pane, the component above the
+     *              category list.
+     * @param {CategoryPane} component
      * @public
      * @function
      */
-    restartShell: function() {
-        // code to refresh shell
-        this.closeMenu();
-        global.reexec_self();
+    setCategoryPane: function(component) {
+        this._categoryPane = component;
     },
 
     /**
-     * @description This method suspends the computer.
+     * @description This setter sets the viewmode pane, the component above the
+     *              shortcut area.
+     * @param {ViewModePane} component
      * @public
      * @function
      */
-    suspendComputer: function() {
-        // code to suspend
-        this.closeMenu();
-        //NOTE: alternate is to check if (Main.panel.statusArea.userMenu._haveSuspend) is true
-        loginManager.canSuspend(
-            function(result) {
-                if (result) {
-                    Main.overview.hide();
-                    LoginManager.getLoginManager().suspend();
-                }
-            }
-        );
+    setViewModePane: function(component) {
+        this._viewModePane = component;
     },
 
     /**
-     * @description This method shuts the computer down.
+     * @description This setter sets the searchfield, the component above the
+     *              shortcut area.
+     * @param {SearchField} component
      * @public
      * @function
      */
-    shutdownComputer: function() {
-        // code to shutdown (power off)
-        // ToDo: GS38 iterates through SystemLoginSession to check for open sessions
-        // and displays an openSessionWarnDialog
-        this.closeMenu();
-        this._session.ShutdownRemote();
+    setSearchField: function(component) {
+        this._searchField = component;
     },
 
     /**
-     * @description This method logs the user out.
+     * @description This setter sets the sidebar.
+     * @param {Sidebar} component
      * @public
      * @function
      */
-    logoutSession: function() {
-        // code to logout user
-        this.closeMenu();
-        this._session.LogoutRemote(0);
+    setSidebar: function(component) {
+        this._sidebar = component;
     },
 
     /**
-     * @description This method locks the session.
+     * @description This setter sets the navigation area, the component with the
+     *              category list.
+     * @param {NavigationArea} component
      * @public
      * @function
      */
-    lockSession: function() {
-        // code for lock options
-        this.closeMenu();
-        Main.overview.hide();
-        Main.screenShield.lock(true);
+    setNavigationArea: function(component) {
+        this._navigationArea = component;
     },
 
     /**
-     * @description This method opens the gnome control center.
+     * @description This setter sets the main area, the component with the
+     *              shortcuts or searchresults.
+     * @param {MainArea} component
      * @public
      * @function
      */
-    showSystemPreferences: function() {
-        this.closeMenu();
-        let app = Shell.AppSystem.get_default().lookup_app('gnome-control-center.desktop');
-        app.activate();
+    setMainArea: function(component) {
+        this._mainArea = component;
     },
 
     /**
-     * @description This method opens the extension settings.
+     * @description This setter sets the control pane, the component with
+     *              shutdown and logout buttons.
+     * @param {ControlPane} component
      * @public
      * @function
      */
-    showPreferences: function() {
-        this.closeMenu();
-        Main.Util.trySpawnCommandLine('gnome-shell-extension-prefs ' + Me.metadata['uuid']);
+    setControlPane: function(component) {
+        this._controlPane = component;
     },
 
     /**
-     * @description This method hides the overview.
+     * @description This setter sets the description box, the component which
+     *              provides information about hovered buttons.
+     * @param {DescriptionBox} component
      * @public
      * @function
      */
-    hideOverview: function() {
-        Main.overview.hide();
-    },
-
-
-    // #########################################################################
-    // ---
-    // Mediator <-> Search
-
-    /**
-     * @description Setter to set the searchsystem.
-     * @param {SearchSystem} system
-     * @public
-     * @function
-     */
-    setSearchSystem: function(system) {
-        this._searchSystem = system;
+    setDescriptionBox: function(component) {
+        this._descriptionBox = component;
     },
 
     /**
-     * @description This method starts a search run. After the start continue with
-     *              the continueSearch method.
-     * @param {List} terms
+     * @description This setter sets the Settings button, the component right corner.
+     * @param {ExtensionPrefButton} component
      * @public
      * @function
      */
-    startSearch: function(terms) {
-        if (!this._searchSystem) {
-            Log.logError("Gnomenu.MenuMediator", "startSearch", "this._searchSystem is null!");
-        }
-        this._searchSystem.updateSearchResults(terms);
-    },
-
-    /**
-     * @description This method continues a search run. To end the search call
-     *              stopSearch.
-     * @param {List} terms
-     * @public
-     * @function
-     */
-    continueSearch: function(terms) {
-        if (!this._searchSystem) {
-            Log.logError("Gnomenu.MenuMediator", "continueSearch", "this._searchSystem is null!");
-        }
-        this._searchSystem.updateSearchResults(terms);
-    },
-
-    /**
-     * @description This method stops a search run.
-     * @public
-     * @function
-     */
-    stopSearch: function() {
-        if (!this._searchSystem) {
-            Log.logError("Gnomenu.MenuMediator", "stopSearch", "this._searchSystem is null!");
-        }
-        this._searchSystem.stopSearch();
-    },
-
-
-    // #########################################################################
-    // ---
-    // Mediator <-> Apps
-
-    /**
-     * @description This method selects a category by ID. It changes all affected
-     *              components.
-     * @param {Enum} categoryID
-     * @public
-     * @function
-     */
-    selectMenuCategory: function(categoryID) {
-        if (!this._searchField || !this._categoryPane || !this._navigationArea || !this._mainArea) {
-            Log.logError("Gnomenu.MenuMediator", "selectMenuCategory", "Something is null!");
-        }
-
-        this._searchField.reset();
-        this._categoryPane.selectCategory(categoryID);
-        this._navigationArea.selectCategory(categoryID);
-        this._mainArea.showCategory(categoryID);
-    },
-
-    /**
-     * @description This method sets the viewmode. It changes all affected
-     *              components.
-     * @param {Enum} viewMode
-     * @public
-     * @function
-     */
-    setViewMode: function(viewMode) {
-        if (!this._mainArea) {
-            Log.logError("Gnomenu.MenuMediator", "setViewMode", "this._mainArea is null!");
-        }
-
-        if (viewMode) {
-            this._mainArea.setViewMode(viewMode);
-        }
-    },
-
-    // #########################################################################
-    // ---
-    // Mediator <-> Info
-
-    /**
-     * @description This method returns a function with which you can change
-     *              the description box title by calling it with a string.
-     * @returns {Bound Function(String)}
-     * @public
-     * @function
-     */
-    getFocusedTitleChanger: function() {
-        return Lang.bind(this, function(title) {
-            this.setFocusedTitle(title);
-        });
-    },
-
-    /**
-     * @description This method returns a function with which you can change
-     *              the description box description by calling it with a string.
-     * @returns {Bound Function(String)}
-     * @public
-     * @function
-     */
-    getFocusedDescriptionChanger: function() {
-        return Lang.bind(this, function(desc) {
-            this.setFocusedDescription(desc);
-        });
-    },
-
-    /**
-     * @description This method lets you change the description box title.
-     * @param {String} title
-     * @public
-     * @function
-     */
-    setFocusedTitle: function(title) {
-        if (this._descriptionBox) {
-            this._descriptionBox.setTitle(title);
-        }
-    },
-
-    /**
-     * @description This method lets you change the description box description.
-     * @param {String} desc
-     * @public
-     * @function
-     */
-    setFocusedDescription: function(desc) {
-        if (this._descriptionBox) {
-            this._descriptionBox.setDescription(desc);
-        }
+    setExtensionPrefButton: function(component) {
+        this._extensionPrefButton = component;
     },
 });

@@ -7,38 +7,6 @@ const Me = imports.misc.extensionUtils.getCurrentExtension();
 const Log = Me.imports.scripts.misc.log;
 
 
-const ProviderSearchResult = new Lang.Class({
-    
-    Name: 'GnoMenu.ProviderSearchResult',
-    
-    
-    _init: function(id, name, description, getIconFunc, launchFunc) {
-        if (!id || !name || !getIconFunc || !launchFunc) {
-            Log.logError("GnoMenu.ProviderSearchResult", "_init", "A searchresult needs ... to work properly!");
-        }
-        
-        this._id = id;
-        this._name = name;
-        this._description = description;
-        
-        this.getIcon = getIconFunc;
-        this.launch = launchFunc;
-    },
-    
-    getID: function() {
-        return this._id;
-    },
-    
-    getName: function() {
-        return this._name;
-    },
-    
-    getDescription: function() {
-        return this._description;
-    },
-});
-
-
 const SearchSystem = new Lang.Class({
     
     Name: 'GnoMenu.SearchSystem',
