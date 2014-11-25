@@ -1,6 +1,5 @@
 /*
     Copyright (C) 2014-2015, THE PANACEA PROJECTS <panacier@gmail.com>
-    Copyright (C) 2014-2015, AxP <Der_AxP@t-online.de>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -27,12 +26,27 @@ const MenuModel = Me.imports.scripts.menu.menuModel;
 const IconToggleButton = Me.imports.scripts.menu.components.elements.menubutton.IconToggleButton;
 const ButtonGroup = Me.imports.scripts.menu.components.elements.menubutton.ButtonGroup;
 
-const MOUSEBUTTON = Me.imports.scripts.menu.components.elements.menubutton.MOUSEBUTTON;
 const EViewMode = MenuModel.EViewMode;
+
+/**
+ * Simple Enum which provides a mousebutton to id mapping.
+ * @private
+ */
+const MOUSEBUTTON = Me.imports.scripts.menu.components.elements.menubutton.MOUSEBUTTON;
+
 
 
 /**
- * @class ViewModePane: This class creates the controls to change the viewmode.
+ * @class ViewModePane
+ * @extends Component
+ *
+ * @classdesc The viewmode pane lets the user change the viewmode of the menu.
+ *            It is a small button bar with icon buttons. The class provides no
+ *            keyboard controls or other advanced functionallity. It is possible
+ *            to select a button by viewmode ID.
+ *
+ * @description @see Component
+ * 
  *
  * @param {MenuModel} model A model instance.
  * @param {MenuMediator} mediator A mediator instance.
@@ -40,7 +54,8 @@ const EViewMode = MenuModel.EViewMode;
  * @property {Clutter.Actor} actor The clutter actor of this component.
  *
  *
- * @author AxP
+ * @author AxP <Der_AxP@t-online.de>
+ * @author passingthru67 <panacier@gmail.com>
  * @version 1.0
  */
 const ViewModePane = new Lang.Class({
@@ -70,6 +85,8 @@ const ViewModePane = new Lang.Class({
             }
         ));
 
+        // With the group it would be possible to implement keyboard controls without problems.
+        // But because its only two viewmodes it is possible to handle it with a single key.
         this._buttonGroup = new ButtonGroup();
         this._buttonGroup.deactivateDeselection();
         this._buttonGroup.addButton(listViewBtn);
@@ -83,8 +100,8 @@ const ViewModePane = new Lang.Class({
 
     /**
      * @description Use this function to bring the view up-to-date.
-     * @public
      * @function
+     * @memberOf ViewModePane#
      */
     refresh: function() {
         this.selectButton(this.menuSettings.getMainAreaViewMode());
@@ -93,8 +110,8 @@ const ViewModePane = new Lang.Class({
     /**
      * @description Use this function to remove all actors from the component.
      *              Not implemented for this class.
-     * @public
      * @function
+     * @memberOf ViewModePane#
      */
     clear: function() {
         /*
@@ -105,8 +122,8 @@ const ViewModePane = new Lang.Class({
 
     /**
      * @description Use this function to destroy the component.
-     * @public
      * @function
+     * @memberOf ViewModePane#
      */
     destroy: function() {
         this.actor.destroy();
@@ -114,14 +131,17 @@ const ViewModePane = new Lang.Class({
 
     /**
      * @description This method lets you select a button for a specific viewmode.
-     * @public
+     *              You need to provide a valid id.
+     * @param {IntegerEnum} viewModeID The viewmode id of the button or assoziated
+     *                      with it.
      * @function
+     * @memberOf ViewModePane#
      */
-    selectButton: function(shortcutAreaViewModeID) {
-        if (!shortcutAreaViewModeID) {
+    selectButton: function(viewModeID) {
+        if (!viewModeID) {
             Log.logError("Gnomenu.ViewModePane", "selectButton", "shortcutAreaViewModeID is null!");
         }
 
-        this._buttonGroup.selectByID(shortcutAreaViewModeID);
+        this._buttonGroup.selectByID(viewModeID);
     },
 });

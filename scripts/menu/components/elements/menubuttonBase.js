@@ -1,6 +1,5 @@
 /*
     Copyright (C) 2014-2015, THE PANACEA PROJECTS <panacier@gmail.com>
-    Copyright (C) 2014-2015, AxP <Der_AxP@t-online.de>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -25,36 +24,63 @@ const St = imports.gi.St;
 const DND = imports.ui.dnd;
 const Main = imports.ui.main;
 
-//params parameter example:
-//
-//let params = {
-//    actor_params:     {  },
-//    container_params: {  },
-//    icon_add_params:  {  },
-//    label_params:     {  },
-//    label_add_params: {  },
-//};
-
+/**
+ * @description Mousebutton to name map.
+ * @private
+ */
 const MOUSEBUTTON = {
-    
+
     MOUSE_LEFT:   1,
     MOUSE_MIDDLE: 2,
     MOUSE_RIGHT:  3,
-    
+
 };
 
 /**
- * @class Button: This is the base class for all buttons.
+ * @class Button
  *
- * @param {Icon of some kind} icon The icon.
+ * @classdesc This is the base class for all buttons. It provides all
+ *            basic functionallity that can be fitted here without
+ *            much more complexity. It does not need a model or mediator
+ *            to work and should be extended for the use. Many of this
+ *            methods are used in the subclasses in the menubutton module.
+ *
+ *            Some of the private callback methods here are only marginally
+ *            implemented and need to be implemented by the subclass.
+ *            For example the _notify methods.
+ *
+ *            The constructor should not fail in case you provide no
+ *            icon and label. But it can fail if the icon is none
+ *            of now used types.
+ *
+ *            Some methods need an integer button argument. The enum
+ *            MOUSEBUTTON contains some useful information for this.
+ *
+ * @description This class takes as parameter not only icon and label but also
+ *              parameters for its basic components.
+ * 
+ *
+ * @param {Icon} icon The icon. The now working icon types are the Gio icons,
+ *                    Clutter textures, and names.
  * @param {Integer} iconSize The iconSize.
  * @param {String} labelTextID The gettext id of the label.
  * @param {String} hoverTitleID The gettext id of the title.
  * @param {String} hoverDescriptionID The gettext id of the description.
- * @param {Object} params
+ * @param {Object} params It is possible to provide some layout and pack
+ *                        parameter in an map. It is possible to add more.
+ *                        params parameter example:
+ *
+ *                        let params = {
+ *                           actor_params:     {  },
+ *                           container_params: {  },
+ *                           icon_add_params:  {  },
+ *                           label_params:     {  },
+ *                           label_add_params: {  },
+ *                        };
  *
  *
- * @author AxP
+ * @author AxP <Der_AxP@t-online.de>
+ * @author passingthru67 <panacier@gmail.com>
  * @version 1.0
  */
 const Button = new Lang.Class({
@@ -72,11 +98,15 @@ const Button = new Lang.Class({
         this._stIcon = null;
         if (icon && iconSize) {
             if (typeof icon == 'string') {
+                // Iconnames
                 this._stIcon = new St.Icon({ icon_name: icon, icon_size: iconSize });
             } else if (icon instanceof Gio.ThemedIcon || icon instanceof Gio.FileIcon) {
+                // Some important Gio Icons.
                 this._stIcon = new St.Icon({ gicon: icon, icon_size: iconSize });
             } else {
+                // Clutter textures and others.
                 this._stIcon = icon;
+                this._stIcon.icon_size = iconSize;
             }
         }
         if (this._stIcon) {
@@ -106,8 +136,8 @@ const Button = new Lang.Class({
 
     /**
      * @description Sets an id for the button.
-     * @public
      * @function
+     * @memberOf Button#
      */
     setID: function(id) {
         this.id = id;
@@ -116,14 +146,23 @@ const Button = new Lang.Class({
     /**
      * @description Returns the id of the button.
      * @returns {Object}
-     * @public
      * @function
+     * @memberOf Button#
      */
     getID: function() {
         return this.id;
     },
 
+    /**
+     * @description Sets a mouse handler for a specific mousebutton of the button.
+     *              The handler for hover events is set in another method.
+     * @param {Integer} button The id of the mousebutton. @see MOUSEBUTTON
+     * @param {Function} handler The handler.
+     * @function
+     * @memberOf Button#
+     */
     setHandlerForButton: function(button, handler) {
+        // At the moment only good for the three normal mouse buttons.
         if (handler && button && button > 0 && button <= 3) {
             this._btnHandlers[button] = handler;
         }
@@ -132,25 +171,37 @@ const Button = new Lang.Class({
     /**
      * @description Sets a hover handler.
      * @param {function} handler
-     * @public
      * @function
+     * @memberOf Button#
      */
     setOnHoverHandler: function(handler) {
         this._btnHoverHandler = handler;
     },
-    
+
+    /**
+     * @description Returns the title of the button description.
+     * @returns {String}
+     * @function
+     * @memberOf Button#
+     */
     getButtonInfoTitle: function() {
         return this.buttonInfoTitle;
     },
-    
+
+    /**
+     * @description Returns the button description.
+     * @returns {String}
+     * @function
+     * @memberOf Button#
+     */
     getButtonInfoDescription: function() {
         return this.buttonInfoDescription;
     },
 
     /**
      * @description Marks the button as selected.
-     * @public
      * @function
+     * @memberOf Button#
      */
     select: function() {
         this.actor.add_style_pseudo_class('open');
@@ -159,29 +210,43 @@ const Button = new Lang.Class({
 
     /**
      * @description Removes the selection mark.
-     * @public
      * @function
+     * @memberOf Button#
      */
     deselect: function() {
-        this.reset();
+        this.actor.remove_style_pseudo_class('open');
+        this._isSelected = false;
     },
 
     /**
      * @description Returns wether the button is selected.
      * @returns {Boolean}
-     * @public
      * @function
+     * @memberOf Button#
      */
     isSelected: function() {
         return this._isSelected;
     },
 
     /**
+     * @description Resets the button.
+     * @function
+     * @memberOf Button#
+     */
+    reset: function() {
+        this.actor.remove_style_pseudo_class('open');
+        this.actor.remove_style_pseudo_class('pressed');
+        this.actor.remove_style_pseudo_class('active');
+
+        this._isSelected = false;
+    },
+
+    /**
      * @description This function does the same as a normal click would do.
      * @param {Integer} button The button id.
      * @param {Object} params Some parametersy.
-     * @public
      * @function
+     * @memberOf Button#
      */
     activate: function(button, params) {
         if (button >= 0 && this._btnHandlers[button]) {
@@ -197,21 +262,14 @@ const Button = new Lang.Class({
             }
         }
     },
-    
-    _notifyActivation: function(actor, event) {
-    },
-    
+
     /**
-     * @description Resets the button.
-     * @public
-     * @function
+     * To be implemented!
+     * @callback
+     * @memberOf Button#
      */
-    reset: function() {
-        this.actor.remove_style_pseudo_class('open');
-        this.actor.remove_style_pseudo_class('pressed');
-        this.actor.remove_style_pseudo_class('active');
-        
-        this._isSelected = false;
+    _notifyActivation: function(actor, event) {
+        // Is called when a button is activated.
     },
 
     /**
@@ -221,6 +279,7 @@ const Button = new Lang.Class({
      * @returns {Boolean} Was the event handled?
      * @private
      * @function
+     * @memberOf Button#
      */
     _onRelease: function(actor, event) {
         let button = event.get_button();
@@ -232,12 +291,14 @@ const Button = new Lang.Class({
     },
 
     /**
-     * @description Function that is called in case of a press event.
+     * @description Function that is called in case of a press event. It
+     *              notifies then about an activation.
      * @param actor
      * @param event
      * @returns {Boolean} Was the event handled?
      * @private
      * @function
+     * @memberOf Button#
      */
     _onPress: function(actor, event) {
         let button = event.get_button();
@@ -245,8 +306,9 @@ const Button = new Lang.Class({
         if (this._btnHandlers[button]) {
             this.actor.remove_style_pseudo_class('pressed');
             this.actor.remove_style_pseudo_class('active');
-            
+
             this._btnHandlers[button](actor, event);
+            this._notifyActivation(actor, event);
 
             return Clutter.EVENT_STOP;
         }
@@ -260,6 +322,7 @@ const Button = new Lang.Class({
      * @returns {Boolean} Was the event handled?
      * @private
      * @function
+     * @memberOf Button#
      */
     _onEnter: function(actor, event) {
         this.actor.add_style_pseudo_class('active');
@@ -267,10 +330,10 @@ const Button = new Lang.Class({
 
         if (this._btnHoverHandler) {
             this._btnHoverHandler(actor, event);
-            
+
             return Clutter.EVENT_STOP;
         }
-            
+
         return Clutter.EVENT_PROPAGATE;
     },
 
@@ -281,32 +344,41 @@ const Button = new Lang.Class({
      * @returns {Boolean} Was the event handled?
      * @private
      * @function
+     * @memberOf Button#
      */
     _onLeave: function(actor, event) {
         this.actor.remove_style_pseudo_class('active');
         this._notifyHovered(actor, event, false);
-        
+
         return Clutter.EVENT_STOP;
     },
-    
+
+    /**
+     * To be implemented.
+     * @callback
+     * @memberOf Button#
+     */
     _notifyHovered: function(actor, event, entered) {
+        // Called after a hover event happened.
     },
 
     /**
      * @description Destroys the button.
-     * @public
      * @function
+     * @memberOf Button#
      */
     destroy: function() {
         if (this._btnPressId) this.actor.disconnect(this._btnPressId);
         if (this._btnReleaseId) this.actor.disconnect(this._btnReleaseId);
         if (this._btnEnterId) this.actor.disconnect(this._btnEnterId);
         if (this._btnLeaveId) this.actor.disconnect(this._btnLeaveId);
-        
+
         this._btnPressId = undefined;
         this._btnReleaseId = undefined;
         this._btnEnterId = undefined;
         this._btnLeaveId = undefined;
+
+        this.actor.destroy();
     }
 });
 
@@ -316,10 +388,21 @@ const Button = new Lang.Class({
 
 
 /**
- * @class ToggleButton: This is the base class for all togglebuttons.
+ * @class ToggleButton
  * @extends Button
  *
- * @param {Icon of some kind} icon The icon.
+ * @classdesc This is the base class for all togglebuttons. It
+ *            provides some special methods for this kind of button
+ *            but keeps all buttons from the parent.
+ *
+ *            It is possible to set a callback for a toggled
+ *            event with "setStateToggledCallback".
+ *
+ *            Please see the parent class. @see Button
+ *
+ * @description @see Button
+ *
+ * @param {Icon} icon The icon.
  * @param {Integer} iconSize The iconSize.
  * @param {String} labelTextID The gettext id of the label.
  * @param {String} hoverTitleID The gettext id of the title.
@@ -327,7 +410,8 @@ const Button = new Lang.Class({
  * @param {Object} params
  *
  *
- * @author AxP
+ * @author AxP <Der_AxP@t-online.de>
+ * @author passingthru67 <panacier@gmail.com>
  * @version 1.0
  */
 const ToggleButton = new Lang.Class({
@@ -346,8 +430,8 @@ const ToggleButton = new Lang.Class({
     /**
      * @description Sets the function which is called when the state is changed.
      * @param {Function} callback
-     * @public
      * @function
+     * @memberOf ToggleButton#
      */
     setStateToggledCallback: function(callback) {
         this._stateToggledCallback = callback;
@@ -356,12 +440,12 @@ const ToggleButton = new Lang.Class({
     /**
      * @description Toggles the selection state of the button. This triggers
      *              a stateToggledCallback if this was provided.
-     * @public
      * @function
+     * @memberOf ToggleButton#
      */
     toggleState: function() {
         this.setState(!this.isSelected());
-        
+
         if (this._stateToggledCallback) {
             this._stateToggledCallback(this, this.isSelected());
         }
@@ -370,8 +454,8 @@ const ToggleButton = new Lang.Class({
     /**
      * @description Sets the state of the button.
      * @param {Boolean} selected
-     * @public
      * @function
+     * @memberOf ToggleButton#
      */
     setState: function(active) {
         if (active) {
@@ -384,12 +468,14 @@ const ToggleButton = new Lang.Class({
     /**
      * @description Function that is called in case of a press event.
      *              This overrides the base class to move the actual important
-     *              event to the press event.
+     *              event to the press event. This method triggers an
+     *              activation event.
      * @param actor
      * @param event
      * @returns {Boolean} Was the event handled?
      * @private
      * @function
+     * @memberOf ToggleButton#
      */
     _onPress: function(actor, event) {
         this.toggleState();
@@ -400,7 +486,8 @@ const ToggleButton = new Lang.Class({
             this.actor.remove_style_pseudo_class('active');
 
             this._btnHandlers[button](this.isSelected());
-            
+            this._notifyActivation(actor, event);
+
             return Clutter.EVENT_STOP;
         }
 
@@ -413,10 +500,19 @@ const ToggleButton = new Lang.Class({
 
 
 /**
- * @class DraggableButton: This is the base class for all draggable buttons.
+ * @class DraggableButton
  * @extends Button
  *
- * @param {Icon of some kind} icon The icon.
+ * @classdesc This is the base class for all draggable buttons. It
+ *            is able to deal with DnD and notify about this events.
+ *            You need to override the methods for this.
+ *            The activation is shifted from onPress to onRelease.
+ *
+ *            Please see the parent class. @see Button
+ *
+ * @description @see Button
+ *
+ * @param {Icon} icon The icon.
  * @param {Integer} iconSize The iconSize.
  * @param {String} labelTextID The gettext id of the label.
  * @param {String} hoverTitleID The gettext id of the title.
@@ -424,7 +520,8 @@ const ToggleButton = new Lang.Class({
  * @param {Object} params
  *
  *
- * @author AxP
+ * @author AxP <Der_AxP@t-online.de>
+ * @author passingthru67 <panacier@gmail.com>
  * @version 1.0
  */
 const DraggableButton = new Lang.Class({
@@ -453,6 +550,7 @@ const DraggableButton = new Lang.Class({
         }
         this._iconSize = iconSize;
 
+        // DnD
         this._draggable = DND.makeDraggable(this.actor);
         this._dragMonitor = null;
         this._dragIds = [];
@@ -464,8 +562,8 @@ const DraggableButton = new Lang.Class({
     /**
      * @description Returns the drag actor which in most cases is an icon.
      * @returns {St.Icon}
-     * @public
      * @function
+     * @memberOf DraggableButton#
      */
     getDragActor: function() {
         if (!this._gicon && !this._iconName || !this._iconSize) {
@@ -477,8 +575,8 @@ const DraggableButton = new Lang.Class({
     /**
      * @description Returns the drag actor source which is the button icon.
      * @returns {St.Icon}
-     * @public
      * @function
+     * @memberOf DraggableButton#
      */
     getDragActorSource: function() {
         return this._stIcon;
@@ -493,6 +591,7 @@ const DraggableButton = new Lang.Class({
      * @returns {Boolean} Was the event handled?
      * @private
      * @function
+     * @memberOf DraggableButton#
      */
     _onRelease: function(actor, event) {
         let button = event.get_button();
@@ -515,6 +614,7 @@ const DraggableButton = new Lang.Class({
      * @returns {Boolean} Was the event handled?
      * @private
      * @function
+     * @memberOf DraggableButton#
      */
     _onPress: function(actor, event) {
         let button = event.get_button();
@@ -531,6 +631,7 @@ const DraggableButton = new Lang.Class({
      * @description Function that is called in case of a drag-begin event.
      * @private
      * @function
+     * @memberOf DraggableButton#
      */
     _onDragBegin: function(draggable, id) {
         this.reset();
@@ -550,6 +651,7 @@ const DraggableButton = new Lang.Class({
      * @description Function that is called in case of a drag-motion event.
      * @private
      * @function
+     * @memberOf DraggableButton#
      */
     _onDragMotion: function(dragEvent) {
         return DND.DragMotionResult.CONTINUE;
@@ -559,6 +661,7 @@ const DraggableButton = new Lang.Class({
      * @description Function that is called in case of a drag-cancel event.
      * @private
      * @function
+     * @memberOf DraggableButton#
      */
     _onDragCancelled: function(draggable, id) {
         DND.removeDragMonitor(this._dragMonitor);
@@ -570,6 +673,7 @@ const DraggableButton = new Lang.Class({
      * @description Function that is called in case of a drag-end event.
      * @private
      * @function
+     * @memberOf DraggableButton#
      */
     _onDragEnd: function(draggable, id) {
         this.reset();
@@ -581,38 +685,61 @@ const DraggableButton = new Lang.Class({
         this._notifyDragEnd(draggable, id);
     },
 
+    /**
+     * To be implemented!
+     * @callback
+     * @memberOf DraggableButton#
+     */
     _notifyDragBegin: function(draggable, id) {
+        // This method is called when a drag begins.
     },
-    
+
+    /**
+     * To be implemented!
+     * @callback
+     * @memberOf DraggableButton#
+     */
     _notifyDragCancelled: function(draggable, id) {
+        // This method is called when a drag is cancelled.
     },
-    
+
+    /**
+     * To be implemented!
+     * @callback
+     * @memberOf DraggableButton#
+     */
     _notifyDragEnd: function(draggable, id) {
+        // This method is called when a drag ends.
     },
 
     /**
      * @description Destroys the button.
-     * @public
      * @function
+     * @memberOf DraggableButton#
      */
     destroy: function() {
+        // I actually have no idea how the destroying should be handled.
+        // This all is not really easy to reverse engineer.
         if (this._btnPressId) this.actor.disconnect(this._btnPressId);
         if (this._btnReleaseId) this.actor.disconnect(this._btnReleaseId);
         if (this._btnEnterId) this.actor.disconnect(this._btnEnterId);
         if (this._btnLeaveId) this.actor.disconnect(this._btnLeaveId);
-        
+
         this._btnPressId = undefined;
         this._btnReleaseId = undefined;
         this._btnEnterId = undefined;
         this._btnLeaveId = undefined;
-        
+
         DND.removeDragMonitor(this._dragMonitor);
 
+        // Disconnect all dnd ids.
         for each (let id in this._dragIds) {
             if (id > 0) {
                 this._draggable.disconnect(id);
             }
         }
         this._dragIds = undefined;
+
+        this.actor.destroy();
     },
 });

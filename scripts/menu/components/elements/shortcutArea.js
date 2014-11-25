@@ -1,6 +1,5 @@
 /*
     Copyright (C) 2014-2015, THE PANACEA PROJECTS <panacier@gmail.com>
-    Copyright (C) 2014-2015, AxP <Der_AxP@t-online.de>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -31,18 +30,30 @@ const DraggableGridButton = Me.imports.scripts.menu.components.elements.menubutt
 const DraggableListButton = Me.imports.scripts.menu.components.elements.menubutton.DraggableListButton;
 const Component = Me.imports.scripts.menu.components.component.Component;
 
+
 const ECategoryID = MenuModel.ECategoryID;
 const EEventType = MenuModel.EEventType;
 const EViewMode = MenuModel.EViewMode;
 
 
+
 /**
- * @class ShortcutBoxBase: Represents the basic shortcut component.
+ * @class ShortcutBoxBase
+ *
+ * @classdesc This is the base class for all shortcut boxes. It
+ *            provides the basic methods that every box probably
+ *            needs. It defines the basic structures and also
+ *            implements big parts of the keyboard controls.
+ *
+ * @description Creates basic functions which are useful for every kind of box.
+ *              It does not create an actor.
+ * 
  *
  * @param {MenuMediator} mediator A mediator instance.
  *
  *
- * @author AxP
+ * @author AxP <Der_AxP@t-online.de>
+ * @author passingthru67 <panacier@gmail.com>
  * @version 1.0
  */
 const ShortcutBoxBase = new Lang.Class({
@@ -54,29 +65,38 @@ const ShortcutBoxBase = new Lang.Class({
         if (!mediator) {
             Log.logError("GnoMenu.shortcutArea.ShortcutBoxBase", "_init", "mediator may not be null!");
         }
-
         this._mediator = mediator;
 
+        // This map is used for the static categories
         this._categoryButtonMap = {};
+        // while this is used for the generic ones. The reason to use two is
+        // that its this way easier to update the real categories.
         this._appCategoryButtonMap = {};
-        
+
         this._selectedButtonMap = null;
         this._selectedButtonIdx = -1;
     },
 
     /**
      * @description Abstract method to add a new button.
-     * @public
+     *
+     *              To be implemented.
+     * @param {StringEnum} categoryID
+     * @param {Launchable} launchable
+     * @param {Boolean} isAppCategory
      * @function
+     * @memberOf ShortcutBoxBase#
      */
     addCategoryButton: function(categoryID, launchable, isAppCategory) {
         Log.logError("GnoMenu.shortcutArea.ShortcutBoxBase", "addCategoryButton", "Implement me!");
     },
 
     /**
-     * @description Deletes all buttons from the storage.
-     * @public
+     * @description Deletes all buttons of the specified category from the storage.
+     * @param {StringEnum} categoryID
+     * @param {Boolean} isAppCategory
      * @function
+     * @memberOf ShortcutBoxBase#
      */
     clearCategoryStorage: function(categoryID, isAppCategory) {
         let map = null;
@@ -115,13 +135,15 @@ const ShortcutBoxBase = new Lang.Class({
     },
 
     /**
-     * @description Refreshes the component.
-     * @public
+     * @description Refreshes the component and shows the last shown category
+     *              again.
+     * @param {Object} shownCategory Has id and isAppCategory entries.
      * @function
+     * @memberOf ShortcutBoxBase#
      */
     refresh: function(shownCategory) {
         this.clear();
-        
+
         // The parameter should only be used intern. It provides the shown category.
         if (shownCategory) {
             this.showCategory(shownCategory.id, shownCategory.isAppCategory);
@@ -132,8 +154,8 @@ const ShortcutBoxBase = new Lang.Class({
 
     /**
      * @description Clears the elements from the component.
-     * @public
      * @function
+     * @memberOf ShortcutBoxBase#
      */
     clear: function() {
         let actors = this.actor.get_children();
@@ -146,35 +168,35 @@ const ShortcutBoxBase = new Lang.Class({
 
     /**
      * @description Hides the component.
-     * @public
      * @function
+     * @memberOf ShortcutBoxBase#
      */
     hide: function() {
         if (this.actor) {
             this.actor.hide();
         }
-        
+
         this._selectedButtonIdx = -1;
     },
 
     /**
      * @description Shows the component.
-     * @public
      * @function
+     * @memberOf ShortcutBoxBase#
      */
     show: function() {
         if (this.actor) {
             this.actor.show();
         }
-        
+
         this._selectedButtonIdx = -1;
     },
 
     /**
      * @description Determines wether the component is visible.
-     * @returns {Boolean}
-     * @public
+     * @returns {Boolean} Is the element visible?
      * @function
+     * @memberOf ShortcutBoxBase#
      */
     isVisible: function() {
         if (this.actor) {
@@ -185,8 +207,8 @@ const ShortcutBoxBase = new Lang.Class({
 
     /**
      * @description Hides or shows the component.
-     * @public
      * @function
+     * @memberOf ShortcutBoxBase#
      */
     toggleVisibility: function() {
         if (this._isShown) {
@@ -197,26 +219,37 @@ const ShortcutBoxBase = new Lang.Class({
             this._isShown = true;
         }
     },
-    
+
+    /**
+     * @description This method selects the first button in the box.
+     * @function
+     * @memberOf ShortcutBoxBase#
+     */
     selectFirst: function() {
         if (!this._selectedButtonMap) {
             return;
         }
         this.deselectAll();
-        
+
+        // I am only working with the indices so i need to translate them back first.
         let keys = Object.keys(this._selectedButtonMap);
         this._selectedButtonIdx = 0;
         let buttonID = keys[this._selectedButtonIdx];
         let btn = this._selectedButtonMap[buttonID];
         if (btn) btn.select();
     },
-    
+
+    /**
+     * @description This method selects the last button in the box.
+     * @function
+     * @memberOf ShortcutBoxBase#
+     */
     selectLast: function() {
         if (!this._selectedButtonMap) {
             return;
         }
         this.deselectAll();
-        
+
         let keys = Object.keys(this._selectedButtonMap);
         this._selectedButtonIdx = keys.length - 1;
         let buttonID = keys[this._selectedButtonIdx];
@@ -224,13 +257,18 @@ const ShortcutBoxBase = new Lang.Class({
         if (btn) btn.select();
     },
 
+    /**
+     * @description This method selects the button above the selected one.
+     * @function
+     * @memberOf ShortcutBoxBase#
+     */
     selectUpper: function() {
         if (!this._selectedButtonMap) {
             return;
         }
-        
+
         this.deselectLastSelectedButton();
-        
+
         let colMax = this._mediator.getMenuSettings().getAppGridColumnCount();
         let keys = Object.keys(this._selectedButtonMap);
         this._selectedButtonIdx -= colMax;
@@ -241,37 +279,47 @@ const ShortcutBoxBase = new Lang.Class({
                 this._selectedButtonIdx = this._selectedButtonIdx + colMax
             }
         }
-        
+
         let buttonID = keys[this._selectedButtonIdx];
         let btn = this._selectedButtonMap[buttonID];
         if (btn) btn.select();
     },
-    
+
+    /**
+     * @description This method selects the button under the selected one.
+     * @function
+     * @memberOf ShortcutBoxBase#
+     */
     selectLower: function() {
         if (!this._selectedButtonMap) {
             return;
         }
-        
+
         this.deselectLastSelectedButton();
-        
+
         let colMax = this._mediator.getMenuSettings().getAppGridColumnCount();
         let keys = Object.keys(this._selectedButtonMap);
         this._selectedButtonIdx += colMax;
         if (this._selectedButtonIdx >= keys.length) {
             this._selectedButtonIdx = (this._selectedButtonIdx + 1) % colMax;
         }
-        
+
         let buttonID = keys[this._selectedButtonIdx];
         let btn = this._selectedButtonMap[buttonID];
         if (btn) btn.select();
     },
-    
+
+    /**
+     * @description This method selects the next button in the box.
+     * @function
+     * @memberOf ShortcutBoxBase#
+     */
     selectNext: function() {
         if (!this._selectedButtonMap) {
             return;
         }
         this.deselectLastSelectedButton();
-        
+
         let keys = Object.keys(this._selectedButtonMap);
         this._selectedButtonIdx = (this._selectedButtonIdx + 1) % keys.length;
         let buttonID = keys[this._selectedButtonIdx];
@@ -280,12 +328,17 @@ const ShortcutBoxBase = new Lang.Class({
 
     },
 
+    /**
+     * @description This method selects the previous button in the box.
+     * @function
+     * @memberOf ShortcutBoxBase#
+     */
     selectPrevious: function() {
         if (!this._selectedButtonMap) {
             return;
         }
         this.deselectLastSelectedButton();
-        
+
         let keys = Object.keys(this._selectedButtonMap);
         this._selectedButtonIdx -= 1;
          if (this._selectedButtonIdx < 0) {
@@ -295,12 +348,17 @@ const ShortcutBoxBase = new Lang.Class({
         let btn = this._selectedButtonMap[buttonID];
         if (btn) btn.select();
     },
-    
+
+    /**
+     * @description This method deselects the last selected button.
+     * @function
+     * @memberOf ShortcutBoxBase#
+     */
     deselectLastSelectedButton: function() {
         if (!this._selectedButtonMap) {
             return;
         }
-        
+
         if (this._selectedButtonIdx != -1) {
             let keys = Object.keys(this._selectedButtonMap);
             let buttonID = keys[this._selectedButtonIdx];
@@ -308,33 +366,50 @@ const ShortcutBoxBase = new Lang.Class({
             if (lastBtn) lastBtn.deselect();
         }
     },
-    
+
+    /**
+     * @description This method deselects all buttons.
+     * @function
+     * @memberOf ShortcutBoxBase#
+     */
     deselectAll: function() {
         if (!this._selectedButtonMap) {
             return;
         }
-        
+
         for each (let btn in this._selectedButtonMap) {
             if (btn) {
                 btn.deselect();
             }
         }
-        
+
         this._selectedButtonIdx = -1;
     },
-    
+
+    /**
+     * @description This method activates the currently selected button.
+     * @param {IntegerEnum} button
+     * @param {Object} params
+     * @function
+     * @memberOf ShortcutBoxBase#
+     */
     activateSelected: function(button, params) {
         let btn = this.getSelectedButton();
         if (btn) {
             btn.activate(button, params);
         }
     },
-    
+
+    /**
+     * @description Returns the selected button object. Needed to fix mouse scroll.
+     * @function
+     * @memberOf ShortcutBoxBase#
+     */
     getSelectedButton: function() {
         if (!this._selectedButtonMap) {
             return null;
         }
-        
+
         let btn = null;
         if (this._selectedButtonIdx != -1) {
             let keys = Object.keys(this._selectedButtonMap);
@@ -346,8 +421,8 @@ const ShortcutBoxBase = new Lang.Class({
 
     /**
      * @description Destroys the component.
-     * @public
      * @function
+     * @memberOf ShortcutBoxBase#
      */
     destroy: function() {
         if (this.actor) {
@@ -357,14 +432,26 @@ const ShortcutBoxBase = new Lang.Class({
 });
 
 
+
 /**
- * @class ShortcutList: This is the element that shows the app as a list.
+ * @class ShortcutList
  * @extends ShortcutBoxBase
+ *
+ * @classdesc The shortcutList class creates the normal applist
+ *            view. It is a normal boxlayout that can be fitted into
+ *            a scrollview. There is functionallity to add buttons
+ *            and to show specific categories. You should also
+ *            see the methods of the parent class. There are some
+ *            important parts of the keyboard controls.
+ *
+ * @description Creates the actor for this component.
+ * 
  *
  * @param {MenuMediator} mediator A mediator instance.
  *
  *
- * @author AxP
+ * @author AxP <Der_AxP@t-online.de>
+ * @author passingthru67 <panacier@gmail.com>
  * @version 1.0
  */
 const ShortcutList = new Lang.Class({
@@ -375,16 +462,19 @@ const ShortcutList = new Lang.Class({
 
     _init: function(mediator) {
         this.parent(mediator);
+        // Into this layout are the buttons coming.
         this.actor = new St.BoxLayout({ style_class: 'gnomenu-applications-list-box', vertical:true });
     },
 
     /**
-     * @description Adds a button to the list.
+     * @description Adds a button to the list. You need to provide an category
+     *              id so the button can ordered correctly. Actually no parameter
+     *              should be null.
      * @param {Enum} categoryID The id of the category.
      * @param {Launchable} launchable This provides app, name and icon.
      * @param {Boolean} isAppCategory Dynamic category? ie not from you created.
-     * @public
      * @function
+     * @memberOf ShortcutList#
      */
     addCategoryButton: function(categoryID, launchable, isAppCategory) {
         if (!categoryID || !launchable) {
@@ -392,7 +482,8 @@ const ShortcutList = new Lang.Class({
             return;
         }
 
-        // Gets the correct map.
+        // Gets the correct map. The buttons of the non-fixed, non-hardcoded
+        // categories come into the appCategory map.
         let map = null;
         if (isAppCategory) {
             if (!this._appCategoryButtonMap[categoryID]) {
@@ -407,17 +498,19 @@ const ShortcutList = new Lang.Class({
             map = this._categoryButtonMap;
         }
 
+        // Thats it. Just create the button and store it.
         let iconSize = this._mediator.getMenuSettings().getAppListIconsize();
         map[categoryID].push(new DraggableListButton(this._mediator, iconSize, launchable));
     },
 
     /**
-     * @description Shows a category.
+     * @description Shows a category. Same as in the addButton method the parameter
+     *              shouldn't be null.
      * @param {Enum} categoryID The id of the category.
      * @param {Boolean} isAppCategory Dynamic category? ie not from you created.
      * @returns {Boolean}
-     * @public
      * @function
+     * @memberOf ShortcutList#
      */
     showCategory: function(categoryID, isAppCategory) {
         let buttonMap = null;
@@ -434,8 +527,9 @@ const ShortcutList = new Lang.Class({
         // This is needed for the keyboard controls.
         this._selectedButtonMap = buttonMap;
 
+        // Remove all stuff ..
         this.clear();
-
+        // And add new.
         for each (let btn in buttonMap) {
             this.actor.add_actor(btn.actor);
         }
@@ -445,14 +539,24 @@ const ShortcutList = new Lang.Class({
 });
 
 
+
 /**
- * @class ShortcutGrid: This is the element that shows the app in a grid.
+ * @class ShortcutGrid
  * @extends ShortcutBoxBase
+ *
+ * @classdesc This is class that provides the shortcut grid of the
+ *            menu. It is similar to the list but needs another button
+ *            class and another add schema. The method calls here are
+ *            the same as the ones of the list.
+ *
+ * @description Creates the actor for this component.
+ * 
  *
  * @param {MenuMediator} mediator A mediator instance.
  *
  *
- * @author AxP
+ * @author AxP <Der_AxP@t-online.de>
+ * @author passingthru67 <panacier@gmail.com>
  * @version 1.0
  */
 const ShortcutGrid = new Lang.Class({
@@ -463,17 +567,18 @@ const ShortcutGrid = new Lang.Class({
 
     _init: function(mediator) {
         this.parent(mediator);
-        
+        // This table can be added to Scrollview without problems.
         this.actor = new St.Table({ homogeneous: false, reactive: true, style_class: 'gnomenu-applications-grid-box' });
     },
-    
+
     /**
-     * @description Adds a button to the final frontier.
+     * @description Adds a button to the final frontier. Please see the
+     *              corresponding method of the list class above.
      * @param {Enum} categoryID The id of the category.
      * @param {Launchable} launchable This provides app, name and icon.
      * @param {Boolean} isAppCategory Dynamic category? ie not from you created.
-     * @public
      * @function
+     * @memberOf ShortcutGrid#
      */
     addCategoryButton: function(categoryID, launchable, isAppCategory) {
         if (!categoryID || !launchable) {
@@ -481,6 +586,7 @@ const ShortcutGrid = new Lang.Class({
             return;
         }
 
+        // The hard-coded categories have another map.
         let map = null;
         if (isAppCategory) {
             if (!this._appCategoryButtonMap[categoryID]) {
@@ -495,6 +601,7 @@ const ShortcutGrid = new Lang.Class({
             map = this._categoryButtonMap;
         }
 
+        // Here im creating a grid button instead of a list button.
         let iconSize = this._mediator.getMenuSettings().getAppGridIconsize();
         map[categoryID].push(new DraggableGridButton(this._mediator, iconSize, launchable));
     },
@@ -504,8 +611,8 @@ const ShortcutGrid = new Lang.Class({
      * @param {Enum} categoryID The id of the category.
      * @param {Boolean} isAppCategory Dynamic category? ie not from you created.
      * @returns {Boolean}
-     * @public
      * @function
+     * @memberOf ShortcutGrid#
      */
     showCategory: function(categoryID, isAppCategory) {
         let buttonMap = null;
@@ -524,6 +631,8 @@ const ShortcutGrid = new Lang.Class({
 
         this.clear();
 
+        // Adding is not difficult but needs some special handling to fill
+        // the table correctly.
         let count = 0;
         let colMax = this._mediator.getMenuSettings().getAppGridColumnCount();
         for each (let btn in buttonMap) {
@@ -539,15 +648,30 @@ const ShortcutGrid = new Lang.Class({
 });
 
 
+
 /**
- * @class ShortcutArea: This component displays the apps in a list or a grid.
+ * @class ShortcutArea
  * @extends Component
+ *
+ * @classdesc This component uses the list or gridview elements to
+ *            create the part of the menu that shows the apps. This
+ *            class automatically updates itself if the model was
+ *            correctly provided. In that case the update events
+ *            trigger an automatic update of the component. There
+ *            are some methods implemented to control this component
+ *            with the keyboard. Also it is simple to change the
+ *            viewmode from list to grid and viseversa. It also
+ *            should be no problem to add more viewmodes.
+ *
+ * @description Creates the boxes for every viewmode and puts them into
+ *              a scrollview.
  *
  * @param {MenuModel} model A model instance.
  * @param {MenuMediator} mediator A mediator instance.
  *
  *
- * @author AxP
+ * @author AxP <Der_AxP@t-online.de>
+ * @author passingthru67 <panacier@gmail.com>
  * @version 1.0
  */
 const ShortcutArea = new Lang.Class({
@@ -566,13 +690,19 @@ const ShortcutArea = new Lang.Class({
         this.actor.set_mouse_scrolling(true);
         this.actor.add_actor(this._mainBox);
 
+        // All viewmode elements are just added to the actor.
+        // Through the program it is then assured that only one is visible at a time.
         this._shortcutList = new ShortcutList(mediator);
         this._shortcutGrid = new ShortcutGrid(mediator);
         this._mainBox.add(this._shortcutList.actor, { expand: true, x_fill: false, y_fill: false, x_align: St.Align.START, y_align: St.Align.START });
         this._mainBox.add(this._shortcutGrid.actor, { expand: true, x_fill: false, y_fill: false, x_align: St.Align.START, y_align: St.Align.START });
 
+        // The showncategory is stored for redraws.
         this._shownCategory = { id: null, isAppCategory: null };
 
+        // The updates are handled after a little timeout.
+        // That way it not that bad if some update event comes very often in a
+        // short period. This here are the connect ids.
         this._updateTimeoutIds = {};
         this._updateTimeoutIds[EEventType.DATA_APPS_EVENT] = 0;
         this._updateTimeoutIds[EEventType.DATA_MOSTUSED_EVENT] = 0;
@@ -585,9 +715,9 @@ const ShortcutArea = new Lang.Class({
     },
 
     /**
-     * @description Refreshs the component.
-     * @public
+     * @description Refreshs the component and resets it to startup state.
      * @function
+     * @memberOf ShortcutArea#
      */
     refresh: function() {
         this.updateCategory();
@@ -597,20 +727,18 @@ const ShortcutArea = new Lang.Class({
     /**
      * @description Use this function to remove all actors from the component.
      *              Not implemented for this class.
-     * @public
      * @function
+     * @memberOf ShortcutArea#
      */
     clear: function() {
-        /*
-         * It is not intended to refresh the component so why clear it.
-         */
+        // I dont know when it would help to remove the list and the grid.
         Log.logWarning("Gnomenu.shortcutArea.ShortcutArea", "clear", "This is not useful!");
     },
 
     /**
      * @description Destroys the component.
-     * @public
      * @function
+     * @memberOf ShortcutArea#
      */
     destroy: function() {
         for each (let id in this._updateTimeoutIds) {
@@ -625,9 +753,15 @@ const ShortcutArea = new Lang.Class({
         this.actor.destroy();
     },
 
-    updateCategory: function(categoryDataEvent) {
-        let event = categoryDataEvent;
-        
+    /**
+     * @description This method is called by the model observer. If the correct
+     *              event type was sent it automatically updates the outdated
+     *              parts.
+     * @param {Object} event The event with an event.type
+     * @function
+     * @memberOf ShortcutArea#
+     */
+    updateCategory: function(event) {
         // I want that everything is updated if the event is null.
         if (!event) {
             this.updateCategory({ type: EEventType.DATA_APPS_EVENT });
@@ -665,6 +799,8 @@ const ShortcutArea = new Lang.Class({
                     let appMap = this.model.getApplicationsMap();
                     for (let category in appMap) {
 
+                        // This is the only part here where this kind of categories
+                        // are filled.
                         let applist = appMap[category];
                         for each (let app in applist) {
                             this._shortcutList.addCategoryButton(category, app, true);
@@ -747,16 +883,21 @@ const ShortcutArea = new Lang.Class({
         }
     },
 
-    /** Only a helper method. Dont call. @private */
+    /**
+     * @description Only a helper method. Clears the specified storage, creates
+     *              the updated buttons and refreshs the view.
+     * @private
+     * @memberOf ShortcutArea#
+     */
     _updateHelperForStaticCategories: function(categoryID, dataMap) {
         this._shortcutList.clearCategoryStorage(categoryID);
         this._shortcutGrid.clearCategoryStorage(categoryID);
-        
+
         for each (let item in dataMap) {
             this._shortcutList.addCategoryButton(categoryID, item);
             this._shortcutGrid.addCategoryButton(categoryID, item);
         }
-        
+
         if (this._shownCategory.id == categoryID) {
             this._shortcutList.refresh(this._shownCategory);
             this._shortcutGrid.refresh(this._shownCategory);
@@ -765,9 +906,9 @@ const ShortcutArea = new Lang.Class({
 
     /**
      * @description Shows a specific category.
-     * @param {Enum} categoryID
-     * @public
+     * @param {StringEnum} categoryID
      * @function
+     * @memberOf ShortcutArea#
      */
     showCategory: function(categoryID) {
         if (!categoryID) {
@@ -795,9 +936,12 @@ const ShortcutArea = new Lang.Class({
                 break;
             }
         }
-        
-        this._shortcutList.showCategory(categoryID, isAppCategory);
-        this._shortcutGrid.showCategory(categoryID, isAppCategory);
+
+        if (this._shortcutGrid.isVisible()) {
+            this._shortcutGrid.showCategory(categoryID, isAppCategory);
+        } else {
+            this._shortcutList.showCategory(categoryID, isAppCategory);
+        }
 
         // Save the data for refreshs and the kind.
         this._shownCategory = { id: categoryID, isAppCategory: isAppCategory };
@@ -805,9 +949,9 @@ const ShortcutArea = new Lang.Class({
 
     /**
      * @description Sets the viewmode of the component.
-     * @param {Enum} id
-     * @public
+     * @param {IntegerEnum} id
      * @function
+     * @memberOf ShortcutArea#
      */
     setViewMode: function(id) {
         switch (id) {
@@ -829,14 +973,24 @@ const ShortcutArea = new Lang.Class({
                 break;
         }
     },
-    
+
+    /**
+     * @description Selects the first button of the current view.
+     * @function
+     * @memberOf ShortcutArea#
+     */
     selectFirst: function() {
         this._shortcutGrid.selectFirst();
         this._scrollToSelectedButton(this._shortcutGrid);
         this._shortcutList.selectFirst();
         this._scrollToSelectedButton(this._shortcutList);
     },
-    
+
+    /**
+     * @description Selects the last button of the current view.
+     * @function
+     * @memberOf ShortcutArea#
+     */
     selectLast: function() {
         this._shortcutGrid.selectLast();
         this._scrollToSelectedButton(this._shortcutGrid);
@@ -844,6 +998,12 @@ const ShortcutArea = new Lang.Class({
         this._scrollToSelectedButton(this._shortcutList);
     },
 
+    /**
+     * @description Selects the button above the currently selected button in
+     *              the current view.
+     * @function
+     * @memberOf ShortcutArea#
+     */
     selectUpper: function() {
         if (this._shortcutGrid.isVisible()) {
             this._shortcutGrid.selectUpper();
@@ -854,6 +1014,12 @@ const ShortcutArea = new Lang.Class({
         }
     },
 
+    /**
+     * @description Selects the button under the currently selected button in
+     *              the current view.
+     * @function
+     * @memberOf ShortcutArea#
+     */
     selectLower: function() {
         if (this._shortcutGrid.isVisible()) {
             this._shortcutGrid.selectLower();
@@ -864,6 +1030,12 @@ const ShortcutArea = new Lang.Class({
         }
     },
 
+    /**
+     * @description Selects the button next to the currently selected button in
+     *              the current view.
+     * @function
+     * @memberOf ShortcutArea#
+     */
     selectNext: function() {
         if (this._shortcutGrid.isVisible()) {
             this._shortcutGrid.selectNext();
@@ -874,6 +1046,12 @@ const ShortcutArea = new Lang.Class({
         }
     },
 
+    /**
+     * @description Selects the button before to the currently selected button in
+     *              the current view.
+     * @function
+     * @memberOf ShortcutArea#
+     */
     selectPrevious: function() {
         if (this._shortcutGrid.isVisible()) {
             this._shortcutGrid.selectPrevious();
@@ -884,6 +1062,11 @@ const ShortcutArea = new Lang.Class({
         }
     },
 
+    /**
+     * @description Deselects all buttons of both views and scrolls to the top.
+     * @function
+     * @memberOf ShortcutArea#
+     */
     resetSelection: function() {
         this._shortcutGrid.selectFirst();
         this._shortcutList.selectFirst();
@@ -892,7 +1075,14 @@ const ShortcutArea = new Lang.Class({
         this._shortcutGrid.deselectAll();
         this._shortcutList.deselectAll();
     },
-    
+
+    /**
+     * @description Activates the currently selected button.
+     * @param {Integer} button The mousebutton id or null.
+     * @param {Object} params
+     * @function
+     * @memberOf ShortcutArea#
+     */
     activateSelected: function(button, params) {
         if (this._shortcutGrid.isVisible()) {
             this._shortcutGrid.activateSelected(button, params);
@@ -900,7 +1090,15 @@ const ShortcutArea = new Lang.Class({
             this._shortcutList.activateSelected(button, params);
         }
     },
-    
+
+    /**
+     * @description Helper to adjust the scroll state according to the selected
+     *              button.
+     * @param {BOX} activeView
+     * @private
+     * @function
+     * @memberOf ShortcutArea#
+     */
     _scrollToSelectedButton: function(activeView) {
         let vscroll = this.actor.get_vscroll_bar();
         let btn = activeView.getSelectedButton();
@@ -909,18 +1107,19 @@ const ShortcutArea = new Lang.Class({
         }
         let buttonBox = btn.actor.get_allocation_box();
 
-        let current_scroll_value = vscroll.get_adjustment().get_value();
-        let box_height = this.actor.get_allocation_box().y2 - this.actor.get_allocation_box().y1;
-        let new_scroll_value = current_scroll_value;
+        // This code adjusts the vertical scrollbar.
+        let currentScrollValue = vscroll.get_adjustment().get_value();
+        let boxHeight = this.actor.get_allocation_box().y2 - this.actor.get_allocation_box().y1;
+        let newScrollValue = currentScrollValue;
 
-        if (current_scroll_value > buttonBox.y1 - 20) {
-            new_scroll_value = buttonBox.y1 - 20;
+        if (currentScrollValue > buttonBox.y1 - 20) {
+            newScrollValue = buttonBox.y1 - 20;
         }
-        if (box_height + current_scroll_value < buttonBox.y2 + 20) {
-            new_scroll_value = buttonBox.y2 - box_height + 20;
+        if (boxHeight + currentScrollValue < buttonBox.y2 + 20) {
+            newScrollValue = buttonBox.y2 - boxHeight + 20;
         }
-        if (new_scroll_value != current_scroll_value) {
-            vscroll.get_adjustment().set_value(new_scroll_value);
+        if (newScrollValue != currentScrollValue) {
+            vscroll.get_adjustment().set_value(newScrollValue);
         }
     },
 });

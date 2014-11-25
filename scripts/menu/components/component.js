@@ -1,6 +1,5 @@
 /*
     Copyright (C) 2014-2015, THE PANACEA PROJECTS <panacier@gmail.com>
-    Copyright (C) 2014-2015, AxP <Der_AxP@t-online.de>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -25,18 +24,33 @@ const Me = imports.misc.extensionUtils.getCurrentExtension();
 const Log = Me.imports.scripts.misc.log;
 
 
+
 /**
- * @class Component: Represents a basic menu component and provides some often
- *                   used functions.
+ * @class Component
+ * 
+ * @classdesc Represents a basic menu component and provides some often used
+ *            functions. Some of the declared functions are not implemented and
+ *            need to be created by subclasses.
+ *
+ * @description The subclasses need valid instances of model and mediator to
+ *              work properly. After init you can also access a menuSettings
+ *              instance from the mediator to receive the current menustate.
+ *              This is needed to get new iconsizes or other layout changes.
+ *              The model provides you with data which is read from the system.
+ *              With the mediator you can access other components. Dont access
+ *              them directly to reduce the complexity.
+ *
  *
  * @param {MenuModel} model A model instance.
  * @param {MenuMediator} mediator A mediator instance.
  *
  * @property {MenuModel} model The model instance.
  * @property {MenuMediator} mediator The mediator instance.
+ * @property {MenuSettings} menuSettings The mediator menuSettings instance.
  *
  *
- * @author AxP
+ * @author AxP <Der_AxP@t-online.de>
+ * @author passingthru67 <panacier@gmail.com>
  * @version 1.0
  */
 const Component = new Lang.Class({
@@ -56,8 +70,8 @@ const Component = new Lang.Class({
 
     /**
      * @description Hides the component.
-     * @public
      * @function
+     * @memberOf Component#
      */
     hide: function() {
         if (this.actor) {
@@ -67,8 +81,8 @@ const Component = new Lang.Class({
 
     /**
      * @description Shows the component.
-     * @public
      * @function
+     * @memberOf Component#
      */
     show: function() {
         if (this.actor) {
@@ -79,8 +93,8 @@ const Component = new Lang.Class({
     /**
      * @description Returns if the component is visible.
      * @returns {Boolean} Is visible.
-     * @public
      * @function
+     * @memberOf Component#
      */
     isVisible: function() {
         if (this.actor) {
@@ -91,8 +105,8 @@ const Component = new Lang.Class({
 
     /**
      * @description Toggles the visibility.
-     * @public
      * @function
+     * @memberOf Component#
      */
     toggleVisibility: function() {
         if (this.actor) {
@@ -105,18 +119,26 @@ const Component = new Lang.Class({
     },
 
     /**
-     * @description Refreshs the component. NEEDS TO BE IMPLEMENTED BY SUBCLASSES.
-     * @public
+     * @description Refreshs the component. What this actual means depends on
+     *              the subclasses but in any case it should bring the component
+     *              on the state that the settings provide.
+     *
+     *              NEEDS TO BE IMPLEMENTED BY SUBCLASSES.
      * @function
+     * @memberOf Component#
      */
     refresh: function() {
         Log.logError("Gnomenu.Component", "refresh", "Please override this method!");
     },
-    
+
     /**
-     * @description Clears all actors from the component. NEEDS TO BE IMPLEMENTED BY SUBCLASSES.
-     * @public
+     * @description Clears all actors from the component. The component should
+     *              be in empty state afterwards and it should be possible
+     *              to add elements again.
+     *
+     *              NEEDS TO BE IMPLEMENTED BY SUBCLASSES.
      * @function
+     * @memberOf Component#
      */
     clear: function() {
         Log.logError("Gnomenu.Component", "clear", "Please override this method!");
@@ -124,8 +146,8 @@ const Component = new Lang.Class({
 
     /**
      * @description Destroys the component.
-     * @public
      * @function
+     * @memberOf Component#
      */
     destroy: function() {
         if (this.actor) {
@@ -135,15 +157,25 @@ const Component = new Lang.Class({
 });
 
 
+
 /**
- * @class UpdateableComponent: Represents a component which is updateable.
+ * @class UpdateableComponent
  * @extends Component
+ *
+ * @classdesc Represents a component which is updateable. It takes the methods from
+ *            the component class and adds an update method. This method is used
+ *            by the model observer to update the components. @see Component
+ *
+ * @description @see Component
+ * 
  *
  * @param {MenuModel} model A model instance.
  * @param {MenuMediator} mediator A mediator instance.
+ * @property {MenuSettings} menuSettings The mediator menuSettings instance.
  *
  *
- * @author AxP
+ * @author AxP <Der_AxP@t-online.de>
+ * @author passingthru67 <panacier@gmail.com>
  * @version 1.0
  */
 const UpdateableComponent = new Lang.Class({
@@ -158,11 +190,13 @@ const UpdateableComponent = new Lang.Class({
 
     /**
      * @description Tells the component that it is outdated and it needs to get
-     *              new data from the model. NEEDS TO BE IMPLEMENTED BY SUBCLASSES.
+     *              new data from the model.
+     *
+     *              NEEDS TO BE IMPLEMENTED BY SUBCLASSES.
      * @param {Object} event The event object that provides some information about
      *                 the update.
-     * @public
      * @function
+     * @memberOf UpdateableComponent#
      */
     update: function(event) {
         Log.logError("Gnomenu.UpdateableComponent", "update", "Please override this method!");

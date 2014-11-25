@@ -18,7 +18,7 @@ const PanelBox = new Lang.Class({
     _init: function(settings) {
         this.actor = new St.BoxLayout({ style_class: 'gnomenu-panel-box' });
         
-        this._buttonOne = new MenuButton("Gno", "view-grid-symbolic", true);
+        this._buttonOne = new MenuButton("", "view-grid-symbolic", true);
         this._buttonOne.setMenu(new Menu(this._buttonOne.actor, settings));
         this.actor.add(this._buttonOne.container);
         

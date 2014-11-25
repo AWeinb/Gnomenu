@@ -1,6 +1,5 @@
 /*
     Copyright (C) 2014-2015, THE PANACEA PROJECTS <panacier@gmail.com>
-    Copyright (C) 2014-2015, AxP <Der_AxP@t-online.de>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -25,11 +24,25 @@ const MenuModel = Me.imports.scripts.menu.menuModel;
 const Component = Me.imports.scripts.menu.components.component.Component;
 const IconButton = Me.imports.scripts.menu.components.elements.menubutton.IconButton;
 
-const MOUSEBUTTON = Me.imports.scripts.menu.components.elements.menubutton.MOUSEBUTTON;
 
 /**
- * @class PreferencesButton: This Class create the preferences button in the top right corner.
+ * Simple Enum which provides a mousebutton to id mapping.
+ * @private
+ */
+const MOUSEBUTTON = Me.imports.scripts.menu.components.elements.menubutton.MOUSEBUTTON;
+
+
+
+/**
+ * @class PreferencesButton
  * @extends Component
+ *
+ * @classdesc This component is a single button to open the settings and the
+ *            extension preferences. It is addable to all major layouts such as
+ *            the boxlayout.
+ *
+ * @description @see Component
+ * 
  *
  * @param {MenuModel} model A model instance.
  * @param {MenuMediator} mediator A mediator instance.
@@ -37,7 +50,8 @@ const MOUSEBUTTON = Me.imports.scripts.menu.components.elements.menubutton.MOUSE
  * @property {Clutter.Actor} actor The clutter actor of this component.
  *
  *
- * @author AxP
+ * @author AxP <Der_AxP@t-online.de>
+ * @author passingthru67 <panacier@gmail.com>
  * @version 1.0
  */
 const PreferencesButton = new Lang.Class({
@@ -50,18 +64,19 @@ const PreferencesButton = new Lang.Class({
         this.parent(model, mediator);
 
         this.actor = new St.Bin();
-        
+
+        // Refresh creates the element.
         this.refresh();
     },
 
     /**
-     * @description Use this function to bring the view up-to-date.
-     * @public
+     * @description Use this function to bring the starting state.
      * @function
+     * @memberOf PreferencesButton#
      */
     refresh: function() {
         this.clear();
-        
+
         let iconSize = this.menuSettings.getLayoutDependendIconsize();
         let extensionPreferencesBtn = new IconButton(this.mediator, 'control-center-alt-symbolic', iconSize, 'Settings', 'Settings Description');
 
@@ -82,8 +97,8 @@ const PreferencesButton = new Lang.Class({
 
     /**
      * @description Use this function to remove all actors from the component.
-     * @public
      * @function
+     * @memberOf PreferencesButton#
      */
     clear: function() {
         let actors = this.actor.get_children();
@@ -97,8 +112,8 @@ const PreferencesButton = new Lang.Class({
 
     /**
      * @description Use this function to destroy the component.
-     * @public
      * @function
+     * @memberOf PreferencesButton#
      */
     destroy: function() {
         this.clear();

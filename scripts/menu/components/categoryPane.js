@@ -1,6 +1,5 @@
 /*
     Copyright (C) 2014-2015, THE PANACEA PROJECTS <panacier@gmail.com>
-    Copyright (C) 2014-2015, AxP <Der_AxP@t-online.de>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -27,23 +26,44 @@ const MenuModel = Me.imports.scripts.menu.menuModel;
 const TextToggleButton = Me.imports.scripts.menu.components.elements.menubutton.TextToggleButton;
 const ButtonGroup = Me.imports.scripts.menu.components.elements.menubutton.ButtonGroup;
 
-const MOUSEBUTTON = Me.imports.scripts.menu.components.elements.menubutton.MOUSEBUTTON;
 const ECategoryID = MenuModel.ECategoryID;
 const ECategoryDescriptionID = MenuModel.ECategoryDescriptionID;
 
+/**
+ * Simple Enum which provides a mousebutton to id mapping.
+ * @private
+ */
+const MOUSEBUTTON = Me.imports.scripts.menu.components.elements.menubutton.MOUSEBUTTON;
+
 
 /**
- * @class CategoryPane: Represents the small category panel above the
- *                      main category box.
+ * @class CategoryPane
  * @extends Component
+ * 
+ * @classdesc This class creates a small pane with category buttons. It
+ *            contains toggle buttons that show which category is active. You
+ *            can also set the selected category programmatically. If you
+ *            provide an valid id the corresponding category is selected, if
+ *            not no category is selected. It is possible to refresh this
+ *            component. This triggers a complete rebuild of the component
+ *            which is probably not needed very often. It is possible to add
+ *            the actor of this class to a normal boxlayout.
+ * 
+ * @description You need to provide valid instances of model and mediator. The
+ *              model is needed to receive current data which then is displayed.
+ *              The mediator is used to interact with the other components of
+ *              the menu. So it is not allowed to call the methods of any other
+ *              component directly.
+ *
  *
  * @param {MenuModel} model A model instance.
  * @param {MenuMediator} mediator A mediator instance.
  *
  * @property {Clutter.Actor} actor The clutter actor of this component.
  *
- * 
- * @author AxP
+ *
+ * @author AxP <Der_AxP@t-online.de>
+ * @author passingthru67 <panacier@gmail.com>
  * @version 1.0
  */
 const CategoryPane = new Lang.Class({
@@ -55,6 +75,8 @@ const CategoryPane = new Lang.Class({
     _init: function(model, mediator) {
         this.parent(model, mediator);
 
+        // The buttons are in a buttongroup so it would be no problem to
+        // implement keyboard controls.
         this.actor = new St.BoxLayout({ style_class: 'gnomenu-categorypanel-box' });
         this._buttonGroup = new ButtonGroup();
 
@@ -62,13 +84,14 @@ const CategoryPane = new Lang.Class({
     },
 
     /**
-     * @description Use this function to bring the view up-to-date.
-     * @public
+     * @description Use this function to bring the view to a fresh state. This
+     *              recreates the component completely.
      * @function
+     * @memberof CategoryPane#
      */
     refresh: function() {
         this.clear();
-        
+
         // Creates the recent category button.
         let recentCategoryBtn = new TextToggleButton(this.mediator, ECategoryID.RECENTFILES, ECategoryID.RECENTFILES, ECategoryDescriptionID.RECENTFILES);
         recentCategoryBtn.setID(ECategoryID.RECENTFILES);
@@ -111,17 +134,20 @@ const CategoryPane = new Lang.Class({
 
     /**
      * @description This function returns the callback for the buttons.
-     * @returns {Bound Function} A callback that triggers a category change.
+     * @param {StringEnum} categoryID The enum string that is used as id. @see MenuModel
+     * @returns {Callback} A callback that triggers a category change.
      * @private
      * @function
+     * @memberof CategoryPane#
      */
     _getCallback: function(categoryID) {
         return Lang.bind(this, function(isSelected) {
-            log(categoryID, isSelected)
+            // If the button is deselected then the default category is applied.
             let cat = this.menuSettings.getDefaultShortcutAreaCategory();
             if (isSelected) {
                 cat = categoryID;
             }
+            // The mediator is notified that a category changed.
             this.mediator.notifyCategoryChange(cat);
 
             return true;
@@ -130,8 +156,10 @@ const CategoryPane = new Lang.Class({
 
     /**
      * @description Use this function to remove all actors from the component.
-     * @public
+     *              After this call the actor is empty and the date got
+     *              deleted.
      * @function
+     * @memberof CategoryPane#
      */
     clear: function() {
         let actors = this.actor.get_children();
@@ -148,8 +176,8 @@ const CategoryPane = new Lang.Class({
 
     /**
      * @description Use this function to destroy the component.
-     * @public
      * @function
+     * @memberof CategoryPane#
      */
     destroy: function() {
         this.clear();
@@ -157,10 +185,13 @@ const CategoryPane = new Lang.Class({
     },
 
     /**
-     * @description Use this function to select a button by category ID.
-     * @param {Enum String} The category id that the button handles.
-     * @public
+     * @description Use this function to select a button by category ID. You
+     *              may provide wrong or unregistered ids to spare an
+     *              extra check. In this case no button is selected and all
+     *              are after this deselected.
+     * @param {StringEnum} categoryID The category id that the button handles.
      * @function
+     * @memberof CategoryPane#
      */
     selectCategory: function(categoryID) {
         // For this to work the buttons need to have their category id.
@@ -168,10 +199,9 @@ const CategoryPane = new Lang.Class({
     },
 
     /**
-     * @description Use this function to deselect all buttons. May be needed in
-     * combination with the main category box.
-     * @public
+     * @description Use this function to deselect all buttons.
      * @function
+     * @memberof CategoryPane#
      */
     deselectButtons: function() {
         this._buttonGroup.clearButtonStates();

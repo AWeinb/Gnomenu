@@ -1,8 +1,9 @@
 /*
     Copyright (C) 2014-2015, Gnome Shell
     
-    Modified by THE PANACEA PROJECTS <panacier@gmail.com>
-                AxP                  <Der_AxP@t-online.de>
+    Modified by passingthru67 <panacier@gmail.com> and
+                AxP <Der_AxP@t-online.de>
+    to fit better into the menu.
 */
 
 const Clutter = imports.gi.Clutter;

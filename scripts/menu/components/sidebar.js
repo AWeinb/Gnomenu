@@ -1,6 +1,5 @@
 /*
     Copyright (C) 2014-2015, THE PANACEA PROJECTS <panacier@gmail.com>
-    Copyright (C) 2014-2015, AxP <Der_AxP@t-online.de>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -28,16 +27,32 @@ const DraggableIconButton = Me.imports.scripts.menu.components.elements.menubutt
 const ButtonGroup = Me.imports.scripts.menu.components.elements.menubutton.ButtonGroup;
 const UpdateableComponent = Me.imports.scripts.menu.components.component.UpdateableComponent;
 
-const MOUSEBUTTON = Me.imports.scripts.menu.components.elements.menubutton.MOUSEBUTTON;
-
 const ECategoryID = MenuModel.ECategoryID;
 const EEventType = MenuModel.EEventType;
 
+/**
+ * Simple Enum which provides a mousebutton to id mapping.
+ * @private
+ */
+const MOUSEBUTTON = Me.imports.scripts.menu.components.elements.menubutton.MOUSEBUTTON;
+
+
 
 /**
- * @class Sidebar: Represents a vertical box of buttons. In this context used for
- *                 often used applications.
+ * @class Sidebar
  * @extends UpdateableComponent
+ *
+ * @classdesc This component keeps at the moment only the favorites or the places.
+ *            It is a simple button bar without special functionallity. It would be
+ *            nice to implement the normal Gnome Dock features some time. It is a
+ *            scrollview, so you can add it in a normal boxlayout. Because the
+ *            buttons are ordered in a buttongroup it is possible to control them
+ *            easily with the keyboard. Just set the keyfocus to this component. It
+ *            is neccessary to provide the component with update events from the
+ *            model to keep it up-to-date.
+ *
+ * @description @see UpdateableComponent
+ * 
  *
  * @param {MenuModel} model A model instance.
  * @param {MenuMediator} mediator A mediator instance.
@@ -45,7 +60,8 @@ const EEventType = MenuModel.EEventType;
  * @property {Clutter.Actor} actor The clutter actor of this component.
  *
  *
- * @author AxP
+ * @author AxP <Der_AxP@t-online.de>
+ * @author passingthru67 <panacier@gmail.com>
  * @version 1.0
  */
 const Sidebar = new Lang.Class({
@@ -63,9 +79,10 @@ const Sidebar = new Lang.Class({
         this._mainBox = new St.BoxLayout({ style_class: 'gnomenu-sidebar-box', vertical: true });
 
         let scrollBox = new St.ScrollView({ x_fill: true, y_fill: false, y_align: St.Align.START, style_class: 'gnomenu-sidebar-scrollbox' });
-        scrollBox.add_actor(this._mainBox);
-        scrollBox.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.NEVER);
+        // Mousescrolling yes but without any bars.
         scrollBox.set_mouse_scrolling(true);
+        scrollBox.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.NEVER);
+        scrollBox.add_actor(this._mainBox);
         this.actor = scrollBox;
 
         // To enable keyboard navigation the press event is connected to a function.
@@ -77,13 +94,13 @@ const Sidebar = new Lang.Class({
 
     /**
      * @description Use this function to bring the view up-to-date.
-     * @public
      * @function
+     * @memberOf Sidebar#
      */
     refresh: function() {
         // Remove the old buttons.
         this.clear();
-        
+
         if (!this.menuSettings.isSidebarVisible()) {
             this.actor.hide();
         } else {
@@ -118,8 +135,8 @@ const Sidebar = new Lang.Class({
 
     /**
      * @description Use this function to remove all actors from the component.
-     * @public
      * @function
+     * @memberOf Sidebar#
      */
     clear: function() {
         let actors = this._mainBox.get_children();
@@ -136,8 +153,8 @@ const Sidebar = new Lang.Class({
 
     /**
      * @description Use this function to destroy the component.
-     * @public
      * @function
+     * @memberOf Sidebar#
      */
     destroy: function() {
         if (this._keyPressID > 0) {
@@ -155,16 +172,16 @@ const Sidebar = new Lang.Class({
      *                       With this type it is decided if the component needs
      *                       to be updated. If this parameter is null the component
      *                       is updated.
-     * @public
      * @function
+     * @memberOf Sidebar#
      */
     update: function(event) {
         if (!event) {
             event = { type: EEventType.DATA_FAVORITES_EVENT };
         }
-        
+
         switch (event.type) {
-            
+
             case EEventType.DATA_FAVORITES_EVENT:
                 this.refresh();
                 break;
@@ -172,23 +189,25 @@ const Sidebar = new Lang.Class({
             case EEventType.DATA_PLACES_EVENT:
                 this.refresh();
                 break;
-            
+
             default:
                 break;
         }
     },
-    
+
     /**
      * @description This function handles the keyboard events.
      * @param {Clutter.Actor} actor
      * @param {Clutter.Event} event
-     *
+     * @param {Boolean} mediatorCall If called from the mediator.
+     * @returns {Boolean}
      * @private
      * @function
+     * @memberOf Sidebar#
      */
-    _onKeyboardEvent: function(actor, event, firstCall) {
+    _onKeyboardEvent: function(actor, event, mediatorCall) {
         log("Sidebar received key event!");
-        
+
         let state = event.get_state();
         let ctrl_pressed = (state & Clutter.ModifierType.CONTROL_MASK ? true : false);
         let symbol = event.get_key_symbol();
@@ -217,15 +236,18 @@ const Sidebar = new Lang.Class({
                 this.mediator.moveKeyFocusRight(actor, event);
                 returnVal = Clutter.EVENT_STOP;
                 break;
-            
+
             case Clutter.KEY_Tab:
                 this._buttongroup.clearButtonStates();
                 this.mediator.moveKeyFocusRight(actor, event);
                 returnVal = Clutter.EVENT_STOP;
                 break;
-                
+
             case Clutter.KEY_Return:
                 this._buttongroup.clearButtonStates();
+                // The control key is used to activate already open apps.
+                // Or actually to activate the action connected to the middle button.
+                // But thats at the moment the reactivate action.
                 if (ctrl_pressed) {
                     this._buttongroup.activateSelected(MOUSEBUTTON.MOUSE_MIDDLE);
                 } else {

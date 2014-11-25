@@ -338,15 +338,15 @@ const MenuMediator = new Lang.Class({
     },
     
     notifyDragBegin: function() {
-        this._navigationArea._onDragBegin();
+        this._navigationArea.onDragBegin();
     },
 
     notifyDragCancelled: function() {
-        this._navigationArea._onDragCancelled();
+        this._navigationArea.onDragCancelled();
     },
 
     notifyDragEnd: function() {
-        this._navigationArea._onDragEnd();
+        this._navigationArea.onDragEnd();
     },
     
     notifyCategoryChange: function(categoryID) {
@@ -355,6 +355,7 @@ const MenuMediator = new Lang.Class({
             this._navigationArea.selectCategory(categoryID);
             this._categoryPane.selectCategory(categoryID);
             this._mainArea.showCategory(categoryID);
+            this.resetKeyFocus();
         }
     },
     
