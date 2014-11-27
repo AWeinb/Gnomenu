@@ -32,7 +32,7 @@ const EViewMode = MenuModel.EViewMode;
  * Simple Enum which provides a mousebutton to id mapping.
  * @private
  */
-const MOUSEBUTTON = Me.imports.scripts.menu.components.elements.menubutton.MOUSEBUTTON;
+const MOUSEBUTTON = Me.imports.scripts.menu.components.elements.menubutton.EMousebutton;
 
 
 
@@ -127,6 +127,15 @@ const ViewModePane = new Lang.Class({
      */
     destroy: function() {
         this.actor.destroy();
+    },
+    
+    /**
+     * @description Removes unneeded effects like the hover style.
+     * @function
+     * @memberof ViewModePane#
+     */
+    clean: function() {
+        this._buttonGroup.clean();
     },
 
     /**

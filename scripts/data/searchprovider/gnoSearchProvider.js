@@ -1,3 +1,20 @@
+/*
+    Copyright (C) 2014-2015, THE PANACEA PROJECTS <panacier@gmail.com>
+
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software Foundation,
+    Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
+*/
 
 const GLib = imports.gi.GLib;
 const Gio = imports.gi.Gio;
@@ -12,12 +29,34 @@ const Log = Me.imports.scripts.misc.log;
 const AbstractSearchProvider = Me.imports.scripts.data.searchprovider.abstractSearchProvider.AbstractSearchProvider;
 const SearchLaunchable = Me.imports.scripts.data.launchable.SearchLaunchable;
 
-
+/**
+ * @description Dialog title.
+ * @private
+ */
 const GNO_NAME = 'Gno the Gnominator';
+/**
+ * @description Command that is executed when the dialog is run.
+ * @private
+ */
 const GNO_COMMAND = 'fortune';
+/**
+ * @description Terms that show the fortune button.
+ */
 const MAGIC_GNO_KEY = 'free the gno';
 
 
+/**
+ * @class FortuneDialog
+ *
+ * @classdesc Copy of the wanda fortune dialog of the Gnome Shell.
+ *
+ * @description .
+ * 
+ *
+ * @author AxP <Der_AxP@t-online.de>
+ * @author passingthru67 <panacier@gmail.com>
+ * @version 1.0
+ */
 const FortuneDialog = new Lang.Class({
     
     Name: 'GnoMenu.FortuneDialog',
@@ -53,6 +92,11 @@ const FortuneDialog = new Lang.Class({
         GLib.timeout_add_seconds(GLib.PRIORITY_DEFAULT, 10, Lang.bind(this, this.destroy));
     },
 
+    /**
+     * @description Destroys the dialog.
+     * @function
+     * @memberOf FortuneDialog#
+     */
     destroy: function() {
         this._bin.destroy();
     }
@@ -60,6 +104,19 @@ const FortuneDialog = new Lang.Class({
 
 
 
+/**
+ * @class GnoSearchProvider
+ * @extends AbstractSearchProvider
+ *
+ * @classdesc Copy of the wanda fortune search provider.
+ *
+ * @description .
+ * 
+ *
+ * @author AxP <Der_AxP@t-online.de>
+ * @author passingthru67 <panacier@gmail.com>
+ * @version 1.0
+ */
 const GnoSearchProvider = new Lang.Class({
     
     Name: 'GnoMenu.GnoSearchProvider',
@@ -72,21 +129,42 @@ const GnoSearchProvider = new Lang.Class({
         this.reset();
     },
     
+    /**
+     * @description Resets the provider.
+     * @function
+     * @memberOf GnoSearchProvider#
+     */
     reset: function() {
         this._results = null;
     },
     
+    /**
+     * @description Returns a list of results optinally filtered.
+     * @param {Object} filterParams
+     * @returns {List}
+     * @function
+     * @memberOf GnoSearchProvider#
+     */
     getResults: function(filterParams) {
         return this._results;
     },
 
+    /**
+     * @description Returns the refined searchresults created from the raw results.
+     * @param {List} apps
+     * @returns {SearchLaunchableList}
+     * @function
+     * @memberOf GnoSearchProvider#
+     */
     getResultMetas: function(gno) {
         if (gno && gno.length > 0) {
             let name = gno[0];
             let description = "";
             let getIconFunc = function() {
+                // I thought a monkey would be somewhat funny.
                 return Gio.icon_new_for_string('face-monkey-symbolic');
             }
+            // Creates on launch the dialog.
             let launchFunc = Lang.bind(this, function(openNew, params) {
                 if (this._dialog)
                     this._dialog.destroy();
@@ -100,10 +178,12 @@ const GnoSearchProvider = new Lang.Class({
         return [];
     },
 
-    filterResults: function(results) {
-        return results;
-    },
-
+    /**
+     * @description Receives the startset of results for a search run. Calls
+     *              the updateCallback afterwards.
+     * @function
+     * @memberOf GnoSearchProvider#
+     */
     getInitialResultSet: function(terms) {
         if (terms && terms.join(' ') == MAGIC_GNO_KEY) {
             this._results = [ GNO_NAME ];
@@ -116,6 +196,12 @@ const GnoSearchProvider = new Lang.Class({
         }
     },
 
+    /**
+     * @description Refines the current search run. Calls the updateCallback
+     *              afterwards.
+     * @function
+     * @memberOf GnoSearchProvider#
+     */
     getSubsearchResultSet: function(terms) {
         this.getInitialResultSet(terms);
         

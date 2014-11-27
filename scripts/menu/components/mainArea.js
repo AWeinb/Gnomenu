@@ -35,7 +35,7 @@ const EViewMode = MenuModel.EViewMode;
  * Simple Enum which provides a mousebutton to id mapping.
  * @private
  */
-const MOUSEBUTTON = Me.imports.scripts.menu.components.elements.menubutton.MOUSEBUTTON;
+const MOUSEBUTTON = Me.imports.scripts.menu.components.elements.menubutton.EMousebutton;
 /**
  * Used to slow down the button switching by keyboard.
  * @private
@@ -136,15 +136,20 @@ const MainArea = new Lang.Class({
      * @memberOf MainArea#
      */
     destroy: function() {
-        if (this._keyPressID > 0) {
-            this.actor.disconnect(this._keyPressID);
-            this._keyPressID = undefined;
-        }
-
         this._resultArea.destroy();
         this._shortcutArea.destroy();
 
         this.actor.destroy();
+    },
+    
+    /**
+     * @description Removes unneeded effects like the hover style.
+     * @function
+     * @memberof MainArea#
+     */
+    clean: function() {
+        this._resultArea.clean();
+        this._shortcutArea.clean();
     },
 
     /**
@@ -225,11 +230,11 @@ const MainArea = new Lang.Class({
         switch (this._viewmode) {
 
             case EViewMode.LIST:
-                this.setViewMode(EViewMode.GRID);
+                this.mediator.setViewMode(EViewMode.GRID);
                 break;
 
             case EViewMode.GRID:
-                this.setViewMode(EViewMode.LIST);
+                this.mediator.setViewMode(EViewMode.LIST);
                 break;
 
             default:

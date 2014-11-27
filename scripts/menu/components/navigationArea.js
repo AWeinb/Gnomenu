@@ -40,7 +40,7 @@ const ESelectionMethod = MenuModel.ESelectionMethod;
  * Simple Enum which provides a mousebutton to id mapping.
  * @private
  */
-const MOUSEBUTTON = Me.imports.scripts.menu.components.elements.menubutton.MOUSEBUTTON;
+const MOUSEBUTTON = Me.imports.scripts.menu.components.elements.menubutton.EMousebutton;
 /**
  * Delay between two workspace changes.
  * @private
@@ -303,9 +303,6 @@ const WorkspaceBox = new Lang.Class({
      * @memberOf WorkspaceBox#
      */
     destroy: function() {
-        if (this._actorLeaveEventID) {
-            this.actor.disconnect(this._actorLeaveEventID);
-        }
         this._thumbnailsBox.destroyThumbnails();
         this.actor.destroy();
     }
@@ -492,9 +489,17 @@ const CategoryBox = new Lang.Class({
      * @memberOf CategoryBox#
      */
     destroy: function() {
-        this.clear();
         this.actor.destroy();
-    }
+    },
+    
+    /**
+     * @description Removes unneeded effects like the hover style.
+     * @function
+     * @memberof CategoryBox#
+     */
+    clean: function() {
+        this._buttonGroup.clean();
+    },
 });
 
 
@@ -615,25 +620,19 @@ const NavigationArea = new Lang.Class({
      * @memberOf NavigationArea#
      */
     destroy: function() {
-        if (this._mouseReleaseID > 0) {
-            this.actor.disconnect(this._mouseReleaseID);
-            this._mouseReleaseID = undefined;
-        }
-
-        if (this._keyPressID > 0) {
-            this.actor.disconnect(this._keyPressID);
-            this._keyPressID = undefined;
-        }
-
-        if (this._scrollID > 0) {
-            this.actor.disconnect(this._scrollID);
-            this._scrollID = undefined;
-        }
-
         this._workspaceBox.destroy();
         this._categoryBox.destroy();
 
         this.actor.destroy();
+    },
+    
+    /**
+     * @description Removes unneeded effects like the hover style.
+     * @function
+     * @memberof NavigationArea#
+     */
+    clean: function() {
+        this._categoryBox.clean();
     },
 
     /**

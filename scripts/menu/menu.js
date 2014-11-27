@@ -1,6 +1,5 @@
 /*
     Copyright (C) 2014-2015, THE PANACEA PROJECTS <panacier@gmail.com>
-    Copyright (C) 2014-2015, AxP <Der_AxP@t-online.de>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -44,16 +43,27 @@ const DescriptionBox = Me.imports.scripts.menu.components.descriptionBox.Descrip
 const PreferencesButton = Me.imports.scripts.menu.components.preferencesButton.PreferencesButton;
 
 
+
 /**
- * @class Menu: This class creates the entire menu. The menu is build from
- *              many components. This components are not connected to each other
- *              but communicate over an observer and mediator.
+ * @class Menu
+ * @extends PopupMenu
  *
- * @param {Clutter.Actor} sourceActor The button.
- * @param {Settings} settings
+ * @classdesc This class creates all components of the menu. It is a popupmenu
+ *            and can be integrated into a menubutton. This class controls
+ *            not much of the menu but creates every component and connects
+ *            them.
+ *
+ * @description The sourceActor can be the menubutton actor that opens this menu.
+ *              The settings are an instance of the gsettings. You must provide
+ *              non-null instances.
+ * 
+ *
+ * @param {Clutter.Actor} sourceActor The button that triggers the menu.
+ * @param {Settings} settings A gsettings instance.
  *
  *
- * @author AxP
+ * @author AxP <Der_AxP@t-online.de>
+ * @author passingthru67 <panacier@gmail.com>
  * @version 1.0
  */
 const Menu = new Lang.Class({
@@ -102,9 +112,65 @@ const Menu = new Lang.Class({
     },
     
     /**
+     * @description Destroys the menu.
+     * @function
+     * @memberOf Menu#
+     */
+    destroy: function() {
+        if (this._onOpenStateId > 0) {
+            this._section.disconnect(this._onOpenStateId);
+            this._onOpenStateId = undefined;
+        }
+        
+        if (this._keyPressID > 0) {
+            this.actor.disconnect(this._keyPressID);
+            this._keyPressID = undefined;
+        }
+        
+        if (this._fixLoop) {
+            Mainloop.source_remove(this._fixLoop);
+        }
+        
+        this._categoryPane.destroy();
+        this._viewModePane.destroy();
+        this._searchField.destroy();
+        this._sidebar.destroy();
+        this._navigationArea.destroy();
+        this._mainArea.destroy();
+        this._controlPane.destroy();
+        this._descriptionBox.destroy();
+        this._extensionPrefButton.destroy();
+        
+        this._model.destroy();
+        this._modelObserver.destroy();
+        this._mediator.destroy();
+        this._menuSearch.destroy();
+        
+        this._section.destroy();
+        
+        this._categoryPane = undefined;
+        this._viewModePane = undefined;
+        this._searchField = undefined;
+        this._sidebar = undefined;
+        this._navigationArea = undefined;
+        this._mainArea = undefined;
+        this._controlPane = undefined;
+        this._descriptionBox = undefined;
+        this._extensionPrefButton = undefined;
+        
+        this._model = undefined;
+        this._menuSearch = undefined;
+        
+        this._section = undefined;
+        
+        this.removeAll();
+    },
+    
+    /**
      * @description This creates the menu components and adds them to the section.
      * @private
      * @function
+     * @memberOf Menu#
      */
     _create: function() {
         // mainbox holds the topPane and bottomPane
@@ -159,6 +225,7 @@ const Menu = new Lang.Class({
      * @description Fixes the height and width of the elements.
      * @private
      * @function
+     * @memberOf Menu#
      */
     _fixElements: function() {
         let menuSettings = this._mediator.getMenuSettings();
@@ -170,7 +237,7 @@ const Menu = new Lang.Class({
         }
         
         // To be sure i wait again some time to prevent errors.
-        Mainloop.timeout_add(200, Lang.bind(this, function() {
+        this._fixLoop = Mainloop.timeout_add(200, Lang.bind(this, function() {
         
             // This fixes the height.
             let height = this._navigationArea.actor.height;
@@ -200,6 +267,7 @@ const Menu = new Lang.Class({
      * @description This sets up the model and mediator stuff for the components.
      * @private
      * @function
+     * @memberOf Menu#
      */
     _initMenu: function() {
         // The model sends messages to this components if it changes.
@@ -218,6 +286,9 @@ const Menu = new Lang.Class({
         this._mediator.setExtensionPrefButton(this._extensionPrefButton);
         
         this._registerSettingCallbacks();
+        
+        this._mediator.resetKeyFocus();
+        this._mediator.stopSearch();
     },
     
     /**
@@ -225,6 +296,7 @@ const Menu = new Lang.Class({
      *              is handleable here.
      * @private
      * @function
+     * @memberOf Menu#
      */
     _registerSettingCallbacks: function() {
         let menuSettings = this._mediator.getMenuSettings();
@@ -298,76 +370,11 @@ const Menu = new Lang.Class({
      * @description Handles the keyboard events.
      * @private
      * @function
+     * @memberOf Menu#
      */
     _handleKeyboardEvents: function(actor, event) {
         // Actually the mediator handles it.
         this._mediator._onKeyboardEvent(actor, event);
         return true;
-    },
-    
-    /**
-     * @description Resets the whole menu. It is essentially recreated.
-     * @public
-     * @function
-     */
-    reset: function() {
-        let actors = this._section.actor.get_children();
-        if (actors) {
-            for each (let actor in actors) {
-                this._section.actor.remove_actor(actor);
-                actor.destroy();
-            }
-        }
-        
-        this._modelObserver.clearUpdateables();
-        
-        this._categoryPane.destroy();
-        this._viewModePane.destroy();
-        this._searchField.destroy();
-        
-        this._sidebar.destroy();
-        this._navigationArea.destroy();
-        this._mainArea.destroy();
-        
-        this._controlPane.destroy();
-        this._descriptionBox.destroy();
-        this._extensionPrefButton.destroy();
-        
-        this._create();
-        this._initMenu();
-    },
-    
-    /**
-     * @description Destroys the menu.
-     * @public
-     * @function
-     */
-    destroy: function() {
-        if (this._onOpenStateId > 0) {
-            this._section.disconnect(this._onOpenStateId);
-            this._onOpenStateId = undefined;
-        }
-        
-        if (this._keyPressID > 0) {
-            this.actor.disconnect(this._keyPressID);
-            this._keyPressID = undefined;
-        }
-        
-        this._categoryPane.destroy();
-        this._viewModePane.destroy();
-        this._searchField.destroy();
-        
-        this._sidebar.destroy();
-        this._navigationArea.destroy();
-        this._mainArea.destroy();
-        
-        this._controlPane.destroy();
-        this._descriptionBox.destroy();
-        this._extensionPrefButton.destroy();
-        
-        this._model.destroy();
-        this._menuSearch.destroy();
-        
-        this._section.destroy();
     },
 });

@@ -130,24 +130,6 @@ const SearchField = new Lang.Class({
      * @memberOf SearchField#
      */
     destroy: function() {
-        if (this._searchEntryText) {
-            this._searchEntryText.disconnect(this._keyPressID);
-            this._keyPressID = 0;
-
-            this._searchEntryText.disconnect(this._btnPressID);
-            this._btnPressID = 0;
-        }
-
-        if (this._iconClickedId > 0) {
-            this._searchEntry.disconnect(this._iconClickedId);
-            this._iconClickedId = 0;
-        }
-
-        if (this._searchTimeoutId > 0) {
-            Mainloop.source_remove(this._searchTimeoutId);
-            this._searchTimeoutId = 0;
-        }
-
         this.actor.destroy();
     },
 

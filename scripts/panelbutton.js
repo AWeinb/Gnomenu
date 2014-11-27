@@ -56,7 +56,7 @@ const PanelButton = new Lang.Class({
      * Creates the button view elements and adds them to the base actor.
      *
      */
-    _init: function(nameText, iconName, enableHotspot, buttonHandler) {
+    _init: function(nameText, iconName) {
         if (!iconName && !nameText) {
             Log.logError("Gnomenu.panelbutton.PanelButton", "_init", "Icon and label are null!");
         }
@@ -84,22 +84,32 @@ const PanelButton = new Lang.Class({
         let descBin = new St.Bin({reactive: true});
         // The box takes the icon on the left and the label on the right.
         let descBox = new St.BoxLayout();
+        
+        this._icon = new St.Icon({ margin_right: 2, style_class: 'system-status-icon gnomenu-panel-button-icon' });
         if (iconName) {
-            let icon = new St.Icon({ icon_name: iconName, margin_right: 2, style_class: 'system-status-icon gnomenu-panel-button-icon' });
-            descBox.add(icon);
+            this._icon.icon_name = iconName;
         }
+        descBox.add(this._icon);
+        
+        this._label = new St.Label();
         if (nameText) {
-            let label = new St.Label({ text: nameText});
-            descBox.add(label);
+            this._label.text = nameText;
         }
+        descBox.add(this._label);
+        
         descBin.set_child(descBox);
         // expand: true tells the system that the bin with the button should fill the place.
         mainBox.add(descBin, { expand: true });
         
         this.actor.add_actor(mainBox);
-        
-        this.setButtonHandler(buttonHandler);
-        this.setHotspotActive(enableHotspot);
+    },
+    
+    setIconName: function(iconName) {
+        this._icon.icon_name = iconName;
+    },
+    
+    setLabelText: function(text) {
+        this._label.text = text;
     },
     
     setButtonHandler: function(handler) {
@@ -118,7 +128,7 @@ const PanelButton = new Lang.Class({
             this._hotspot.disconnect(this._hotspotId);
             this._hotspotId = null;
         }
-        if (active) {
+        if (this._buttonHandler && active) {
             this._hotspotId = this._hotspot.connect('enter-event', this._buttonHandler);
         }
         this._hotspotActive = active;
@@ -159,27 +169,13 @@ const MenuButton = new Lang.Class({
     Name: 'Gnomenu.panelbutton.MenuButton',
     Extends: Button,
 
-    _hotspot: null,
-    _hotspotActive: false,
-
-    _keybindingName: null,
     
-    /**
-     * _init:
-     *  @nameText:
-     *  @iconName:
-     *  @enableHotspot:
-     *
-     */
-    _init: function(nameText, iconName, enableHotspot) {
-        if (!iconName && !nameText) {
-            Log.logWarning("Gnomenu.panelbutton.MenuButton", "_init", "Icon and label are null!");
-        }
-        
+    _init: function(nameText, iconName) {
         this.parent(0.0, nameText, true);
         this.actor.add_style_class_name('panel-status-button');
     
         this._keybindingName = null;
+        this._hotspotActive = false;
     
         // The mainBox is a vertical layout with the hotspot at the top border and the actual button below.
         let mainBox = new St.BoxLayout({ style_class: 'gnomenu-panel-button', vertical: true });
@@ -187,26 +183,38 @@ const MenuButton = new Lang.Class({
         // The hotspot has height 1 and fires if entered with the mouse.
         this._hotspot = new Clutter.Actor({ reactive: true, opacity: 0, height: 1 });
         this._hotspot.connect('enter-event', Lang.bind(this, this._onHotspotEntered));
-        this._hotspotActive = enableHotspot;
         mainBox.add(this._hotspot);
         
         // The bin is used to align the button vertically in the middle.
         let descBin = new St.Bin({reactive: true});
         // The box takes the icon on the left and the label on the right.
         let descBox = new St.BoxLayout();
+        
+        this._icon = new St.Icon({ margin_right: 2, style_class: 'system-status-icon gnomenu-panel-button-icon' });
         if (iconName) {
-            let icon = new St.Icon({ icon_name: iconName, margin_right: 2, style_class: 'system-status-icon gnomenu-panel-button-icon' });
-            descBox.add(icon);
+            this._icon.icon_name = iconName;
         }
+        descBox.add(this._icon);
+        
+        this._label = new St.Label();
         if (nameText) {
-            let label = new St.Label({ text: nameText});
-            descBox.add(label);
+            this._label.text = nameText;
         }
+        descBox.add(this._label);
+        
         descBin.set_child(descBox);
         // expand: true tells the system that the bin with the button should fill the place.
         mainBox.add(descBin, {expand: true});
         
         this.actor.add_actor(mainBox);
+    },
+    
+    setIconName: function(iconName) {
+        this._icon.icon_name = iconName;
+    },
+    
+    setLabelText: function(text) {
+        this._label.text = text;
     },
 
     setHotspotActive: function(active) {
@@ -233,9 +241,11 @@ const MenuButton = new Lang.Class({
     destroy: function() {
         this._hotspot.destroy();
         this.menu.destroy();
+        this.menu = undefined;
         
         this.setKeyboardShortcut(null, null, null);
         this.actor.destroy();
+        this.container.destroy();
     },
 
     // Override _onStyleChanged function

@@ -30,7 +30,6 @@ const DraggableGridButton = Me.imports.scripts.menu.components.elements.menubutt
 const DraggableListButton = Me.imports.scripts.menu.components.elements.menubutton.DraggableListButton;
 const Component = Me.imports.scripts.menu.components.component.Component;
 
-
 const ECategoryID = MenuModel.ECategoryID;
 const EEventType = MenuModel.EEventType;
 const EViewMode = MenuModel.EViewMode;
@@ -428,7 +427,22 @@ const ShortcutBoxBase = new Lang.Class({
         if (this.actor) {
             this.actor.destroy();
         }
-    }
+    },
+    
+    /**
+     * @description Removes unneeded effects like the hover style.
+     * @function
+     * @memberof ShortcutBoxBase#
+     */
+    clean: function() {
+        if (!this._selectedButtonMap) {
+            return;
+        }
+        
+        for each (let btn in this._selectedButtonMap) {
+            btn.clean();
+        }
+    },
 });
 
 
@@ -751,6 +765,19 @@ const ShortcutArea = new Lang.Class({
         this._shortcutGrid.destroy();
 
         this.actor.destroy();
+    },
+    
+    /**
+     * @description Removes unneeded effects like the hover style.
+     * @function
+     * @memberof ShortcutArea#
+     */
+    clean: function() {
+        if (this._shortcutList.isVisible()) {
+            this._shortcutList.clean();
+        } else {
+            this._shortcutGrid.clean();
+        }
     },
 
     /**

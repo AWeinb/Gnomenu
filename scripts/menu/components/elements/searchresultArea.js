@@ -19,6 +19,7 @@
 const Lang = imports.lang;
 const Gtk = imports.gi.Gtk;
 const St = imports.gi.St;
+const Clutter = imports.gi.Clutter;
 
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const MenuModel = Me.imports.scripts.menu.menuModel;
@@ -89,8 +90,6 @@ const ProviderResultBoxButton = new Lang.Class({
         this._btnReleaseId = this.actor.connect('button-release-event', Lang.bind(this, this._onRelease));
         this._btnEnterId = this.actor.connect('enter-event', Lang.bind(this, this._onEnter));
         this._btnLeaveId = this.actor.connect('leave-event', Lang.bind(this, this._onLeave));
-
-        this.actor.connect('notify::destroy', Lang.bind(this, this._onDestroy));
     },
 
     /**
@@ -121,28 +120,6 @@ const ProviderResultBoxButton = new Lang.Class({
      */
     setOnClickHandler: function(handler) {
         this._btnClickHandler = handler;
-    },
-
-    /**
-     * @description Destroys the component.
-     * @function
-     * @memberOf ProviderResultBoxButton#
-     */
-    _onDestroy: function() {
-        // Prevent unregister errors.
-        try {
-            this.actor.disconnect(this._btnPressId);
-            this.actor.disconnect(this._btnReleaseId);
-            this.actor.disconnect(this._btnEnterId);
-            this.actor.disconnect(this._btnLeaveId);
-            this._btnPressId = undefined;
-            this._btnReleaseId = undefined;
-            this._btnEnterId = undefined;
-            this._btnLeaveId = undefined;
-
-        } catch(e) {
-            Log.logWarning("GnoMenu.searchresultArea.ProviderResultBoxButton", "destroy", "Unregister error occured!");
-        }
     },
 
     /**
@@ -319,6 +296,15 @@ const ProviderResultList = new Lang.Class({
                 actor.destroy();
             }
         }
+    },
+    
+    /**
+     * @description Removes unneeded effects like the hover style.
+     * @function
+     * @memberof ProviderResultList#
+     */
+    clean: function() {
+        this._buttonGroup.clean();
     },
 
     /**
@@ -512,6 +498,15 @@ const ProviderResultGrid = new Lang.Class({
                 actor.destroy();
             }
         }
+    },
+    
+    /**
+     * @description Removes unneeded effects like the hover style.
+     * @function
+     * @memberof ProviderResultGrid#
+     */
+    clean: function() {
+        this._buttonGroup.clean();
     },
 
     /**
@@ -758,8 +753,27 @@ const ResultArea = new Lang.Class({
      * @memberOf ResultArea#
      */
     destroy: function() {
-        this.clear();
         this.actor.destroy();
+    },
+    
+    /**
+     * @description Removes unneeded effects like the hover style.
+     * @function
+     * @memberof ResultArea#
+     */
+    clean: function() {
+        if (!this._viewMode) {
+            return;
+        }
+        
+        let boxmap = this._viewmodeProviderBoxMap[this._viewMode];
+        if (!boxmap) {
+            return;
+        }
+        
+        for each (let box in boxmap) {
+            box.clean();
+        }
     },
 
     /**

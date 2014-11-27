@@ -33,7 +33,7 @@ const ECategoryDescriptionID = MenuModel.ECategoryDescriptionID;
  * Simple Enum which provides a mousebutton to id mapping.
  * @private
  */
-const MOUSEBUTTON = Me.imports.scripts.menu.components.elements.menubutton.MOUSEBUTTON;
+const MOUSEBUTTON = Me.imports.scripts.menu.components.elements.menubutton.EMousebutton;
 
 
 /**
@@ -180,7 +180,6 @@ const CategoryPane = new Lang.Class({
      * @memberof CategoryPane#
      */
     destroy: function() {
-        this.clear();
         this.actor.destroy();
     },
 
@@ -205,5 +204,14 @@ const CategoryPane = new Lang.Class({
      */
     deselectButtons: function() {
         this._buttonGroup.clearButtonStates();
+    },
+    
+    /**
+     * @description Removes unneeded effects like the hover style.
+     * @function
+     * @memberof CategoryPane#
+     */
+    clean: function() {
+        this._buttonGroup.clean();
     },
 });

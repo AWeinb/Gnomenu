@@ -1,6 +1,5 @@
 /*
     Copyright (C) 2014-2015, THE PANACEA PROJECTS <panacier@gmail.com>
-    Copyright (C) 2014-2015, AxP <Der_AxP@t-online.de>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -18,26 +17,39 @@
 */
 
 const Lang = imports.lang;
-const GnomeSession = imports.misc.gnomeSession;
-const LoginManager = imports.misc.loginManager;
-const Main = imports.ui.main;
-const Shell = imports.gi.Shell;
 const Clutter = imports.gi.Clutter;
+const Mainloop = imports.mainloop;
+
+const Main = imports.ui.main;
 
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const MenuSettings = Me.imports.scripts.menu.menuSettings.MenuSettings;
 const Log = Me.imports.scripts.misc.log;
 
 
+
 /**
- * @class MenuMediator: The mediator is used by the components to instruct
- *                      another component to do something.
+ * @class MenuMediator
+ *
+ * @classdesc The mediator is kinda like the glue between the different
+ *            components. That way the components are easier to replace and
+ *            you dont have to search a lot in the code to find changed
+ *            method calls. All communication is handled about this class
+ *            and non of the components know about the other components. The
+ *            methods of this class are mostly ones that are called by the
+ *            components to notify about something or methods to call
+ *            something of bigger scope.
+ *
+ * @description The constructor must be called with a valid menu and a valid
+ *              gsettings instance.
+ * 
  *
  * @param {Menu} menu
  * @param {MenuModel} model
  *
  *
- * @author AxP
+ * @author AxP <Der_AxP@t-online.de>
+ * @author passingthru67 <panacier@gmail.com>
  * @version 1.0
  */
 const MenuMediator = new Lang.Class({
@@ -49,7 +61,6 @@ const MenuMediator = new Lang.Class({
         this._menu = menu;
 
         this._menuSettings = new MenuSettings(settings);
-        this._session = new GnomeSession.SessionManager();
 
         // Scroll down for getters/setters.
         this._categoryPane = null;
@@ -69,24 +80,30 @@ const MenuMediator = new Lang.Class({
      * @description Returns the settings manager of the menu. This object bundles
      *              the settings so they can easier be modified.
      * @returns {MenuSettings}
-     * @public
      * @function
+     * @memberOf MenuMediator#
      */
     getMenuSettings: function() {
         return this._menuSettings;
+    },
+    
+    destroy: function() {
+        this._menuSettings.destroy();
     },
 
 
     // #########################################################################
     // ---
-    // Manuel controls.
+    // Manual controls.
 
     /**
      * @description This method selects a category by ID. It changes all affected
-     *              components.
-     * @param {Enum} categoryID
-     * @public
+     *              components. This is not called by the navigationarea. This
+     *              component uses a notify method to tell the mediator that
+     *              the category changed.
+     * @param {StringEnum} categoryID
      * @function
+     * @memberOf MenuMediator#
      */
     selectMenuCategory: function(categoryID) {
         this._searchField.reset();
@@ -97,10 +114,12 @@ const MenuMediator = new Lang.Class({
 
     /**
      * @description This method sets the viewmode. It changes all affected
-     *              components.
-     * @param {Enum} viewMode
-     * @public
+     *              components. It is not called by the viewmode component
+     *              but by init code. The pane itself uses a notify method to
+     *              tell the mediator that the viewmode changed.
+     * @param {IntegerEnum} viewMode
      * @function
+     * @memberOf MenuMediator#
      */
     setViewMode: function(viewMode) {
         if (viewMode) {
@@ -111,8 +130,8 @@ const MenuMediator = new Lang.Class({
 
     /**
      * @description Method to close the menu.
-     * @public
      * @function
+     * @memberOf MenuMediator#
      */
     closeMenu: function() {
         if (!this._menu) {
@@ -123,8 +142,8 @@ const MenuMediator = new Lang.Class({
 
     /**
      * @description Method to open the menu.
-     * @public
      * @function
+     * @memberOf MenuMediator#
      */
     openMenu: function() {
         if (!this._menu) {
@@ -135,8 +154,8 @@ const MenuMediator = new Lang.Class({
 
     /**
      * @description Method to toggle the menu.
-     * @public
      * @function
+     * @memberOf MenuMediator#
      */
     toggleMenu: function() {
         if (!this._menu) {
@@ -148,106 +167,6 @@ const MenuMediator = new Lang.Class({
             this.open();
         }
     },
-    
-    // #########################################################################
-    // ---
-    // Mediator <-> System
-
-    /**
-     * @description This method restarts the shell.
-     * @public
-     * @function
-     */
-    restartShell: function() {
-        // code to refresh shell
-        this.closeMenu();
-        global.reexec_self();
-    },
-
-    /**
-     * @description This method suspends the computer.
-     * @public
-     * @function
-     */
-    suspendComputer: function() {
-        // code to suspend
-        this.closeMenu();
-        //NOTE: alternate is to check if (Main.panel.statusArea.userMenu._haveSuspend) is true
-        loginManager.canSuspend(
-            function(result) {
-                if (result) {
-                    Main.overview.hide();
-                    LoginManager.getLoginManager().suspend();
-                }
-            }
-        );
-    },
-
-    /**
-     * @description This method shuts the computer down.
-     * @public
-     * @function
-     */
-    shutdownComputer: function() {
-        // code to shutdown (power off)
-        // ToDo: GS38 iterates through SystemLoginSession to check for open sessions
-        // and displays an openSessionWarnDialog
-        this.closeMenu();
-        this._session.ShutdownRemote();
-    },
-
-    /**
-     * @description This method logs the user out.
-     * @public
-     * @function
-     */
-    logoutSession: function() {
-        // code to logout user
-        this.closeMenu();
-        this._session.LogoutRemote(0);
-    },
-
-    /**
-     * @description This method locks the session.
-     * @public
-     * @function
-     */
-    lockSession: function() {
-        // code for lock options
-        this.closeMenu();
-        Main.overview.hide();
-        Main.screenShield.lock(true);
-    },
-
-    /**
-     * @description This method opens the gnome control center.
-     * @public
-     * @function
-     */
-    showSystemPreferences: function() {
-        this.closeMenu();
-        let app = Shell.AppSystem.get_default().lookup_app('gnome-control-center.desktop');
-        app.activate();
-    },
-
-    /**
-     * @description This method opens the extension settings.
-     * @public
-     * @function
-     */
-    showPreferences: function() {
-        this.closeMenu();
-        Main.Util.trySpawnCommandLine('gnome-shell-extension-prefs ' + Me.metadata['uuid']);
-    },
-
-    /**
-     * @description This method hides the overview.
-     * @public
-     * @function
-     */
-    hideOverview: function() {
-        Main.overview.hide();
-    },
 
 
     // #########################################################################
@@ -257,8 +176,8 @@ const MenuMediator = new Lang.Class({
     /**
      * @description Setter to set the searchsystem.
      * @param {SearchSystem} system
-     * @public
      * @function
+     * @memberOf MenuMediator#
      */
     setSearchSystem: function(system) {
         this._searchSystem = system;
@@ -267,9 +186,9 @@ const MenuMediator = new Lang.Class({
     /**
      * @description This method starts a search run. After the start continue with
      *              the continueSearch method.
-     * @param {List} terms
-     * @public
+     * @param {StringList} terms
      * @function
+     * @memberOf MenuMediator#
      */
     startSearch: function(terms) {
         this._searchSystem.updateSearchResults(terms);
@@ -278,18 +197,20 @@ const MenuMediator = new Lang.Class({
     /**
      * @description This method continues a search run. To end the search call
      *              stopSearch.
-     * @param {List} terms
-     * @public
+     * @param {StringList} terms
      * @function
+     * @memberOf MenuMediator#
      */
     continueSearch: function(terms) {
         this._searchSystem.updateSearchResults(terms);
     },
 
     /**
-     * @description This method stops a search run.
-     * @public
+     * @description This method stops a search run. This call makes the searchsystem
+     *              clear its buffer. You should call it when the searchfield
+     *              is cleared.
      * @function
+     * @memberOf MenuMediator#
      */
     stopSearch: function() {
         this._searchSystem.stopSearch();
@@ -300,22 +221,72 @@ const MenuMediator = new Lang.Class({
     // ---
     // Mediator Notifications
     
+    /**
+     * @description This method notifies the mediator that the menu was opened.
+     * @function
+     * @memberOf MenuMediator#
+     */
     notifyMenuOpened: function() {
-        // Cleaning up.
-        this._searchField.reset();
         this.selectMenuCategory(this.getMenuSettings().getDefaultShortcutAreaCategory());
         this.resetKeyFocus();
     },
     
+    /**
+     * @description This method notifies the mediator that the menu was closed.
+     * @function
+     * @memberOf MenuMediator#
+     */
     notifyMenuClosed: function() {
+        Mainloop.timeout_add(50, Lang.bind(this, function() {
+
+            // Cleaning up.
+            this._searchField.reset();
+        
+            this._categoryPane.clean();
+            this._viewModePane.clean();
+    
+            this._sidebar.clean();
+            this._navigationArea.clean();
+            this._mainArea.clean();
+    
+            this._controlPane.clean();
+            this._extensionPrefButton.clean();
+
+            this._descriptionBox.setTitle(null);
+            this._descriptionBox.setDescription(null);
+            
+            return false;
+
+        }));
     },
     
+    /**
+     * @description This notifies the mediator about an app activation. This
+     *              means that an external app was started. The mediator then
+     *              takes the steps needed to handle whatever should happen
+     *              after a launch.
+     * @param {Clutter.Actor} actor
+     * @param {Clutter.Event} event
+     * @function
+     * @memberOf MenuMediator#
+     */
     notifyActivation: function(actor, event) {
         this.closeMenu();
-        this.hideOverview();
+        Main.overview.hide();
     },
     
+    /**
+     * @description This method informs the mediator that an element was hovered.
+     *              The mediator then tries to trigger the descriptionbox to
+     *              show more information about the hovered element.
+     * @param {Clutter.Actor} actor This actor provides the information.
+     * @param {Clutter.Event} event
+     * @param {Boolean} entered If the element was entered.
+     * @function
+     * @memberOf MenuMediator#
+     */
     notifyHover: function(actor, event, entered) {
+        // It is possible that the needed informations are not available.
         if (entered && actor._delegate) {
             if (actor._delegate.getButtonInfoTitle && actor._delegate.getButtonInfoTitle()) {
                 let title = _(actor._delegate.getButtonInfoTitle());
@@ -337,18 +308,47 @@ const MenuMediator = new Lang.Class({
         }
     },
     
+    /**
+     * @description This method notifies the mediator that a button drag has
+     *              began. The components that need this information are then
+     *              informed.
+     * @function
+     * @memberOf MenuMediator#
+     */
     notifyDragBegin: function() {
         this._navigationArea.onDragBegin();
     },
 
+    /**
+     * @description This method notifies the mediator that a button drag was
+     *              cancelled. The components that need this information are then
+     *              informed.
+     * @function
+     * @memberOf MenuMediator#
+     */
     notifyDragCancelled: function() {
         this._navigationArea.onDragCancelled();
     },
 
+    /**
+     * @description This method notifies the mediator that a button drag has
+     *              ended. The components that need this information are then
+     *              informed.
+     * @function
+     * @memberOf MenuMediator#
+     */
     notifyDragEnd: function() {
         this._navigationArea.onDragEnd();
     },
     
+    /**
+     * @description This method notifies the mediator about a category change.
+     *              It then handles this change and sends it to other components
+     *              that need this information.
+     * @param {StringEnum} categoryID The category ID.
+     * @function
+     * @memberOf MenuMediator#
+     */
     notifyCategoryChange: function(categoryID) {
         if (categoryID) {
             this._searchField.reset();
@@ -359,9 +359,17 @@ const MenuMediator = new Lang.Class({
         }
     },
     
-    notifyViewModeChange: function(viewMode) {
-        if (viewMode) {
-            this._mainArea.setViewMode(viewMode);
+    /**
+     * @description This method notifies the mediator that the category was
+     *              changed. It then triggers the appropriate response from
+     *              the other components.
+     * @param {IntegerEnum} viewmode The viewmode ID.
+     * @function
+     * @memberOf MenuMediator#
+     */
+    notifyViewModeChange: function(viewmode) {
+        if (viewmode) {
+            this._mainArea.setViewMode(viewmode);
         }
     },
     
@@ -369,12 +377,30 @@ const MenuMediator = new Lang.Class({
     // ---
     // Mediator Keyboard Handling
     
+    /**
+     * @description This function resets the keyfocus to the default component.
+     *              At the moment this is the navigation area to select a
+     *              category.
+     * @function
+     * @memberOf MenuMediator#
+     */
     resetKeyFocus: function() {
         // Sets the focus to the menu for the key controls.
         global.stage.set_key_focus(this._navigationArea.actor);
         this._focusedComponent = this._navigationArea;
     },
     
+    /**
+     * @description This function sets the keyfocus to the searchfield. It
+     *              is needed to handle mouse-focus-activation properly. This
+     *              method is called when the user activates the searchfield
+     *              with a click. Without this call the keyboard controls
+     *              wont work properly.
+     * @param {Clutter.Actor} actor
+     * @param {Clutter.Event} event
+     * @function
+     * @memberOf MenuMediator#
+     */
     activateSearchfieldKeyFocus: function(actor, event) {
         this._searchField.activateFocus(actor, event);
         this._focusedComponent = this._searchField;
@@ -382,9 +408,16 @@ const MenuMediator = new Lang.Class({
 
     /**
      * @description Handles the keyboard event. This is the toplevel handler which
-     *              begins the keyboard handling.
+     *              begins the keyboard handling. It is registered in such a way
+     *              that the component events can bubble up to this handler.
+     *              If you press a normal char-key it is probable that it bubbles
+     *              up to this handler and is then send to the search.
+     * @param {Clutter.Actor} actor
+     * @param {Clutter.Event} event
+     * @returns {Boolean} If event was handled.
      * @private
      * @function
+     * @memberOf MenuMediator#
      */
     _onKeyboardEvent: function(actor, event) {
         log("Mediator received key event!");
@@ -406,11 +439,16 @@ const MenuMediator = new Lang.Class({
     },
 
     /**
-     * @description This function determines wether an input was important for the search.
+     * @description This function determines wether an input was important for the search
+     *              or if it is better handled by the currently focused component.
+     *              For example all normal keystrokes should be delivered to the
+     *              searchfield if they are not needed elsewhere so that the
+     *              search can start immediately.
      * @param {Integer} symbolID The Clutter symbol ID.
-     * @returns {Boolean}
+     * @returns {Boolean} If the symbol should trigger the search.
      * @private
      * @function
+     * @memberOf MenuMediator#
      */
     _shouldTriggerSearch: function(symbolID) {
         // This keys are important because they delete chars.
@@ -434,6 +472,17 @@ const MenuMediator = new Lang.Class({
         return false;
     },
 
+    /**
+     * @description This function sets the key focus to the next possible
+     *              component to the left of the currently
+     *              focused component. You may provide the data of the last
+     *              received event which is not handable in the old
+     *              component so that it is not wasted.
+     * @param {Clutter.Actor} actor
+     * @param {Clutter.Event} event
+     * @function
+     * @memberOf MenuMediator#
+     */
     moveKeyFocusLeft: function(actor, event) {
         let gid = -1;
         if (this._focusedComponent && this._focusedComponent.actor) {
@@ -479,6 +528,17 @@ const MenuMediator = new Lang.Class({
         return ret;
     },
 
+    /**
+     * @description This function sets the key focus to the next possible
+     *              component to the right of the currently
+     *              focused component. You may provide the data of the last
+     *              received event which is not handable in the old
+     *              component so that it is not wasted.
+     * @param {Clutter.Actor} actor
+     * @param {Clutter.Event} event
+     * @function
+     * @memberOf MenuMediator#
+     */
     moveKeyFocusRight: function(actor, event) {
         let gid = -1;
         if (this._focusedComponent && this._focusedComponent.actor) {
@@ -522,6 +582,17 @@ const MenuMediator = new Lang.Class({
         return ret;
     },
 
+    /**
+     * @description This function sets the key focus to the next possible
+     *              component in upwards direction from the currently
+     *              focused component. You may provide the data of the last
+     *              received event which is not handable in the old
+     *              component so that it is not wasted.
+     * @param {Clutter.Actor} actor
+     * @param {Clutter.Event} event
+     * @function
+     * @memberOf MenuMediator#
+     */
     moveKeyFocusUp: function(actor, event) {
         let gid = -1;
         if (this._focusedComponent && this._focusedComponent.actor) {
@@ -555,6 +626,17 @@ const MenuMediator = new Lang.Class({
         return ret;
     },
 
+    /**
+     * @description This function sets the key focus to the next possible
+     *              component in downwards direction from the currently
+     *              focused component. You may provide the data of the last
+     *              received event which is not handable in the old
+     *              component so that it is not wasted.
+     * @param {Clutter.Actor} actor
+     * @param {Clutter.Event} event
+     * @function
+     * @memberOf MenuMediator#
+     */
     moveKeyFocusDown: function(actor, event) {
         let gid = -1;
         if (this._focusedComponent && this._focusedComponent.actor) {
@@ -603,8 +685,8 @@ const MenuMediator = new Lang.Class({
      * @description This setter sets the category pane, the component above the
      *              category list.
      * @param {CategoryPane} component
-     * @public
      * @function
+     * @memberOf MenuMediator#
      */
     setCategoryPane: function(component) {
         this._categoryPane = component;
@@ -614,8 +696,8 @@ const MenuMediator = new Lang.Class({
      * @description This setter sets the viewmode pane, the component above the
      *              shortcut area.
      * @param {ViewModePane} component
-     * @public
      * @function
+     * @memberOf MenuMediator#
      */
     setViewModePane: function(component) {
         this._viewModePane = component;
@@ -625,8 +707,8 @@ const MenuMediator = new Lang.Class({
      * @description This setter sets the searchfield, the component above the
      *              shortcut area.
      * @param {SearchField} component
-     * @public
      * @function
+     * @memberOf MenuMediator#
      */
     setSearchField: function(component) {
         this._searchField = component;
@@ -635,8 +717,8 @@ const MenuMediator = new Lang.Class({
     /**
      * @description This setter sets the sidebar.
      * @param {Sidebar} component
-     * @public
      * @function
+     * @memberOf MenuMediator#
      */
     setSidebar: function(component) {
         this._sidebar = component;
@@ -644,10 +726,10 @@ const MenuMediator = new Lang.Class({
 
     /**
      * @description This setter sets the navigation area, the component with the
-     *              category list.
+     *              category button list.
      * @param {NavigationArea} component
-     * @public
      * @function
+     * @memberOf MenuMediator#
      */
     setNavigationArea: function(component) {
         this._navigationArea = component;
@@ -657,8 +739,8 @@ const MenuMediator = new Lang.Class({
      * @description This setter sets the main area, the component with the
      *              shortcuts or searchresults.
      * @param {MainArea} component
-     * @public
      * @function
+     * @memberOf MenuMediator#
      */
     setMainArea: function(component) {
         this._mainArea = component;
@@ -668,8 +750,8 @@ const MenuMediator = new Lang.Class({
      * @description This setter sets the control pane, the component with
      *              shutdown and logout buttons.
      * @param {ControlPane} component
-     * @public
      * @function
+     * @memberOf MenuMediator#
      */
     setControlPane: function(component) {
         this._controlPane = component;
@@ -679,18 +761,18 @@ const MenuMediator = new Lang.Class({
      * @description This setter sets the description box, the component which
      *              provides information about hovered buttons.
      * @param {DescriptionBox} component
-     * @public
      * @function
+     * @memberOf MenuMediator#
      */
     setDescriptionBox: function(component) {
         this._descriptionBox = component;
     },
 
     /**
-     * @description This setter sets the Settings button, the component right corner.
+     * @description This setter sets the Settings button.
      * @param {ExtensionPrefButton} component
-     * @public
      * @function
+     * @memberOf MenuMediator#
      */
     setExtensionPrefButton: function(component) {
         this._extensionPrefButton = component;

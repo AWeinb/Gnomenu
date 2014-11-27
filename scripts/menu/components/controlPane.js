@@ -19,6 +19,10 @@
 const Lang = imports.lang;
 const St = imports.gi.St;
 
+const Main = imports.ui.main;
+const GnomeSession = imports.misc.gnomeSession;
+const LoginManager = imports.misc.loginManager;
+
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const Component = Me.imports.scripts.menu.components.component.Component;
 const IconButton = Me.imports.scripts.menu.components.elements.menubutton.IconButton;
@@ -29,7 +33,7 @@ const ButtonGroup = Me.imports.scripts.menu.components.elements.menubutton.Butto
  * Simple Enum which provides a mousebutton to id mapping.
  * @private
  */
-const MOUSEBUTTON = Me.imports.scripts.menu.components.elements.menubutton.MOUSEBUTTON;
+const MOUSEBUTTON = Me.imports.scripts.menu.components.elements.menubutton.EMousebutton;
 
 
 
@@ -64,6 +68,8 @@ const ControlPane = new Lang.Class({
 
     _init: function(model, mediator) {
         this.parent(model, mediator);
+        
+        this._session = new GnomeSession.SessionManager();
 
         this.actor = new St.BoxLayout({ style_class: 'gnomenu-controlPane-box' });
         this._buttonGroup = new ButtonGroup();
@@ -84,27 +90,27 @@ const ControlPane = new Lang.Class({
 
         let systemShutdownBtn = new IconButton(this.mediator, 'shutdown-symbolic', iconSize, 'Power Off', 'PowerOff Description');
         systemShutdownBtn.setHandlerForButton(MOUSEBUTTON.MOUSE_LEFT, Lang.bind(this, function() {
-            this.mediator.shutdownComputer();
+            this.shutdownComputer();
         }));
 
         let systemSuspendBtn = new IconButton(this.mediator, 'suspend-symbolic', iconSize, 'Suspend', 'Suspend Description');
         systemSuspendBtn.setHandlerForButton(MOUSEBUTTON.MOUSE_LEFT, Lang.bind(this, function() {
-            this.mediator.suspendComputer();
+            this.suspendComputer();
         }));
 
         let logoutUserBtn = new IconButton(this.mediator, 'user-logout-symbolic', iconSize, 'Log Out', 'Log Out Description');
         logoutUserBtn.setHandlerForButton(MOUSEBUTTON.MOUSE_LEFT, Lang.bind(this, function() {
-            this.mediator.logoutSession();
+            this.logoutSession();
         }));
 
         let lockScreenBtn = new IconButton(this.mediator, 'user-lock-symbolic', iconSize, 'Lock', 'Lock Description');
         lockScreenBtn.setHandlerForButton(MOUSEBUTTON.MOUSE_LEFT, Lang.bind(this, function() {
-            this.mediator.lockSession();
+            this.lockSession();
         }));
 
         let shellRestartBtn = new IconButton(this.mediator, 'refresh-symbolic', iconSize, 'Restart Shell', 'Restart Shell Description');
         shellRestartBtn.setHandlerForButton(MOUSEBUTTON.MOUSE_LEFT, Lang.bind(this, function() {
-            this.mediator.restartShell();
+            this.restartShell();
         }));
 
         // All buttons are added to a buttongroup. It is not really neccessary here
@@ -145,7 +151,72 @@ const ControlPane = new Lang.Class({
      * @memberOf ControlPane#
      */
     destroy: function() {
-        this.clear();
         this.actor.destroy();
-    }
+    },
+    
+    /**
+     * @description Removes unneeded effects like the hover style.
+     * @function
+     * @memberof ControlPane#
+     */
+    clean: function() {
+        this._buttonGroup.clean();
+    },
+    
+    /**
+     * @description This method restarts the shell.
+     * @function
+     * @memberOf ControlPane#
+     */
+    restartShell: function() {
+        global.reexec_self();
+    },
+
+    /**
+     * @description This method suspends the computer.
+     * @function
+     * @memberOf ControlPane#
+     */
+    suspendComputer: function() {
+        //NOTE: alternate is to check if (Main.panel.statusArea.userMenu._haveSuspend) is true
+        LoginManager.getLoginManager().canSuspend(
+            function(result) {
+                if (result) {
+                    Main.overview.hide();
+                    LoginManager.getLoginManager().suspend();
+                }
+            }
+        );
+    },
+
+    /**
+     * @description This method shuts the computer down.
+     * @function
+     * @memberOf ControlPane#
+     */
+    shutdownComputer: function() {
+        // code to shutdown (power off)
+        // ToDo: GS38 iterates through SystemLoginSession to check for open sessions
+        // and displays an openSessionWarnDialog
+        this._session.ShutdownRemote();
+    },
+
+    /**
+     * @description This method logs the user out.
+     * @function
+     * @memberOf ControlPane#
+     */
+    logoutSession: function() {
+        this._session.LogoutRemote(0);
+    },
+
+    /**
+     * @description This method locks the session.
+     * @function
+     * @memberOf ControlPane#
+     */
+    lockSession: function() {
+        Main.overview.hide();
+        Main.screenShield.lock(true);
+    },
 });

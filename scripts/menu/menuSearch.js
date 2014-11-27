@@ -1,6 +1,5 @@
 /*
     Copyright (C) 2014-2015, THE PANACEA PROJECTS <panacier@gmail.com>
-    Copyright (C) 2014-2015, AxP <Der_AxP@t-online.de>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -26,6 +25,19 @@ const GnoSearchProvider = Me.imports.scripts.data.searchprovider.gnoSearchProvid
 
 
 
+/**
+ * @class MenuSearch
+ *
+ * @classdesc This class creates and sets up the search providers. You can get
+ *            then the searchsystem with the getter method.
+ *
+ * @description Creates the providers.
+ * 
+ *
+ * @author AxP <Der_AxP@t-online.de>
+ * @author passingthru67 <panacier@gmail.com>
+ * @version 1.0
+ */
 const MenuSearch = new Lang.Class({
     
     Name: 'GnoMenu.MenuSearch',
@@ -35,22 +47,14 @@ const MenuSearch = new Lang.Class({
         this._searchSystem = new SearchSystem();
         
         this._appProvider = new AppSearchProvider();
-        this._appProvider2 = new AppSearchProvider();
-        this._appProvider2.id="asaasaasd";
-        this._appProvider3 = new AppSearchProvider();
-        this._appProvider3.id="asaasasafdsdfasd";
         this._gnoProvider = new GnoSearchProvider();
         
         this._searchSystem.registerProvider(this._appProvider);
-        this._searchSystem.registerProvider(this._appProvider2);
-        this._searchSystem.registerProvider(this._appProvider3);
         this._searchSystem.registerProvider(this._gnoProvider);
     },
     
     destroy: function() {
         this._searchSystem.unregisterProvider(this._appProvider);
-        this._searchSystem.unregisterProvider(this._appProvider2);
-        this._searchSystem.unregisterProvider(this._appProvider3);
         this._searchSystem.unregisterProvider(this._gnoProvider);
     },
     

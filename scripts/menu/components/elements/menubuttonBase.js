@@ -25,10 +25,11 @@ const DND = imports.ui.dnd;
 const Main = imports.ui.main;
 
 /**
- * @description Mousebutton to name map.
- * @private
+ * Simple Enum which provides a mousebutton to id mapping.
+ * @public
+ * @enum {Integer}
  */
-const MOUSEBUTTON = {
+const EMousebutton = {
 
     MOUSE_LEFT:   1,
     MOUSE_MIDDLE: 2,
@@ -54,7 +55,7 @@ const MOUSEBUTTON = {
  *            of now used types.
  *
  *            Some methods need an integer button argument. The enum
- *            MOUSEBUTTON contains some useful information for this.
+ *            EMousebutton contains some useful information for this.
  *
  * @description This class takes as parameter not only icon and label but also
  *              parameters for its basic components.
@@ -156,7 +157,7 @@ const Button = new Lang.Class({
     /**
      * @description Sets a mouse handler for a specific mousebutton of the button.
      *              The handler for hover events is set in another method.
-     * @param {Integer} button The id of the mousebutton. @see MOUSEBUTTON
+     * @param {Integer} button The id of the mousebutton. @see EMousebutton
      * @param {Function} handler The handler.
      * @function
      * @memberOf Button#
@@ -240,6 +241,16 @@ const Button = new Lang.Class({
 
         this._isSelected = false;
     },
+    
+    /**
+     * @description Removes style modifier without valueable meaning.
+     * @function
+     * @memberOf Button#
+     */
+    clean: function() {
+        this.actor.remove_style_pseudo_class('pressed');
+        this.actor.remove_style_pseudo_class('active');
+    },
 
     /**
      * @description This function does the same as a normal click would do.
@@ -253,7 +264,7 @@ const Button = new Lang.Class({
             this._btnHandlers[button](this.actor, null);
             this._notifyActivation(this.actor, null);
         } else {
-            for each (let button in MOUSEBUTTON) {
+            for each (let button in EMousebutton) {
                 if (this._btnHandlers[button]) {
                     this._btnHandlers[button](this.actor, null);
                     this._notifyActivation(this.actor, null);
@@ -368,16 +379,6 @@ const Button = new Lang.Class({
      * @memberOf Button#
      */
     destroy: function() {
-        if (this._btnPressId) this.actor.disconnect(this._btnPressId);
-        if (this._btnReleaseId) this.actor.disconnect(this._btnReleaseId);
-        if (this._btnEnterId) this.actor.disconnect(this._btnEnterId);
-        if (this._btnLeaveId) this.actor.disconnect(this._btnLeaveId);
-
-        this._btnPressId = undefined;
-        this._btnReleaseId = undefined;
-        this._btnEnterId = undefined;
-        this._btnLeaveId = undefined;
-
         this.actor.destroy();
     }
 });
@@ -388,8 +389,75 @@ const Button = new Lang.Class({
 
 
 /**
+ * @class InternalButton
+ *
+ * @classdesc This is a simple Button class derived from the normal Button class
+ *            without activation callbacks.
+ *
+ *            @see Button
+ *
+ * @description @see Button
+ * 
+ *
+ * @param {Icon} icon The icon. The now working icon types are the Gio icons,
+ *                    Clutter textures, and names.
+ * @param {Integer} iconSize The iconSize.
+ * @param {String} labelTextID The gettext id of the label.
+ * @param {String} hoverTitleID The gettext id of the title.
+ * @param {String} hoverDescriptionID The gettext id of the description.
+ * @param {Object} params @see Button
+ *
+ *
+ * @author AxP <Der_AxP@t-online.de>
+ * @author passingthru67 <panacier@gmail.com>
+ * @version 1.0
+ */
+const InternalButton = new Lang.Class({
+
+    Name: 'Gnomenu.menubuttonBase.InternalButton',
+    Extends: Button,
+
+
+    _init: function(icon, iconSize, labelTextID, params) {
+        this.parent(icon, iconSize, labelTextID, params);
+    },
+    
+
+    /**
+     * @description Function that is called in case of a press event. It
+     *              notifies then about an activation.
+     * @param actor
+     * @param event
+     * @returns {Boolean} Was the event handled?
+     * @private
+     * @function
+     * @memberOf InternalButton#
+     */
+    _onPress: function(actor, event) {
+        let button = event.get_button();
+
+        if (this._btnHandlers[button]) {
+            this.actor.remove_style_pseudo_class('pressed');
+            this.actor.remove_style_pseudo_class('active');
+
+            this._btnHandlers[button](actor, event);
+            
+            // no notify activation.
+
+            return Clutter.EVENT_STOP;
+        }
+        return Clutter.EVENT_PROPAGATE;
+    },
+});
+
+
+// =============================================================================
+
+
+
+/**
  * @class ToggleButton
- * @extends Button
+ * @extends InternalButton
  *
  * @classdesc This is the base class for all togglebuttons. It
  *            provides some special methods for this kind of button
@@ -417,7 +485,7 @@ const Button = new Lang.Class({
 const ToggleButton = new Lang.Class({
 
     Name: 'Gnomenu.menubuttonBase.ToggleButton',
-    Extends: Button,
+    Extends: InternalButton,
 
 
     _init: function(icon, iconSize, labelTextID, params) {
@@ -478,15 +546,14 @@ const ToggleButton = new Lang.Class({
      * @memberOf ToggleButton#
      */
     _onPress: function(actor, event) {
-        this.toggleState();
-
         let button = event.get_button();
         if (this._btnHandlers[button]) {
+            this.toggleState();
+            
             this.actor.remove_style_pseudo_class('pressed');
             this.actor.remove_style_pseudo_class('active');
 
             this._btnHandlers[button](this.isSelected());
-            this._notifyActivation(actor, event);
 
             return Clutter.EVENT_STOP;
         }
@@ -718,28 +785,7 @@ const DraggableButton = new Lang.Class({
      * @memberOf DraggableButton#
      */
     destroy: function() {
-        // I actually have no idea how the destroying should be handled.
-        // This all is not really easy to reverse engineer.
-        if (this._btnPressId) this.actor.disconnect(this._btnPressId);
-        if (this._btnReleaseId) this.actor.disconnect(this._btnReleaseId);
-        if (this._btnEnterId) this.actor.disconnect(this._btnEnterId);
-        if (this._btnLeaveId) this.actor.disconnect(this._btnLeaveId);
-
-        this._btnPressId = undefined;
-        this._btnReleaseId = undefined;
-        this._btnEnterId = undefined;
-        this._btnLeaveId = undefined;
-
         DND.removeDragMonitor(this._dragMonitor);
-
-        // Disconnect all dnd ids.
-        for each (let id in this._dragIds) {
-            if (id > 0) {
-                this._draggable.disconnect(id);
-            }
-        }
-        this._dragIds = undefined;
-
         this.actor.destroy();
     },
 });

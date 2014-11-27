@@ -23,14 +23,15 @@ const DND = imports.ui.dnd;
 
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const Button = Me.imports.scripts.menu.components.elements.menubuttonBase.Button;
+const InternalButton = Me.imports.scripts.menu.components.elements.menubuttonBase.InternalButton;
 const DraggableButton = Me.imports.scripts.menu.components.elements.menubuttonBase.DraggableButton;
 const ToggleButton = Me.imports.scripts.menu.components.elements.menubuttonBase.ToggleButton;
 
 /**
- * Simple Enum which provides a mousebutton to id mapping.
- * @public
+ * @description Mousebutton to name map.
+ * @private
  */
-const MOUSEBUTTON = Me.imports.scripts.menu.components.elements.menubuttonBase.MOUSEBUTTON;
+const EMousebutton = Me.imports.scripts.menu.components.elements.menubuttonBase.EMousebutton;
 
 
 
@@ -281,6 +282,17 @@ const ButtonGroup = new Lang.Class({
             button.deselect();
         }
     },
+    
+    /**
+     * @description Removes style modifier without valueable meaning.
+     * @function
+     * @memberOf ButtonGroup#
+     */
+    clean: function() {
+        for each (let button in this._buttons) {
+            button.clean();
+        }
+    },
 });
 
 
@@ -291,20 +303,112 @@ const ButtonGroup = new Lang.Class({
 
 
 /**
- * @class IconButton
- * @extends Button
+ * @class TextButton
+ * @extends InternalButton
  *
- * @classdesc This button is a simple icon button without label. It
+ * @classdesc This button is a simple label-only button without icon. It
  *            is used and should only be used to activate menu intern
- *            things. An example would be to use it as option button
- *            for panes. The reason for this is that this button is not
+ *            things. An example would be to use it as category button
+ *            for menus. The reason for this is that this button is not
  *            optimized for starting apps because it does not support
  *            DnD.
  *
- *            Available mediator notifications:
- *            - notifyActivation(actor, event)
- *            - notifyHover(actor, event, entered)
- *            // Implement them in the mediator.
+ *            To provide more information about this button it gets
+ *            at creation some strings or gettext ids. This title and
+ *            description can then be used later on.
+ *
+ *            Many methods stem from the parent class. Please use
+ *            available methods!
+ *
+ * @description Creates the button with predefined params.
+ *
+ *
+ * @param {MenuMediator} mediator A mediator instance. The mediator receives
+ *                                notifications which the button may produce.
+ *                                For this kind of button there is to mention
+ *                                the hover notification to handle hovers in the
+ *                                greater context. It is optional to provide it
+ *                                and if it is not given or a particular callback
+ *                                is not available it will not matter.
+ * @param {String} labelID The gettext id of the label. It is not needed to
+ *                         translate the button label text before it is given to
+ *                         the button. The button tries to translate the text
+ *                         with the default domain.
+ * @param {String} hoverTitleID The gettext id of the title.
+ * @param {String} hoverDescriptionID The gettext id of the description.
+ *
+ * @property {Clutter.Actor} actor To add the button to another actor you can
+ *                                 use button.actor.
+ * @property {String} buttonInfoTitle Infotitle
+ * @property {String} buttonInfoDescription Infodescription
+ *
+ *
+ * @author AxP <Der_AxP@t-online.de>
+ * @author passingthru67 <panacier@gmail.com>
+ * @version 1.0
+ */
+const TextButton = new Lang.Class({
+
+    Name: 'GnoMenu.menubutton.TextButton',
+    Extends: InternalButton,
+
+
+    _init: function (mediator, labelID, hoverTitleID, hoverDescriptionID) {
+        this._mediator = mediator;
+
+        this.buttonInfoTitle = hoverTitleID;
+        this.buttonInfoDescription = hoverDescriptionID;
+
+        let params = {
+            actor_params:     { reactive: true, style_class: 'popup-menu-item popup-submenu-menu-item gnomenu-text-button', x_align: St.Align.START, y_align: St.Align.MIDDLE },
+            container_params: {  },
+            icon_add_params:  {  },
+            label_params:     { style_class: 'gnomenu-text-button-label' },
+            label_add_params: { x_fill: true, y_fill: true, x_align: St.Align.START, y_align: St.Align.MIDDLE },
+        };
+
+        this.parent(null, 0, labelID, params);
+        this.actor._delegate = this;
+    },
+
+    /**
+     * @description This method is called when the button is activated.
+     * @param {Clutter.actor} actor The actor that registered the event.
+     * @param {Event} event The event.
+     * @callback
+     * @private
+     * @memberOf TextButton#
+     */
+    _notifyActivation: function(actor, event) {
+        // This button is used as category button.
+    },
+
+    /**
+     * @description This method is called when the cursor enters or leaves the button.
+     * @param {Clutter.actor} actor The actor that registered the event.
+     * @param {Event} event The event.
+     * @param {Boolean} entered Wether the actor was entered.
+     * @callback
+     * @private
+     * @memberOf TextButton#
+     */
+    _notifyHovered: function(actor, event, entered) {
+        if (this._mediator && this._mediator.notifyHover) {
+            this._mediator.notifyHover(actor, event, entered);
+        }
+    },
+});
+
+
+
+/**
+ * @class IconButton
+ * @extends Button
+ *
+ * @classdesc This button is a simple icon button without label. It is used
+ *            as simple non-draggable button to activate specific apps like
+ *            the settings or to activate procedures like login out or restarts.
+ *            This class does notify the mediator when the button was clicked.
  *
  *            To provide more information about this button it gets
  *            at creation some strings or gettext ids. This title and
@@ -372,93 +476,17 @@ const IconButton = new Lang.Class({
     },
 
     /**
-     * @description This method is called when the cursor enters or leaves the button.
+     * @description This method is called when the button is activated.
      * @param {Clutter.actor} actor The actor that registered the event.
      * @param {Event} event The event.
-     * @param {Boolean} entered Wether the actor was entered.
+     * @callback
      * @private
+     * @memberOf IconButton#
      */
-    _notifyHovered: function(actor, event, entered) {
+    _notifyActivation: function(actor, event) {
         if (this._mediator && this._mediator.notifyHover) {
-            this._mediator.notifyHover(actor, event, entered);
+            this._mediator.notifyActivation(actor, event);
         }
-    },
-});
-
-
-
-/**
- * @class TextButton
- * @extends Button
- *
- * @classdesc This button is a simple label-only button without icon. It
- *            is used and should only be used to activate menu intern
- *            things. An example would be to use it as category button
- *            for menus. The reason for this is that this button is not
- *            optimized for starting apps because it does not support
- *            DnD.
- *
- *            Available mediator notifications:
- *            - notifyActivation(actor, event)
- *            - notifyHover(actor, event, entered)
- *            // Implement them in the mediator.
- *
- *            To provide more information about this button it gets
- *            at creation some strings or gettext ids. This title and
- *            description can then be used later on.
- *
- *            Many methods stem from the parent class. Please use
- *            available methods!
- *
- * @description Creates the button with predefined params.
- *
- *
- * @param {MenuMediator} mediator A mediator instance. The mediator receives
- *                                notifications which the button may produce.
- *                                For this kind of button there is to mention
- *                                the hover notification to handle hovers in the
- *                                greater context. It is optional to provide it
- *                                and if it is not given or a particular callback
- *                                is not available it will not matter.
- * @param {String} labelID The gettext id of the label. It is not needed to
- *                         translate the button label text before it is given to
- *                         the button. The button tries to translate the text
- *                         with the default domain.
- * @param {String} hoverTitleID The gettext id of the title.
- * @param {String} hoverDescriptionID The gettext id of the description.
- *
- * @property {Clutter.Actor} actor To add the button to another actor you can
- *                                 use button.actor.
- * @property {String} buttonInfoTitle Infotitle
- * @property {String} buttonInfoDescription Infodescription
- *
- *
- * @author AxP <Der_AxP@t-online.de>
- * @author passingthru67 <panacier@gmail.com>
- * @version 1.0
- */
-const TextButton = new Lang.Class({
-
-    Name: 'GnoMenu.menubutton.TextButton',
-    Extends: Button,
-
-
-    _init: function (mediator, labelID, hoverTitleID, hoverDescriptionID) {
-        this._mediator = mediator;
-
-        this.buttonInfoTitle = hoverTitleID;
-        this.buttonInfoDescription = hoverDescriptionID;
-
-        let params = {
-            actor_params:     { reactive: true, style_class: 'popup-menu-item popup-submenu-menu-item gnomenu-text-button', x_align: St.Align.START, y_align: St.Align.MIDDLE },
-            container_params: {  },
-            icon_add_params:  {  },
-            label_params:     { style_class: 'gnomenu-text-button-label' },
-            label_add_params: { x_fill: true, y_fill: true, x_align: St.Align.START, y_align: St.Align.MIDDLE },
-        };
-
-        this.parent(null, 0, labelID, params);
-        this.actor._delegate = this;
     },
 
     /**
@@ -466,8 +494,9 @@ const TextButton = new Lang.Class({
      * @param {Clutter.actor} actor The actor that registered the event.
      * @param {Event} event The event.
      * @param {Boolean} entered Wether the actor was entered.
+     * @callback
      * @private
-     * @memberOf TextButton#
+     * @memberOf IconButton#
      */
     _notifyHovered: function(actor, event, entered) {
         if (this._mediator && this._mediator.notifyHover) {
@@ -494,11 +523,6 @@ const TextButton = new Lang.Class({
  *            integrated with the ButtonGroup in this file. You
  *            should use a buttongroup to make sure that only
  *            one button of the group at a time is selected.
- *
- *            Available mediator notifications:
- *            - notifyActivation(actor, event)
- *            - notifyHover(actor, event, entered)
- *            // Implement them in the mediator.
  *
  *            To provide more information about this button it gets
  *            at creation some strings or gettext ids. This title and
@@ -557,20 +581,11 @@ const IconToggleButton = new Lang.Class({
     },
 
     /**
-     * @description This method is called when the button is activated.
-     * @param {Clutter.actor} actor The actor that registered the event.
-     * @param {Event} event The event.
-     * @private
-     * @memberOf IconToggleButton#
-     */
-    _notifyActivation: function(actor, event) {
-    },
-
-    /**
      * @description This method is called when the cursor enters or leaves the button.
      * @param {Clutter.actor} actor The actor that registered the event.
      * @param {Event} event The event.
      * @param {Boolean} entered Wether the actor was entered.
+     * @callback
      * @private
      * @memberOf IconToggleButton#
      */
@@ -637,20 +652,11 @@ const TextToggleButton = new Lang.Class({
     },
 
     /**
-     * @description This method is called when the button is activated.
-     * @param {Clutter.actor} actor The actor that registered the event.
-     * @param {Event} event The event.
-     * @private
-     * @memberOf TextToggleButton#
-     */
-    _notifyActivation: function(actor, event) {
-    },
-
-    /**
      * @description This method is called when the cursor enters or leaves the button.
      * @param {Clutter.actor} actor The actor that registered the event.
      * @param {Event} event The event.
      * @param {Boolean} entered Wether the actor was entered.
+     * @callback
      * @private
      * @memberOf TextToggleButton#
      */
@@ -748,7 +754,7 @@ const DraggableIconButton = new Lang.Class({
         this.actor._delegate = this;
 
         // Left click starts a new app and the middle click activates an possible open one.
-        this.setHandlerForButton(MOUSEBUTTON.MOUSE_LEFT, Lang.bind(this, function(actor, event) {
+        this.setHandlerForButton(EMousebutton.MOUSE_LEFT, Lang.bind(this, function(actor, event) {
             this._launchable.launch(true, { timestamp: event.get_time() });
             this._notifyActivation(actor, event);
         }));
@@ -756,7 +762,7 @@ const DraggableIconButton = new Lang.Class({
         // bigger picture are done in the mediator. Thats probably cleaner
         // and of course it is easier to change, say, if the menu should
         // close on click or not.
-        this.setHandlerForButton(MOUSEBUTTON.MOUSE_MIDDLE, Lang.bind(this, function(actor, event) {
+        this.setHandlerForButton(EMousebutton.MOUSE_MIDDLE, Lang.bind(this, function(actor, event) {
             this._launchable.launch(false, { timestamp: event.get_time() });
             this._notifyActivation(actor, event);
         }));
@@ -774,12 +780,12 @@ const DraggableIconButton = new Lang.Class({
     activate: function(button, params) {
         switch (button) {
 
-            case MOUSEBUTTON.MOUSE_LEFT:
+            case EMousebutton.MOUSE_LEFT:
                 this._launchable.launch(true);
                 this._notifyActivation(this.actor, null);
                 break;
 
-            case MOUSEBUTTON.MOUSE_MIDDLE:
+            case EMousebutton.MOUSE_MIDDLE:
                 this._launchable.launch(false);
                 this._notifyActivation(this.actor, null);
                 break;
@@ -804,6 +810,7 @@ const DraggableIconButton = new Lang.Class({
      * @description This method is called when the button is activated.
      * @param {Clutter.actor} actor The actor that registered the event.
      * @param {Event} event The event.
+     * @callback
      * @private
      * @memberOf DraggableIconButton#
      */
@@ -818,6 +825,7 @@ const DraggableIconButton = new Lang.Class({
      * @param {Clutter.actor} actor The actor that registered the event.
      * @param {Event} event The event.
      * @param {Boolean} entered Wether the actor was entered.
+     * @callback
      * @private
      * @memberOf DraggableIconButton#
      */
@@ -832,6 +840,7 @@ const DraggableIconButton = new Lang.Class({
      *              notifies the mediator about a drag-begin.
      * @param draggable
      * @param id
+     * @callback
      * @private
      * @memberOf DraggableIconButton#
      */
@@ -846,6 +855,7 @@ const DraggableIconButton = new Lang.Class({
      *              notifies the mediator about a drag-cancel.
      * @param draggable
      * @param id
+     * @callback
      * @private
      * @memberOf DraggableIconButton#
      */
@@ -860,6 +870,7 @@ const DraggableIconButton = new Lang.Class({
      *              notifies the mediator about a drag-end.
      * @param draggable
      * @param id
+     * @callback
      * @private
      * @memberOf DraggableIconButton#
      */
@@ -925,11 +936,11 @@ const DraggableGridButton = new Lang.Class({
         this.actor._delegate = this;
 
         // Left click starts a new app and the middle click activates an eventually open one.
-        this.setHandlerForButton(MOUSEBUTTON.MOUSE_LEFT, Lang.bind(this, function(actor, event) {
+        this.setHandlerForButton(EMousebutton.MOUSE_LEFT, Lang.bind(this, function(actor, event) {
             this._launchable.launch(true, { timestamp: event.get_time() });
             this._notifyActivation(actor, event);
         }));
-        this.setHandlerForButton(MOUSEBUTTON.MOUSE_MIDDLE, Lang.bind(this, function(actor, event) {
+        this.setHandlerForButton(EMousebutton.MOUSE_MIDDLE, Lang.bind(this, function(actor, event) {
             this._launchable.launch(false, { timestamp: event.get_time() });
             this._notifyActivation(actor, event);
         }));
@@ -947,12 +958,12 @@ const DraggableGridButton = new Lang.Class({
     activate: function(button, params) {
         switch (button) {
 
-            case MOUSEBUTTON.MOUSE_LEFT:
+            case EMousebutton.MOUSE_LEFT:
                 this._launchable.launch(true);
                 this._notifyActivation(this.actor, null);
                 break;
 
-            case MOUSEBUTTON.MOUSE_MIDDLE:
+            case EMousebutton.MOUSE_MIDDLE:
                 this._launchable.launch(false);
                 this._notifyActivation(this.actor, null);
                 break;
@@ -977,6 +988,7 @@ const DraggableGridButton = new Lang.Class({
      * @description This method is called when the button is activated.
      * @param {Clutter.actor} actor The actor that registered the event.
      * @param {Event} event The event.
+     * @callback
      * @private
      * @memberOf DraggableGridButton#
      */
@@ -991,6 +1003,7 @@ const DraggableGridButton = new Lang.Class({
      * @param {Clutter.actor} actor The actor that registered the event.
      * @param {Event} event The event.
      * @param {Boolean} entered Wether the actor was entered.
+     * @callback
      * @private
      * @memberOf DraggableGridButton#
      */
@@ -1005,6 +1018,7 @@ const DraggableGridButton = new Lang.Class({
      *              notifies the mediator about a drag-begin.
      * @param draggable
      * @param id
+     * @callback
      * @private
      * @memberOf DraggableGridButton#
      */
@@ -1019,6 +1033,7 @@ const DraggableGridButton = new Lang.Class({
      *              notifies the mediator about a drag-cancel.
      * @param draggable
      * @param id
+     * @callback
      * @private
      * @memberOf DraggableGridButton#
      */
@@ -1033,6 +1048,7 @@ const DraggableGridButton = new Lang.Class({
      *              notifies the mediator about a drag-end.
      * @param draggable
      * @param id
+     * @callback
      * @private
      * @memberOf DraggableGridButton#
      */
@@ -1099,11 +1115,11 @@ const DraggableListButton = new Lang.Class({
         this.actor._delegate = this;
 
         // Left click starts a new app and the middle click activates an eventually open one.
-        this.setHandlerForButton(MOUSEBUTTON.MOUSE_LEFT, Lang.bind(this, function(actor, event) {
+        this.setHandlerForButton(EMousebutton.MOUSE_LEFT, Lang.bind(this, function(actor, event) {
             this._launchable.launch(true, { timestamp: event.get_time() });
             this._notifyActivation(actor, event);
         }));
-        this.setHandlerForButton(MOUSEBUTTON.MOUSE_MIDDLE, Lang.bind(this, function(actor, event) {
+        this.setHandlerForButton(EMousebutton.MOUSE_MIDDLE, Lang.bind(this, function(actor, event) {
             this._launchable.launch(false, { timestamp: event.get_time() });
             this._notifyActivation(actor, event);
         }));
@@ -1121,12 +1137,12 @@ const DraggableListButton = new Lang.Class({
     activate: function(button, params) {
         switch (button) {
 
-            case MOUSEBUTTON.MOUSE_LEFT:
+            case EMousebutton.MOUSE_LEFT:
                 this._launchable.launch(true);
                 this._notifyActivation(this.actor, null);
                 break;
 
-            case MOUSEBUTTON.MOUSE_MIDDLE:
+            case EMousebutton.MOUSE_MIDDLE:
                 this._launchable.launch(false);
                 this._notifyActivation(this.actor, null);
                 break;
@@ -1151,6 +1167,7 @@ const DraggableListButton = new Lang.Class({
      * @description This method is called when the button is activated.
      * @param {Clutter.actor} actor The actor that registered the event.
      * @param {Event} event The event.
+     * @callback
      * @private
      * @memberOf DraggableListButton#
      */
@@ -1165,6 +1182,7 @@ const DraggableListButton = new Lang.Class({
      * @param {Clutter.actor} actor The actor that registered the event.
      * @param {Event} event The event.
      * @param {Boolean} entered Wether the actor was entered.
+     * @callback
      * @private
      * @memberOf DraggableListButton#
      */
@@ -1179,6 +1197,7 @@ const DraggableListButton = new Lang.Class({
      *              notifies the mediator about a drag-begin.
      * @param draggable
      * @param id
+     * @callback
      * @private
      * @memberOf DraggableListButton#
      */
@@ -1193,6 +1212,7 @@ const DraggableListButton = new Lang.Class({
      *              notifies the mediator about a drag-cancel.
      * @param draggable
      * @param id
+     * @callback
      * @private
      * @memberOf DraggableListButton#
      */
@@ -1207,6 +1227,7 @@ const DraggableListButton = new Lang.Class({
      *              notifies the mediator about a drag-end.
      * @param draggable
      * @param id
+     * @callback
      * @private
      * @memberOf DraggableListButton#
      */

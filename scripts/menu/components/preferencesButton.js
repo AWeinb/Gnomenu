@@ -18,6 +18,9 @@
 
 const Lang = imports.lang;
 const St = imports.gi.St;
+const Shell = imports.gi.Shell;
+
+const Main = imports.ui.main;
 
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const MenuModel = Me.imports.scripts.menu.menuModel;
@@ -29,7 +32,7 @@ const IconButton = Me.imports.scripts.menu.components.elements.menubutton.IconBu
  * Simple Enum which provides a mousebutton to id mapping.
  * @private
  */
-const MOUSEBUTTON = Me.imports.scripts.menu.components.elements.menubutton.MOUSEBUTTON;
+const MOUSEBUTTON = Me.imports.scripts.menu.components.elements.menubutton.EMousebutton;
 
 
 
@@ -78,21 +81,21 @@ const PreferencesButton = new Lang.Class({
         this.clear();
 
         let iconSize = this.menuSettings.getLayoutDependendIconsize();
-        let extensionPreferencesBtn = new IconButton(this.mediator, 'control-center-alt-symbolic', iconSize, 'Settings', 'Settings Description');
+        this._extensionPreferencesBtn = new IconButton(this.mediator, 'control-center-alt-symbolic', iconSize, 'Settings', 'Settings Description');
 
         // The normal user would probably expect that the button opens the system controls.
         // So now a left click opens the main controls and a middle click the extension prefs.
-        extensionPreferencesBtn.setHandlerForButton(MOUSEBUTTON.MOUSE_LEFT, Lang.bind(this, function() {
-            this.mediator.showSystemPreferences();
+        this._extensionPreferencesBtn.setHandlerForButton(MOUSEBUTTON.MOUSE_LEFT, Lang.bind(this, function() {
+            this.showSystemPreferences();
         }));
 
-        extensionPreferencesBtn.setHandlerForButton(MOUSEBUTTON.MOUSE_MIDDLE, Lang.bind(this, function() {
-            this.mediator.showPreferences();
+        this._extensionPreferencesBtn.setHandlerForButton(MOUSEBUTTON.MOUSE_MIDDLE, Lang.bind(this, function() {
+            this.showPreferences();
         }));
 
         // I dont think we need a button group for this one.
 
-        this.actor.set_child(extensionPreferencesBtn.actor);
+        this.actor.set_child(this._extensionPreferencesBtn.actor);
     },
 
     /**
@@ -116,7 +119,34 @@ const PreferencesButton = new Lang.Class({
      * @memberOf PreferencesButton#
      */
     destroy: function() {
-        this.clear();
         this.actor.destroy();
+    },
+    
+    /**
+     * @description Removes unneeded effects like the hover style.
+     * @function
+     * @memberof PreferencesButton#
+     */
+    clean: function() {
+        this._extensionPreferencesBtn.clean();
+    },
+    
+    /**
+     * @description This method opens the gnome control center.
+     * @function
+     * @memberOf PreferencesButton#
+     */
+    showSystemPreferences: function() {
+        let app = Shell.AppSystem.get_default().lookup_app('gnome-control-center.desktop');
+        app.activate();
+    },
+
+    /**
+     * @description This method opens the extension settings.
+     * @function
+     * @memberOf PreferencesButton#
+     */
+    showPreferences: function() {
+        Main.Util.trySpawnCommandLine('gnome-shell-extension-prefs ' + Me.metadata['uuid']);
     },
 });

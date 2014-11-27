@@ -1,6 +1,5 @@
 /*
     Copyright (C) 2014-2015, THE PANACEA PROJECTS <panacier@gmail.com>
-    Copyright (C) 2014-2015, AxP <Der_AxP@t-online.de>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -23,7 +22,11 @@ const Me = imports.misc.extensionUtils.getCurrentExtension();
 const Datamanager = Me.imports.scripts.data.datamanager.Datamanager;
 const Log = Me.imports.scripts.misc.log;
 
-
+/**
+ * @description Eventtypes used by the model.
+ * @constant
+ * @enum {Integer}
+ */
 const EEventType = {
     
     DATA_APPS_EVENT:          10,
@@ -40,6 +43,11 @@ const EEventType = {
     
 };
 
+/**
+ * @description Category numbers/ids used by the gsettings.
+ * @constant
+ * @enum {Integer}
+ */
 const ECategoryNum = {
         
     ALL_APPS:    50,
@@ -54,6 +62,11 @@ const ECategoryNum = {
     
 };
 
+/**
+ * @description Category strings/ids used by the menu.
+ * @constant
+ * @enum {String}
+ */
 const ECategoryID = {
         
     ALL_APPS:    "All Apps",
@@ -68,6 +81,11 @@ const ECategoryID = {
     
 };
 
+/**
+ * @description Category description strings/ids used by the menu.
+ * @constant
+ * @enum {String}
+ */
 const ECategoryDescriptionID = {
         
     ALL_APPS:    "All-Apps Description",
@@ -83,6 +101,11 @@ const ECategoryDescriptionID = {
     
 };
 
+/**
+ * @description Category selectionmethod ids.
+ * @constant
+ * @enum {Integer}
+ */
 const ESelectionMethod = {
     
     CLICK: 20,
@@ -90,6 +113,11 @@ const ESelectionMethod = {
     
 };
 
+/**
+ * @description Menu viewmode ids.
+ * @constant
+ * @enum {Integer}
+ */
 const EViewMode = {
     
     LIST: 30,
@@ -97,6 +125,11 @@ const EViewMode = {
     
 };
 
+/**
+ * @description Menulayout ids.
+ * @constant
+ * @enum {Integer}
+ */
 const EMenuLayout = {
     
     LARGE:  40,
@@ -106,12 +139,19 @@ const EMenuLayout = {
 };
 
 
+
 /**
- * @class ModelObserver: The observer is updated when the model is changed and
- *                       updates then the registered components.
+ * @class ModelObserver
  *
+ * @classdesc The observer is updated when the model is changed and
+ *            updates then the registered components. It is used
+ *            to inform the components about changes of the data,
+ *            ie the available apps or favorites.
  *
- * @author AxP
+ * @description %
+ *
+ * @author AxP <Der_AxP@t-online.de>
+ * @author passingthru67 <panacier@gmail.com>
  * @version 1.0
  */
 const ModelObserver = new Lang.Class({
@@ -126,8 +166,8 @@ const ModelObserver = new Lang.Class({
     /**
      * @description This setter registers a component to get update events.
      * @param {Updateable} component
-     * @public
      * @function
+     * @memberOf ModelObserver#
      */
     registerUpdateable: function(component) {
         if (component) {
@@ -140,8 +180,8 @@ const ModelObserver = new Lang.Class({
     /**
      * @description This method removes an element from the update list.
      * @param {Updateable} component
-     * @public
      * @function
+     * @memberOf ModelObserver#
      */
     unregisterUpdateable: function(component) {
         if (component) {
@@ -156,8 +196,8 @@ const ModelObserver = new Lang.Class({
 
     /**
      * @description Clears all components.
-     * @public
      * @function
+     * @memberOf ModelObserver#
      */
     clearUpdateables: function() {
         this._components = [];
@@ -167,9 +207,9 @@ const ModelObserver = new Lang.Class({
      * @description This method notifies the registered components that something changed.
      *              To make it more clear which changed it is possible to provide
      *              an event object with an event type attribute.
-     * @param {Object} event
-     * @public
+     * @param {Object} event Something like this { type: EEventType }.
      * @function
+     * @memberOf ModelObserver#
      */
     notify: function(event) {
         for each (let comp in this._components) {
@@ -180,17 +220,26 @@ const ModelObserver = new Lang.Class({
             }
         }
     },
+    
+    destroy: function() {
+    },
 });
 
 
+
 /**
- * @class ModelObserver: The model contains all data that is displayed. The
- *                       components take this data when needed. To inform
- *                       them about updates they can register themselves at
- *                       the observer.
+ * @class MenuModel
  *
+ * @classdesc The model contains all data that is displayed. The
+ *            components take this data when needed. To inform
+ *            them about updates they can register themselves at
+ *            the observer.
  *
- * @author AxP
+ * @description The constructor creates and connects all neccessary datasources.
+ * 
+ *
+ * @author AxP <Der_AxP@t-online.de>
+ * @author passingthru67 <panacier@gmail.com>
  * @version 1.0
  */
 const MenuModel = new Lang.Class({
@@ -227,8 +276,8 @@ const MenuModel = new Lang.Class({
 
     /**
      * @description Destroys the model.
-     * @public
      * @function
+     * @memberOf MenuModel#
      */
     destroy: function() {
         // Disconnect from datamanager.
@@ -252,9 +301,10 @@ const MenuModel = new Lang.Class({
 
     /**
      * @description Helper to notify the observer.
-     * @param {Enum} eventType
+     * @param {StringEnum} eventType
      * @private
      * @function
+     * @memberOf MenuModel#
      */
     _notify: function(eventType) {
         if (!eventType) {
@@ -273,8 +323,8 @@ const MenuModel = new Lang.Class({
     /**
      * @description This getter gives you the model observer.
      * @returns {Observer}
-     * @public
      * @function
+     * @memberOf MenuModel#
      */
     getObserver: function() {
         return this._observer;
@@ -288,9 +338,9 @@ const MenuModel = new Lang.Class({
 
     /**
      * @description Returns a category-app map with the applications of the system.
-     * @returns {Object Launchable}
-     * @public
+     * @returns {LaunchableMap}
      * @function
+     * @memberOf MenuModel#
      */
     getApplicationsMap: function() {
         return this._datamanager.getApplicationsMap();
@@ -298,9 +348,9 @@ const MenuModel = new Lang.Class({
 
     /**
      * @description Returns a categoryID-categoryName map.
-     * @returns {Object String}
-     * @public
+     * @returns {StringMap}
      * @function
+     * @memberOf MenuModel#
      */
     getApplicationCategories: function() {
         return this._datamanager.getCategoryMap();
@@ -308,9 +358,9 @@ const MenuModel = new Lang.Class({
 
     /**
      * @description Returns all applications of the system.
-     * @returns {List Launchable}
-     * @public
+     * @returns {LaunchableList}
      * @function
+     * @memberOf MenuModel#
      */
     getAllApplications: function() {
         return this._datamanager.getAllApplications();
@@ -318,9 +368,9 @@ const MenuModel = new Lang.Class({
 
     /**
      * @description Returns the most used applications of the user.
-     * @returns {List Launchable}
-     * @public
+     * @returns {LaunchableList}
      * @function
+     * @memberOf MenuModel#
      */
     getMostUsedApps: function() {
         return this._datamanager.getMostUsedApps();
@@ -328,9 +378,9 @@ const MenuModel = new Lang.Class({
 
     /**
      * @description Returns the favorite applications of the user.
-     * @returns {List Launchable}
-     * @public
+     * @returns {LaunchableList}
      * @function
+     * @memberOf MenuModel#
      */
     getFavoriteApps: function() {
         return this._datamanager.getFavoriteApps();
@@ -338,9 +388,9 @@ const MenuModel = new Lang.Class({
 
     /**
      * @description Returns the recent files of the user.
-     * @returns {List Launchable}
-     * @public
+     * @returns {LaunchableList}
      * @function
+     * @memberOf MenuModel#
      */
     getRecentFiles: function() {
         return this._datamanager.getRecentFiles();
@@ -348,9 +398,9 @@ const MenuModel = new Lang.Class({
 
     /**
      * @description Returns the places of the user.
-     * @returns {List Launchable}
-     * @public
+     * @returns {LaunchableList}
      * @function
+     * @memberOf MenuModel#
      */
     getPlaces: function() {
         return this._datamanager.getDefaultPlaces();
@@ -358,9 +408,9 @@ const MenuModel = new Lang.Class({
 
     /**
      * @description Returns the bookmarks of the user.
-     * @returns {List Launchable}
-     * @public
+     * @returns {LaunchableList}
      * @function
+     * @memberOf MenuModel#
      */
     getBookmarks: function() {
         return this._datamanager.getBookmarks();
@@ -368,9 +418,9 @@ const MenuModel = new Lang.Class({
 
     /**
      * @description Returns the devices of the user.
-     * @returns {List Launchable}
-     * @public
+     * @returns {LaunchableList}
      * @function
+     * @memberOf MenuModel#
      */
     getDevices: function() {
         return this._datamanager.getDevices();
@@ -378,9 +428,9 @@ const MenuModel = new Lang.Class({
 
     /**
      * @description Returns the remote devices of the user.
-     * @returns {List Launchable}
-     * @public
+     * @returns {LaunchableList}
      * @function
+     * @memberOf MenuModel#
      */
     getNetworkDevices: function() {
         return this._datamanager.getNetworkDevices();
@@ -395,8 +445,8 @@ const MenuModel = new Lang.Class({
      * @description Sets the searchsystem. After that it is possible to get
      *              searchsystem observer updates.
      * @param {Searchsystem} system
-     * @public
      * @function
+     * @memberOf MenuModel#
      */
     setSearchSystem: function(system) {
         if (system) {
@@ -411,8 +461,8 @@ const MenuModel = new Lang.Class({
     /**
      * @description Returns the latest searchresults filtered with the params parameter.
      * @param {Object} params { maxNumber: ?, ... }
-     * @public
      * @function
+     * @memberOf MenuModel#
      */
     getSearchResults: function(params) {
         let results = null;

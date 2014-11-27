@@ -34,7 +34,7 @@ const EEventType = MenuModel.EEventType;
  * Simple Enum which provides a mousebutton to id mapping.
  * @private
  */
-const MOUSEBUTTON = Me.imports.scripts.menu.components.elements.menubutton.MOUSEBUTTON;
+const MOUSEBUTTON = Me.imports.scripts.menu.components.elements.menubutton.EMousebutton;
 
 
 
@@ -74,7 +74,7 @@ const Sidebar = new Lang.Class({
         this.parent(model, mediator);
 
         // The buttongroup handles the interaction between the buttons.
-        this._buttongroup = new ButtonGroup();
+        this._buttonGroup = new ButtonGroup();
         // The mainbox inside of a scrollbox takes the buttons.
         this._mainBox = new St.BoxLayout({ style_class: 'gnomenu-sidebar-box', vertical: true });
 
@@ -128,7 +128,7 @@ const Sidebar = new Lang.Class({
         let iconSize = this.menuSettings.getSidebarIconsize();
         for each (let launchable in launchables) {
             let btn = new DraggableIconButton(this.mediator, iconSize, launchable);
-            this._buttongroup.addButton(btn);
+            this._buttonGroup.addButton(btn);
             this._mainBox.add_actor(btn.actor);
         }
     },
@@ -148,7 +148,7 @@ const Sidebar = new Lang.Class({
             }
         }
         // The buttongroup is now empty again.
-        this._buttongroup.reset();
+        this._buttonGroup.reset();
     },
 
     /**
@@ -157,13 +157,16 @@ const Sidebar = new Lang.Class({
      * @memberOf Sidebar#
      */
     destroy: function() {
-        if (this._keyPressID > 0) {
-            this.actor.disconnect(this._keyPressID);
-            this._keyPressID = undefined;
-        }
-
-        this.clear();
         this.actor.destroy();
+    },
+    
+    /**
+     * @description Removes unneeded effects like the hover style.
+     * @function
+     * @memberof Sidebar#
+     */
+    clean: function() {
+        this._buttonGroup.clean();
     },
 
     /**
@@ -217,41 +220,41 @@ const Sidebar = new Lang.Class({
         switch (symbol) {
 
             case Clutter.Up:
-                this._buttongroup.selectPrevious();
+                this._buttonGroup.selectPrevious();
                 returnVal = Clutter.EVENT_STOP;
                 break;
 
             case Clutter.Down:
-                this._buttongroup.selectNext();
+                this._buttonGroup.selectNext();
                 returnVal = Clutter.EVENT_STOP;
                 break;
 
             case Clutter.Left:
-                this._buttongroup.selectFirst();
+                this._buttonGroup.selectFirst();
                 returnVal = Clutter.EVENT_STOP;
                 break;
 
             case Clutter.Right:
-                this._buttongroup.clearButtonStates();
+                this._buttonGroup.clearButtonStates();
                 this.mediator.moveKeyFocusRight(actor, event);
                 returnVal = Clutter.EVENT_STOP;
                 break;
 
             case Clutter.KEY_Tab:
-                this._buttongroup.clearButtonStates();
+                this._buttonGroup.clearButtonStates();
                 this.mediator.moveKeyFocusRight(actor, event);
                 returnVal = Clutter.EVENT_STOP;
                 break;
 
             case Clutter.KEY_Return:
-                this._buttongroup.clearButtonStates();
+                this._buttonGroup.clearButtonStates();
                 // The control key is used to activate already open apps.
                 // Or actually to activate the action connected to the middle button.
                 // But thats at the moment the reactivate action.
                 if (ctrl_pressed) {
-                    this._buttongroup.activateSelected(MOUSEBUTTON.MOUSE_MIDDLE);
+                    this._buttonGroup.activateSelected(MOUSEBUTTON.MOUSE_MIDDLE);
                 } else {
-                    this._buttongroup.activateSelected(MOUSEBUTTON.MOUSE_LEFT);
+                    this._buttonGroup.activateSelected(MOUSEBUTTON.MOUSE_LEFT);
                 }
                 returnVal = Clutter.EVENT_STOP;
                 break;
