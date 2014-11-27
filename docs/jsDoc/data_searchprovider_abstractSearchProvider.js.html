@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: data/searchprovider/abstractSearchProvider.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: data/searchprovider/abstractSearchProvider.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/*
+    Copyright (C) 2014-2015, THE PANACEA PROJECTS &lt;panacier@gmail.com>
+
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software Foundation,
+    Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
+*/
+
+const Lang = imports.lang;
+
+const Me = imports.misc.extensionUtils.getCurrentExtension();
+const Log = Me.imports.scripts.misc.log;
+const SearchLaunchable = Me.imports.scripts.data.launchable.SearchLaunchable;
+
+
+
+/**
+ * @class AbstractSearchProvider
+ *
+ * @classdesc This class defines the basic structure of a searchprovider.
+ *
+ * @description The constructor needs to define an unique id.
+ * 
+ *
+ * @author AxP &lt;Der_AxP@t-online.de>
+ * @author passingthru67 &lt;panacier@gmail.com>
+ * @version 1.0
+ */
+const AbstractSearchProvider = new Lang.Class({
+    
+    Name: 'GnoMenu.AbstractSearchProvider',
+
+    
+    _init: function() {
+        this.id = 'provider_abstract';
+        
+        this.reset();
+    },
+    
+    /**
+     * @description Callback used to inform the searchsystem that the new
+     *              results are ready.
+     * @function
+     * @memberOf AbstractSearchProvider#
+     */
+    setUpdateCallback: function(updateCallback) {
+        if (!updateCallback) {
+            Log.logError("GnoMenu.AbstractSearchProvider", "setUpdateCallback", "Callback function is null!");
+        }
+        this._updateCallback = updateCallback;  
+    },
+    
+    /**
+     * @description Resets the provider. Deletes the stored results.
+     * @function
+     * @memberOf AbstractSearchProvider#
+     */
+    reset: function() {
+        this._results = [];
+    },
+    
+    /**
+     * @description Returns the raw results as a list.
+     * @returns {List}
+     * @function
+     * @memberOf AbstractSearchProvider#
+     */
+    getResults: function(filterParams) {
+        return this._results;
+    },
+
+    /**
+     * @description Returns the refined results as a list.
+     * @param {List} rawResults Takes the raw results.
+     * @returns {SearchLaunchablesList}
+     * @function
+     * @memberOf AbstractSearchProvider#
+     */
+    getResultMetas: function(rawResults) {
+        return []; // SearchLaunchable
+    },
+
+    /**
+     * @description Receives the startset of results for a search run. Calls
+     *              the updateCallback afterwards.
+     * @function
+     * @memberOf AbstractSearchProvider#
+     */
+    getInitialResultSet: function(terms) {
+        this._results = [];
+        
+        if (this._updateCallback) {
+            this._updateCallback();
+        }
+    },
+
+    /**
+     * @description Refines the current search run. Calls the updateCallback
+     *              afterwards.
+     * @function
+     * @memberOf AbstractSearchProvider#
+     */
+    getSubsearchResultSet: function(terms) {
+        this._results = [];
+        
+        if (this._updateCallback) {
+            this._updateCallback();
+        }
+    },
+});
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="AbstractSearchProvider.html">AbstractSearchProvider</a></li><li><a href="AppSearchProvider.html">AppSearchProvider</a></li><li><a href="AppsManager.html">AppsManager</a></li><li><a href="Button.html">Button</a></li><li><a href="ButtonGroup.html">ButtonGroup</a></li><li><a href="CategoryBox.html">CategoryBox</a></li><li><a href="CategoryPane.html">CategoryPane</a></li><li><a href="Component.html">Component</a></li><li><a href="ControlPane.html">ControlPane</a></li><li><a href="Datamanager.html">Datamanager</a></li><li><a href="DescriptionBox.html">DescriptionBox</a></li><li><a href="DraggableButton.html">DraggableButton</a></li><li><a href="DraggableGridButton.html">DraggableGridButton</a></li><li><a href="DraggableIconButton.html">DraggableIconButton</a></li><li><a href="DraggableListButton.html">DraggableListButton</a></li><li><a href="FortuneDialog.html">FortuneDialog</a></li><li><a href="GnoSearchProvider.html">GnoSearchProvider</a></li><li><a href="IconButton.html">IconButton</a></li><li><a href="IconToggleButton.html">IconToggleButton</a></li><li><a href="InternalButton.html">InternalButton</a></li><li><a href="Launchable.html">Launchable</a></li><li><a href="MainArea.html">MainArea</a></li><li><a href="Menu.html">Menu</a></li><li><a href="MenuMediator.html">MenuMediator</a></li><li><a href="MenuModel.html">MenuModel</a></li><li><a href="MenuSearch.html">MenuSearch</a></li><li><a href="MenuSettings.html">MenuSettings</a></li><li><a href="ModelObserver.html">ModelObserver</a></li><li><a href="NavigationArea.html">NavigationArea</a></li><li><a href="NavigationBox.html">NavigationBox</a></li><li><a href="PlacesManager.html">PlacesManager</a></li><li><a href="PreferencesButton.html">PreferencesButton</a></li><li><a href="ProviderResultBoxBase.html">ProviderResultBoxBase</a></li><li><a href="ProviderResultBoxButton.html">ProviderResultBoxButton</a></li><li><a href="ProviderResultGrid.html">ProviderResultGrid</a></li><li><a href="ProviderResultList.html">ProviderResultList</a></li><li><a href="RecentFilesManager.html">RecentFilesManager</a></li><li><a href="ResultArea.html">ResultArea</a></li><li><a href="SearchField.html">SearchField</a></li><li><a href="SearchLaunchable.html">SearchLaunchable</a></li><li><a href="SearchSystem.html">SearchSystem</a></li><li><a href="ShortcutArea.html">ShortcutArea</a></li><li><a href="ShortcutBoxBase.html">ShortcutBoxBase</a></li><li><a href="ShortcutGrid.html">ShortcutGrid</a></li><li><a href="ShortcutList.html">ShortcutList</a></li><li><a href="Sidebar.html">Sidebar</a></li><li><a href="StyleManager.html">StyleManager</a></li><li><a href="TextButton.html">TextButton</a></li><li><a href="TextToggleButton.html">TextToggleButton</a></li><li><a href="ToggleButton.html">ToggleButton</a></li><li><a href="UpdateableComponent.html">UpdateableComponent</a></li><li><a href="ViewModePane.html">ViewModePane</a></li><li><a href="WorkspaceBox.html">WorkspaceBox</a></li></ul><h3>Global</h3><ul><li><a href="global.html#_init">_init</a></li><li><a href="global.html#ECategoryDescriptionID">ECategoryDescriptionID</a></li><li><a href="global.html#ECategoryID">ECategoryID</a></li><li><a href="global.html#ECategoryNum">ECategoryNum</a></li><li><a href="global.html#EEventType">EEventType</a></li><li><a href="global.html#EMenuLayout">EMenuLayout</a></li><li><a href="global.html#EMousebutton">EMousebutton</a></li><li><a href="global.html#ESelectionMethod">ESelectionMethod</a></li><li><a href="global.html#EViewMode">EViewMode</a></li><li><a href="global.html#getSettings">getSettings</a></li><li><a href="global.html#initTranslations">initTranslations</a></li><li><a href="global.html#MAGIC_GNO_KEY">MAGIC_GNO_KEY</a></li><li><a href="global.html#PanelButton">PanelButton</a></li></ul>
+</nav>
+
+<br clear="both">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-dev</a> on Thu Nov 27 2014 17:47:03 GMT+0100 (MEZ)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

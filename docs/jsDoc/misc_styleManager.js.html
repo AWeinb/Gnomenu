@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: misc/styleManager.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: misc/styleManager.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/*
+    Copyright (C) 2014-2015, THE PANACEA PROJECTS &lt;panacier@gmail.com>
+
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software Foundation,
+    Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
+*/
+
+const Lang = imports.lang;
+const Gio = imports.gi.Gio;
+const GLib = imports.gi.GLib;
+const Main = imports.ui.main;
+const St = imports.gi.St;
+
+const Me = imports.misc.extensionUtils.getCurrentExtension();
+const MenuModel = Me.imports.scripts.menu.menuModel;
+const Log = Me.imports.scripts.misc.log;
+
+const EMenuLayout = MenuModel.EMenuLayout;
+
+/**
+ * @private
+ * @enum {String}
+ */
+const EStylesheetFilename = {
+    
+    LARGE:  'gnomenu-large.css',
+    MEDIUM: 'gnomenu-medium.css',
+    SMALL:  'gnomenu-small.css',
+    
+};
+
+
+/**
+ * @class StyleManager
+ *
+ * @classdesc This class handles the loading and unloading of the stylesheet.
+ *
+ * @description You must provide a valid gsettings instance.
+ * 
+ *
+ * @param {Settings} settings A gsettings instance.
+ *
+ *
+ * @author AxP &lt;Der_AxP@t-online.de>
+ * @author passingthru67 &lt;panacier@gmail.com>
+ * @version 1.0
+ */
+const StyleManager = new Lang.Class({
+
+    Name: 'Gnomenu.StyleManager',
+
+
+    _init: function(settings) {
+        this._settings = settings;
+        this._currentStylesheet = null;
+        
+        this._themeContext = St.ThemeContext.get_for_stage(global.stage);
+        this._theme = this._themeContext.get_theme();
+        
+        if (!this._themeContext || !this._theme) {
+            Log.logError("Gnomenu.StyleManager", "_init", "Loading theme failed!");
+        }
+    },
+
+    /**
+     * @description Loads the stylesheet of the current layout.
+     * @function
+     * @memberOf StyleManager#
+     */
+    load: function() {
+        if (this._currentStylesheet) {
+            this.unload();
+        }
+        
+        let stylesheetName = null;
+        switch (this._settings.get_enum('menu-layout')) {
+
+            case EMenuLayout.LARGE:
+                stylesheetName = EStylesheetFilename.LARGE;
+                break;
+
+            case EMenuLayout.MEDIUM:
+                stylesheetName = EStylesheetFilename.MEDIUM;
+                break;
+
+            case EMenuLayout.SMALL:
+                stylesheetName = EStylesheetFilename.SMALL;
+                break;
+
+            default:
+                stylesheetName = EStylesheetFilename.MEDIUM;
+                break;
+        }
+
+        let themeStylesheet = null;
+        if (Main._cssStylesheet != null) {
+            themeStylesheet = Main._cssStylesheet;
+        } else {
+            themeStylesheet = Main._defaultCssStylesheet;
+        }
+
+        let themeDirectory = GLib.path_get_dirname(themeStylesheet);
+        let stylesheetFile = themeDirectory + '/extensions/Test/' + stylesheetName;
+        if (!GLib.file_test(stylesheetFile, GLib.FileTest.EXISTS)) {
+
+            let stylePath = Me.path + Me.metadata['stylesheets-path'] + stylesheetName;
+            let stylesheetTmpFile = Gio.File.new_for_path(stylePath);
+            if (stylesheetTmpFile.query_exists(null)) {
+                stylesheetFile = stylesheetTmpFile.get_path();
+
+            } else {
+                Log.logError("Gnomenu.StyleManager", "load", "No stylesheet found!");
+            }
+        }
+
+        let result = this._theme.load_stylesheet(stylesheetFile);
+        if (result) {
+            this._currentStylesheet = stylesheetFile;
+        }
+        
+        return result;
+    },
+
+    /**
+     * @description Unloads the current stylesheet.
+     * @function
+     * @memberOf StyleManager#
+     */
+    unload: function() {
+        if (this._currentStylesheet) {
+            this._theme.unload_stylesheet(this._currentStylesheet);
+            this._currentStylesheet = null;
+        }
+        return true;
+    },
+    
+    /**
+     * @description Unloads and loads the stylesheet.
+     * @function
+     * @memberOf StyleManager#
+     */
+    refresh: function() {
+        // Get menu layout
+        let stylesheetName = null;
+        switch (this._settings.get_enum('menu-layout')) {
+
+            case EMenuLayout.LARGE:
+                stylesheetName = EStylesheetFilename.LARGE;
+                break;
+
+            case EMenuLayout.MEDIUM:
+                stylesheetName = EStylesheetFilename.MEDIUM;
+                break;
+
+            case EMenuLayout.SMALL:
+                stylesheetName = EStylesheetFilename.SMALL;
+                break;
+
+            default:
+                stylesheetName = EStylesheetFilename.MEDIUM;
+                break;
+        }
+
+        // Get new theme stylesheet
+        let themeStylesheet = Main._defaultCssStylesheet;
+        if (Main._cssStylesheet != null) {
+            themeStylesheet = Main._cssStylesheet;
+        }
+
+        let themeDirectory = GLib.path_get_dirname(themeStylesheet);
+        let stylesheetFile = themeDirectory + '/extensions/' + Me.metadata['uuid'] + '/' + stylesheetName;
+        if (!GLib.file_test(stylesheetFile, GLib.FileTest.EXISTS)) {
+
+            let stylePath = Me.path + Me.metadata['stylesheets-path'] + stylesheetName;
+            let stylesheetTmpFile = Gio.File.new_for_path(stylePath);
+            if (stylesheetTmpFile.query_exists(null)) {
+                stylesheetFile = stylesheetTmpFile.get_path();
+
+            } else {
+                Log.logError("Gnomenu.StyleManager", "load", "No stylesheet found!");
+            }
+        }
+
+        if (this._currentStylesheet &amp;&amp; this._currentStylesheet == stylesheetFile) {
+            return false;
+        }
+
+        // Change gnomenu stylesheet by updating theme
+        let themeContext = St.ThemeContext.get_for_stage(global.stage);
+        if (!themeContext)
+            return false;
+
+        let theme = themeContext.get_theme();
+        if (!theme)
+            return false;
+
+        let customStylesheets = theme.get_custom_stylesheets();
+        if (!customStylesheets)
+            return false;
+
+        let previousStylesheet = this._currentStylesheet;
+        this._currentStylesheet = stylesheetFile;
+
+        let newTheme = new St.Theme ({ application_stylesheet: themeStylesheet });
+        for (let i = 0; i &lt; customStylesheets.length; i++) {
+            if (customStylesheets[i] != previousStylesheet) {
+                newTheme.load_stylesheet(customStylesheets[i]);
+            }
+        }
+
+        newTheme.load_stylesheet(this._currentStylesheet);
+        themeContext.set_theme (newTheme);
+
+        return true;
+    },
+
+    /**
+     * @description Destroys the instance.
+     * @function
+     * @memberOf StyleManager#
+     */
+    destroy: function() {
+        this.unload();
+    },
+});</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="AbstractSearchProvider.html">AbstractSearchProvider</a></li><li><a href="AppSearchProvider.html">AppSearchProvider</a></li><li><a href="AppsManager.html">AppsManager</a></li><li><a href="Button.html">Button</a></li><li><a href="ButtonGroup.html">ButtonGroup</a></li><li><a href="CategoryBox.html">CategoryBox</a></li><li><a href="CategoryPane.html">CategoryPane</a></li><li><a href="Component.html">Component</a></li><li><a href="ControlPane.html">ControlPane</a></li><li><a href="Datamanager.html">Datamanager</a></li><li><a href="DescriptionBox.html">DescriptionBox</a></li><li><a href="DraggableButton.html">DraggableButton</a></li><li><a href="DraggableGridButton.html">DraggableGridButton</a></li><li><a href="DraggableIconButton.html">DraggableIconButton</a></li><li><a href="DraggableListButton.html">DraggableListButton</a></li><li><a href="FortuneDialog.html">FortuneDialog</a></li><li><a href="GnoSearchProvider.html">GnoSearchProvider</a></li><li><a href="IconButton.html">IconButton</a></li><li><a href="IconToggleButton.html">IconToggleButton</a></li><li><a href="InternalButton.html">InternalButton</a></li><li><a href="Launchable.html">Launchable</a></li><li><a href="MainArea.html">MainArea</a></li><li><a href="Menu.html">Menu</a></li><li><a href="MenuMediator.html">MenuMediator</a></li><li><a href="MenuModel.html">MenuModel</a></li><li><a href="MenuSearch.html">MenuSearch</a></li><li><a href="MenuSettings.html">MenuSettings</a></li><li><a href="ModelObserver.html">ModelObserver</a></li><li><a href="NavigationArea.html">NavigationArea</a></li><li><a href="NavigationBox.html">NavigationBox</a></li><li><a href="PlacesManager.html">PlacesManager</a></li><li><a href="PreferencesButton.html">PreferencesButton</a></li><li><a href="ProviderResultBoxBase.html">ProviderResultBoxBase</a></li><li><a href="ProviderResultBoxButton.html">ProviderResultBoxButton</a></li><li><a href="ProviderResultGrid.html">ProviderResultGrid</a></li><li><a href="ProviderResultList.html">ProviderResultList</a></li><li><a href="RecentFilesManager.html">RecentFilesManager</a></li><li><a href="ResultArea.html">ResultArea</a></li><li><a href="SearchField.html">SearchField</a></li><li><a href="SearchLaunchable.html">SearchLaunchable</a></li><li><a href="SearchSystem.html">SearchSystem</a></li><li><a href="ShortcutArea.html">ShortcutArea</a></li><li><a href="ShortcutBoxBase.html">ShortcutBoxBase</a></li><li><a href="ShortcutGrid.html">ShortcutGrid</a></li><li><a href="ShortcutList.html">ShortcutList</a></li><li><a href="Sidebar.html">Sidebar</a></li><li><a href="StyleManager.html">StyleManager</a></li><li><a href="TextButton.html">TextButton</a></li><li><a href="TextToggleButton.html">TextToggleButton</a></li><li><a href="ToggleButton.html">ToggleButton</a></li><li><a href="UpdateableComponent.html">UpdateableComponent</a></li><li><a href="ViewModePane.html">ViewModePane</a></li><li><a href="WorkspaceBox.html">WorkspaceBox</a></li></ul><h3>Global</h3><ul><li><a href="global.html#_init">_init</a></li><li><a href="global.html#ECategoryDescriptionID">ECategoryDescriptionID</a></li><li><a href="global.html#ECategoryID">ECategoryID</a></li><li><a href="global.html#ECategoryNum">ECategoryNum</a></li><li><a href="global.html#EEventType">EEventType</a></li><li><a href="global.html#EMenuLayout">EMenuLayout</a></li><li><a href="global.html#EMousebutton">EMousebutton</a></li><li><a href="global.html#ESelectionMethod">ESelectionMethod</a></li><li><a href="global.html#EViewMode">EViewMode</a></li><li><a href="global.html#getSettings">getSettings</a></li><li><a href="global.html#initTranslations">initTranslations</a></li><li><a href="global.html#MAGIC_GNO_KEY">MAGIC_GNO_KEY</a></li><li><a href="global.html#PanelButton">PanelButton</a></li></ul>
+</nav>
+
+<br clear="both">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-dev</a> on Thu Nov 27 2014 17:47:03 GMT+0100 (MEZ)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

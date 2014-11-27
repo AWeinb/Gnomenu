@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: components/controlPane.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: components/controlPane.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/*
+    Copyright (C) 2014-2015, THE PANACEA PROJECTS &lt;panacier@gmail.com>
+
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software Foundation,
+    Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
+*/
+
+const Lang = imports.lang;
+const St = imports.gi.St;
+
+const Main = imports.ui.main;
+const GnomeSession = imports.misc.gnomeSession;
+const LoginManager = imports.misc.loginManager;
+
+const Me = imports.misc.extensionUtils.getCurrentExtension();
+const Component = Me.imports.scripts.menu.components.component.Component;
+const IconButton = Me.imports.scripts.menu.components.elements.menubutton.IconButton;
+const ButtonGroup = Me.imports.scripts.menu.components.elements.menubutton.ButtonGroup;
+
+
+/**
+ * Simple Enum which provides a mousebutton to id mapping.
+ * @private
+ */
+const MOUSEBUTTON = Me.imports.scripts.menu.components.elements.menubutton.EMousebutton;
+
+
+
+/**
+ * @class ControlPane
+ * @extends Component
+ *
+ * @classdesc This creates the controls at the bottom of the menu. With the buttons
+ *            you are able to logout or shutdown. This component has no
+ *            implemented keyboard controls but it is no problem to implement
+ *            them. The component can be added to most layouts such as
+ *            boxlayouts.
+ *
+ * @description @see Component
+ * 
+ *
+ * @param {MenuModel} model A model instance.
+ * @param {MenuMediator} mediator A mediator instance.
+ *
+ * @property {Clutter.Actor} actor The clutter actor of this component.
+ *
+ *
+ * @author AxP &lt;Der_AxP@t-online.de>
+ * @author passingthru67 &lt;panacier@gmail.com>
+ * @version 1.0
+ */
+const ControlPane = new Lang.Class({
+
+    Name: 'Gnomenu.ControlPane',
+    Extends: Component,
+
+
+    _init: function(model, mediator) {
+        this.parent(model, mediator);
+        
+        this._session = new GnomeSession.SessionManager();
+
+        this.actor = new St.BoxLayout({ style_class: 'gnomenu-controlPane-box' });
+        this._buttonGroup = new ButtonGroup();
+
+        // The elements are created in the refresh method.
+        this.refresh();
+    },
+
+    /**
+     * @description Use this function to bring the view up-to-date.
+     * @function
+     * @memberOf ControlPane#
+     */
+    refresh: function() {
+        this.clear();
+
+        let iconSize = this.menuSettings.getLayoutDependendIconsize();
+
+        let systemShutdownBtn = new IconButton(this.mediator, 'shutdown-symbolic', iconSize, 'Power Off', 'PowerOff Description');
+        systemShutdownBtn.setHandlerForButton(MOUSEBUTTON.MOUSE_LEFT, Lang.bind(this, function() {
+            this.shutdownComputer();
+        }));
+
+        let systemSuspendBtn = new IconButton(this.mediator, 'suspend-symbolic', iconSize, 'Suspend', 'Suspend Description');
+        systemSuspendBtn.setHandlerForButton(MOUSEBUTTON.MOUSE_LEFT, Lang.bind(this, function() {
+            this.suspendComputer();
+        }));
+
+        let logoutUserBtn = new IconButton(this.mediator, 'user-logout-symbolic', iconSize, 'Log Out', 'Log Out Description');
+        logoutUserBtn.setHandlerForButton(MOUSEBUTTON.MOUSE_LEFT, Lang.bind(this, function() {
+            this.logoutSession();
+        }));
+
+        let lockScreenBtn = new IconButton(this.mediator, 'user-lock-symbolic', iconSize, 'Lock', 'Lock Description');
+        lockScreenBtn.setHandlerForButton(MOUSEBUTTON.MOUSE_LEFT, Lang.bind(this, function() {
+            this.lockSession();
+        }));
+
+        let shellRestartBtn = new IconButton(this.mediator, 'refresh-symbolic', iconSize, 'Restart Shell', 'Restart Shell Description');
+        shellRestartBtn.setHandlerForButton(MOUSEBUTTON.MOUSE_LEFT, Lang.bind(this, function() {
+            this.restartShell();
+        }));
+
+        // All buttons are added to a buttongroup. It is not really neccessary here
+        // but who cares?
+        this._buttonGroup.addButton(systemShutdownBtn);
+        this._buttonGroup.addButton(systemSuspendBtn);
+        this._buttonGroup.addButton(logoutUserBtn);
+        this._buttonGroup.addButton(lockScreenBtn);
+        this._buttonGroup.addButton(shellRestartBtn);
+
+        // You can vary the order of the buttons by shuffeling the lines below.
+        this.actor.add(systemShutdownBtn.actor);
+        this.actor.add(systemSuspendBtn.actor);
+        this.actor.add(logoutUserBtn.actor);
+        this.actor.add(lockScreenBtn.actor);
+        this.actor.add(shellRestartBtn.actor);
+    },
+
+    /**
+     * @description Use this function to remove all actors from the component.
+     * @function
+     * @memberOf ControlPane#
+     */
+    clear: function() {
+        let actors = this.actor.get_children();
+        if (actors) {
+            for each (let actor in actors) {
+                this.actor.remove_actor(actor);
+                actor.destroy();
+            }
+        }
+        this._buttonGroup.reset();
+    },
+
+    /**
+     * @description Use this function to destroy the component.
+     * @function
+     * @memberOf ControlPane#
+     */
+    destroy: function() {
+        this.clear();
+        this.actor.destroy();
+    },
+    
+    /**
+     * @description This method restarts the shell.
+     * @function
+     * @memberOf ControlPane#
+     */
+    restartShell: function() {
+        global.reexec_self();
+    },
+
+    /**
+     * @description This method suspends the computer.
+     * @function
+     * @memberOf ControlPane#
+     */
+    suspendComputer: function() {
+        //NOTE: alternate is to check if (Main.panel.statusArea.userMenu._haveSuspend) is true
+        LoginManager.getLoginManager().canSuspend(
+            function(result) {
+                if (result) {
+                    Main.overview.hide();
+                    LoginManager.getLoginManager().suspend();
+                }
+            }
+        );
+    },
+
+    /**
+     * @description This method shuts the computer down.
+     * @function
+     * @memberOf ControlPane#
+     */
+    shutdownComputer: function() {
+        // code to shutdown (power off)
+        // ToDo: GS38 iterates through SystemLoginSession to check for open sessions
+        // and displays an openSessionWarnDialog
+        this._session.ShutdownRemote();
+    },
+
+    /**
+     * @description This method logs the user out.
+     * @function
+     * @memberOf ControlPane#
+     */
+    logoutSession: function() {
+        this._session.LogoutRemote(0);
+    },
+
+    /**
+     * @description This method locks the session.
+     * @function
+     * @memberOf ControlPane#
+     */
+    lockSession: function() {
+        Main.overview.hide();
+        Main.screenShield.lock(true);
+    },
+});
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Button.html">Button</a></li><li><a href="ButtonGroup.html">ButtonGroup</a></li><li><a href="CategoryBox.html">CategoryBox</a></li><li><a href="CategoryPane.html">CategoryPane</a></li><li><a href="Component.html">Component</a></li><li><a href="ControlPane.html">ControlPane</a></li><li><a href="DescriptionBox.html">DescriptionBox</a></li><li><a href="DraggableButton.html">DraggableButton</a></li><li><a href="DraggableGridButton.html">DraggableGridButton</a></li><li><a href="DraggableIconButton.html">DraggableIconButton</a></li><li><a href="DraggableListButton.html">DraggableListButton</a></li><li><a href="IconButton.html">IconButton</a></li><li><a href="IconToggleButton.html">IconToggleButton</a></li><li><a href="InternalButton.html">InternalButton</a></li><li><a href="MainArea.html">MainArea</a></li><li><a href="Menu.html">Menu</a></li><li><a href="MenuMediator.html">MenuMediator</a></li><li><a href="MenuModel.html">MenuModel</a></li><li><a href="MenuSearch.html">MenuSearch</a></li><li><a href="MenuSettings.html">MenuSettings</a></li><li><a href="ModelObserver.html">ModelObserver</a></li><li><a href="NavigationArea.html">NavigationArea</a></li><li><a href="NavigationBox.html">NavigationBox</a></li><li><a href="PreferencesButton.html">PreferencesButton</a></li><li><a href="ProviderResultBoxBase.html">ProviderResultBoxBase</a></li><li><a href="ProviderResultBoxButton.html">ProviderResultBoxButton</a></li><li><a href="ProviderResultGrid.html">ProviderResultGrid</a></li><li><a href="ProviderResultList.html">ProviderResultList</a></li><li><a href="ResultArea.html">ResultArea</a></li><li><a href="SearchField.html">SearchField</a></li><li><a href="ShortcutArea.html">ShortcutArea</a></li><li><a href="ShortcutBoxBase.html">ShortcutBoxBase</a></li><li><a href="ShortcutGrid.html">ShortcutGrid</a></li><li><a href="ShortcutList.html">ShortcutList</a></li><li><a href="Sidebar.html">Sidebar</a></li><li><a href="TextButton.html">TextButton</a></li><li><a href="TextToggleButton.html">TextToggleButton</a></li><li><a href="ToggleButton.html">ToggleButton</a></li><li><a href="UpdateableComponent.html">UpdateableComponent</a></li><li><a href="ViewModePane.html">ViewModePane</a></li><li><a href="WorkspaceBox.html">WorkspaceBox</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ECategoryDescriptionID">ECategoryDescriptionID</a></li><li><a href="global.html#ECategoryID">ECategoryID</a></li><li><a href="global.html#ECategoryNum">ECategoryNum</a></li><li><a href="global.html#EEventType">EEventType</a></li><li><a href="global.html#EMenuLayout">EMenuLayout</a></li><li><a href="global.html#EMousebutton">EMousebutton</a></li><li><a href="global.html#ESelectionMethod">ESelectionMethod</a></li><li><a href="global.html#EViewMode">EViewMode</a></li></ul>
+</nav>
+
+<br clear="both">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-dev</a> on Wed Nov 26 2014 15:05:45 GMT+0100 (MEZ)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
