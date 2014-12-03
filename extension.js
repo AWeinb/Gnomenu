@@ -53,12 +53,12 @@ function enable() {
         // And hopefully finds one. But this should work in most cases.
         return;
     }
-	
-	// The stylemanager loads the stylesheet and refreshs it if needed.
-	this._styleManager = new StyleManager(settings);
-	if (!this._styleManager.load()) {
-		Log.logError("Gnomenu", "enable", "The style was not loaded!");
-	}
+
+    // The stylemanager loads the stylesheet and refreshs it if needed.
+    this._styleManager = new StyleManager(settings);
+    if (!this._styleManager.load()) {
+        Log.logError("Gnomenu", "enable", "The style was not loaded!");
+    }
 
     // This box contains all buttons and elements that are added by this extension.
     this.panelBox = new PanelBox(settings, this._styleManager);

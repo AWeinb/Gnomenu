@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Class: ToggleButton</title>
+    <title>JSDoc: Class: ActivitiesButton</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Class: ToggleButton</h1>
+    <h1 class="page-title">Class: ActivitiesButton</h1>
 
     
 
@@ -29,17 +29,12 @@
 <header>
     
         <h2>
-        ToggleButton
+        ActivitiesButton
         </h2>
         
-            <div class="class-description">This is the base class for all togglebuttons. It
-           provides some special methods for this kind of button
-           but keeps all buttons from the parent.
-
-           It is possible to set a callback for a toggled
-           event with "setStateToggledCallback".
-
-           Please see the parent class. @see Button</div>
+            <div class="class-description">This class is a wrapper around the apps button of the standard
+           panel. This class provides methods to show/hide the button or
+           to modify the hotspot.</div>
         
     
 </header>
@@ -54,7 +49,7 @@
         <h2>Constructor</h2>
         
 
-        <h4 class="name" id="ToggleButton"><span class="type-signature"></span>new ToggleButton<span class="signature">(icon, iconSize, labelTextID, hoverTitleID, hoverDescriptionID, params)</span><span class="type-signature"></span></h4>
+        <h4 class="name" id="ActivitiesButton"><span class="type-signature"></span>new ActivitiesButton<span class="signature">()</span><span class="type-signature"></span></h4>
 
         
     
@@ -63,7 +58,7 @@
 
     
     <div class="description">
-        @see Button
+        .
     </div>
     
 
@@ -73,169 +68,6 @@
 
     
 
-    
-        <h5>Parameters:</h5>
-        
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>icon</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Icon</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">The icon.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>iconSize</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Integer</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">The iconSize.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>labelTextID</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">String</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">The gettext id of the label.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>hoverTitleID</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">String</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">The gettext id of the title.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>hoverDescriptionID</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">String</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">The gettext id of the description.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>params</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Object</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"></td>
-        </tr>
-
-    
-    </tbody>
-</table>
     
 
     
@@ -282,7 +114,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="menu_components_elements_menubuttonBase.js.html">menu/components/elements/menubuttonBase.js</a>, <a href="menu_components_elements_menubuttonBase.js.html#line458">line 458</a>
+        <a href="panel.js.html">panel.js</a>, <a href="panel.js.html#line271">line 271</a>
     </li></ul></dd>
     
 
@@ -311,17 +143,6 @@
 
     
     </div>
-
-    
-        <h3 class="subsection-title">Extends</h3>
-
-        
-
-
-    <ul>
-        <li><a href="InternalButton.html">InternalButton</a></li>
-    </ul>
-
 
     
 
@@ -344,7 +165,7 @@
     
         
 
-        <h4 class="name" id="setState"><span class="type-signature"></span>setState<span class="signature">(selected)</span><span class="type-signature"></span></h4>
+        <h4 class="name" id="hide"><span class="type-signature"></span>hide<span class="signature">()</span><span class="type-signature"></span></h4>
 
         
     
@@ -353,7 +174,7 @@
 
     
     <div class="description">
-        Sets the state of the button.
+        Hides the activities button. Use show to make it visible again.
     </div>
     
 
@@ -363,54 +184,6 @@
 
     
 
-    
-        <h5>Parameters:</h5>
-        
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>selected</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Boolean</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"></td>
-        </tr>
-
-    
-    </tbody>
-</table>
     
 
     
@@ -445,7 +218,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="menu_components_elements_menubuttonBase.js.html">menu/components/elements/menubuttonBase.js</a>, <a href="menu_components_elements_menubuttonBase.js.html#line528">line 528</a>
+        <a href="panel.js.html">panel.js</a>, <a href="panel.js.html#line300">line 300</a>
     </li></ul></dd>
     
 
@@ -478,7 +251,7 @@
     
         
 
-        <h4 class="name" id="setStateToggledCallback"><span class="type-signature"></span>setStateToggledCallback<span class="signature">(callback)</span><span class="type-signature"></span></h4>
+        <h4 class="name" id="setCornerActive"><span class="type-signature"></span>setCornerActive<span class="signature">()</span><span class="type-signature"></span></h4>
 
         
     
@@ -487,7 +260,7 @@
 
     
     <div class="description">
-        Sets the function which is called when the state is changed.
+        Activates or deactivates the activities hotcorner.
     </div>
     
 
@@ -497,54 +270,6 @@
 
     
 
-    
-        <h5>Parameters:</h5>
-        
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>callback</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">function</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"></td>
-        </tr>
-
-    
-    </tbody>
-</table>
     
 
     
@@ -579,7 +304,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="menu_components_elements_menubuttonBase.js.html">menu/components/elements/menubuttonBase.js</a>, <a href="menu_components_elements_menubuttonBase.js.html#line504">line 504</a>
+        <a href="panel.js.html">panel.js</a>, <a href="panel.js.html#line322">line 322</a>
     </li></ul></dd>
     
 
@@ -612,7 +337,7 @@
     
         
 
-        <h4 class="name" id="toggleState"><span class="type-signature"></span>toggleState<span class="signature">()</span><span class="type-signature"></span></h4>
+        <h4 class="name" id="show"><span class="type-signature"></span>show<span class="signature">()</span><span class="type-signature"></span></h4>
 
         
     
@@ -621,8 +346,7 @@
 
     
     <div class="description">
-        Toggles the selection state of the button. This triggers
-             a stateToggledCallback if this was provided.
+        Shows the activities button. Use hide to make it hidden again.
     </div>
     
 
@@ -666,7 +390,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="menu_components_elements_menubuttonBase.js.html">menu/components/elements/menubuttonBase.js</a>, <a href="menu_components_elements_menubuttonBase.js.html#line514">line 514</a>
+        <a href="panel.js.html">panel.js</a>, <a href="panel.js.html#line311">line 311</a>
     </li></ul></dd>
     
 
@@ -715,7 +439,7 @@
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-dev</a> on Wed Dec 03 2014 21:44:39 GMT+0100 (MEZ)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-dev</a> on Wed Dec 03 2014 21:44:34 GMT+0100 (MEZ)
 </footer>
 
 <script> prettyPrint(); </script>

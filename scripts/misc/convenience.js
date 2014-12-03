@@ -31,7 +31,7 @@ const Lang = imports.lang;
 const Config = imports.misc.config;
 const ExtensionUtils = imports.misc.extensionUtils;
 
-/**
+/*
  * initTranslations:
  * @domain: (optional): the gettext domain to use
  *
@@ -55,7 +55,7 @@ function initTranslations(domain) {
     }
 }
 
-/**
+/*
  * getSettings:
  * @schema: (optional): the GSettings schema id
  *

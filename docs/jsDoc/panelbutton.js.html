@@ -26,12 +26,30 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>
+            <pre class="prettyprint source linenums"><code>/*
+    Copyright (C) 2014-2015, THE PANACEA PROJECTS &lt;panacier@gmail.com>
+
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software Foundation,
+    Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
+*/
+
 const Lang = imports.lang;
 const Signals = imports.signals;
 const Atk = imports.gi.Atk;
 const Clutter = imports.gi.Clutter;
 const Shell = imports.gi.Shell;
+const Meta = imports.gi.Meta;
 const St = imports.gi.St;
 
 const Button = imports.ui.panelMenu.Button;
@@ -43,103 +61,100 @@ const Log = Me.imports.scripts.misc.log;
 
 
 /**
- * PanelButton:
- *  @setHotspotHandler:
- *      Sets the hotspot callback method.
- *  @setKeyboardShortcut:
- *      
+ * @class PanelButton
+ *
+ * @classdesc This class is a simple button that can be used in the main panel.
+ *            It provides methods to change text, icon and buttonhandler. Also
+ *            you can use a hotspot at top border of the button to activate it.
+ *            Besides that you can add keyboard shortcuts to activate the button.
+ *
+ * @description You should provide a name or an icon. If not you wont get a
+ *              big button.
  *
  *
- * This class creates a simple button with label, icon, and hotspot above them.
- * 
- *
+ * @author AxP &lt;Der_AxP@t-online.de>
+ * @author passingthru67 &lt;panacier@gmail.com>
+ * @version 1.0
  */
 const PanelButton = new Lang.Class({
 
     Name: 'Gnomenu.panelbutton.PanelButton',
     Extends: ButtonBox,
 
-    _buttonHandler: null,
-    _buttonHandlerId: null,
-    // Clutter.Actor used as mouse hotspot.
-    _hotspot: null,
-    _hotspotId: null,
-    _hotspotActive: null,
-    // Settings name for the keybinding. Stored to remove it again.
-    _keybindingName: null,
 
-    /**
-     * _init:
-     *  @nameText:
-     *      The label and name text of the button. The nameText can be null.
-     *  @iconName:
-     *      The name/filename without file extension of the icon if it's in the theme path.
-     *      Otherwise the path to the icon relative to the extension. The iconName can
-     *      be null.
-     *  @hotspotHandler:
-     *      The callback method that is called when the button hotspot is entered. The
-     *      hotspotHandler can be null.
-     *
-     * ;
-     * Creates the button view elements and adds them to the base actor.
-     *
-     */
     _init: function(nameText, iconName) {
-        if (!iconName &amp;&amp; !nameText) {
-            Log.logError("Gnomenu.panelbutton.PanelButton", "_init", "Icon and label are null!");
-        }
-        
         this.parent({ reactive: true,
                       can_focus: true,
                       track_hover: true,
                       accessible_name: nameText ? nameText : "",
                       accessible_role: Atk.Role.MENU });
-        
+
         this._buttonHandler = null;
         this._buttonHandlerId = null;
         this._keybindingName = null;
 
         // The mainBox is a vertical layout with the hotspot at the top border and the actual button below.
         let mainBox = new St.BoxLayout({ style_class: 'gnomenu-panel-button', vertical: true });
-        
+
         // The hotspot has height 1 and fires if entered with the mouse.
         this._hotspot = new Clutter.Actor({ reactive: true, opacity: 0, height: 1 });
         mainBox.add(this._hotspot);
         this._hotspotId = null;
         this._hotspotActive = false;
-        
+
         // The bin is used to align the button vertically in the middle.
-        let descBin = new St.Bin({reactive: true});
         // The box takes the icon on the left and the label on the right.
+        let descBin = new St.Bin({reactive: true});
+
         let descBox = new St.BoxLayout();
-        
-        this._icon = new St.Icon({ margin_right: 2, style_class: 'system-status-icon gnomenu-panel-button-icon' });
+        this._icon = new St.Icon({ style_class: 'system-status-icon gnomenu-panel-button-icon' });
         if (iconName) {
             this._icon.icon_name = iconName;
         }
         descBox.add(this._icon);
-        
         this._label = new St.Label();
         if (nameText) {
             this._label.text = nameText;
+        } else {
+            this._icon.actor.padding = 0;
         }
         descBox.add(this._label);
-        
         descBin.set_child(descBox);
+
         // expand: true tells the system that the bin with the button should fill the place.
         mainBox.add(descBin, { expand: true });
-        
+
         this.actor.add_actor(mainBox);
     },
-    
+
+    /**
+     * @description The button uses at the moment only icon names. To change this
+     *              name use this method.
+     * @param {String} iconName
+     * @function
+     * @memberOf PanelButton#
+     */
     setIconName: function(iconName) {
         this._icon.icon_name = iconName;
     },
-    
+
+    /**
+     * @description This changes the label of the button.
+     * @param {String} text
+     * @function
+     * @memberOf PanelButton#
+     */
     setLabelText: function(text) {
         this._label.text = text;
     },
-    
+
+    /**
+     * @description This deletes the last buttonhandler and activates the new
+     *              one if it is valid.
+     * @param {Function} handler
+     * @function
+     * @memberOf PanelButton#
+     */
     setButtonHandler: function(handler) {
         if (this._buttonHandlerId) {
             this.actor.disconnect(this._buttonHandlerId);
@@ -150,7 +165,14 @@ const PanelButton = new Lang.Class({
         }
         this._buttonHandler = handler;
     },
-    
+
+    /**
+     * @description This method activates or deactivates the button hotspot. The
+     *              used method for the hotspot is the button click handler.
+     * @param {Boolean} active
+     * @function
+     * @memberOf PanelButton#
+     */
     setHotspotActive: function(active) {
         if (this._hotspotId) {
             this._hotspot.disconnect(this._hotspotId);
@@ -162,128 +184,200 @@ const PanelButton = new Lang.Class({
         this._hotspotActive = active;
     },
 
-    setKeyboardShortcut: function(name, settings) {
+    /**
+     * @description This method removes the last keybinding and activates the
+     *              new one if it is valid.
+     * @param {Object} settings
+     * @param {String} name
+     * @function
+     * @memberOf PanelButton#
+     */
+    setKeyboardShortcut: function(settings, name) {
         if (this._keybindingName != null) {
             Main.wm.removeKeybinding(this._keybindingName);
             this._keybindingName = null;
         }
         if (name &amp;&amp; settings &amp;&amp; this._buttonHandler) {
-            Main.wm.addKeybinding(name, settings, Meta.KeyBindingFlags.NONE, Shell.KeyBindingMode.NORMAL, this._buttonHandler);
-            this._keybindingName = name;
+            Main.wm.addKeybinding(String(name), settings, Meta.KeyBindingFlags.NONE, Shell.KeyBindingMode.NORMAL, this._buttonHandler);
+            this._keybindingName = String(name);
         }
     },
 
-    setSensitive: function(sensitive) {
-        this.actor.reactive = sensitive;
-        this.actor.can_focus = sensitive;
-        this.actor.track_hover = sensitive;
-    },
-
+    /**
+     * @description Destroys the button. Removes the key binding.
+     * @function
+     * @memberOf PanelButton#
+     */
     destroy: function() {
+        this._hotspot.destroy();
         this.setKeyboardShortcut(null, null);
         this.actor.destroy();
+        this.container.destroy();
     },
 
-    // Override _onStyleChanged function
+    /**
+     * @description Override parent method.
+     * @function
+     * @memberOf PanelButton#
+     * @private
+     */
     _onStyleChanged: function(actor) {
         // Ignore HPadding
     }
 });
 
 
-
+/**
+ * @class MenuButton
+ *
+ * @classdesc This class is a simple button that can be used in the main panel.
+ *            It provides methods to change text, icon and buttonhandler. Also
+ *            you can use a hotspot at top border of the button to activate it.
+ *            Besides that you can add keyboard shortcuts to activate the button.
+ *            It is very similar to the normal panelbutton but also provides
+ *            methods to handle a menu. You can not register an button handler
+ *            because this button is set up to open and close the menu on click.
+ *            To get the menu you may access it with .menu.
+ *
+ * @description You should provide a name or an icon. If not you wont get a
+ *              big button.
+ *
+ *
+ * @author AxP &lt;Der_AxP@t-online.de>
+ * @author passingthru67 &lt;panacier@gmail.com>
+ * @version 1.0
+ */
 const MenuButton = new Lang.Class({
 
     Name: 'Gnomenu.panelbutton.MenuButton',
     Extends: Button,
 
-    
+    // setSensitive: function(sensitive)
+    // setMenu: function(menu)
+
     _init: function(nameText, iconName) {
         this.parent(0.0, nameText, true);
         this.actor.add_style_class_name('panel-status-button');
-    
+
         this._keybindingName = null;
         this._hotspotActive = false;
-    
+
         // The mainBox is a vertical layout with the hotspot at the top border and the actual button below.
         let mainBox = new St.BoxLayout({ style_class: 'gnomenu-panel-button', vertical: true });
-        
+
         // The hotspot has height 1 and fires if entered with the mouse.
         this._hotspot = new Clutter.Actor({ reactive: true, opacity: 0, height: 1 });
-        this._hotspot.connect('enter-event', Lang.bind(this, this._onHotspotEntered));
+        this._hotspot.connect('enter-event', Lang.bind(this, function() {
+            if (this._hotspotActive) {
+                this.menu.toggle();
+            }
+        }));
         mainBox.add(this._hotspot);
-        
+
         // The bin is used to align the button vertically in the middle.
-        let descBin = new St.Bin({reactive: true});
         // The box takes the icon on the left and the label on the right.
+        let descBin = new St.Bin({reactive: true});
+
         let descBox = new St.BoxLayout();
-        
-        this._icon = new St.Icon({ margin_right: 2, style_class: 'system-status-icon gnomenu-panel-button-icon' });
+        this._icon = new St.Icon({ style_class: 'system-status-icon gnomenu-panel-button-icon' });
         if (iconName) {
             this._icon.icon_name = iconName;
         }
         descBox.add(this._icon);
-        
         this._label = new St.Label();
         if (nameText) {
             this._label.text = nameText;
         }
         descBox.add(this._label);
-        
         descBin.set_child(descBox);
+
         // expand: true tells the system that the bin with the button should fill the place.
         mainBox.add(descBin, {expand: true});
-        
+
         this.actor.add_actor(mainBox);
     },
-    
+
+    /**
+     * @description The button uses at the moment only icon names. To change this
+     *              name use this method.
+     * @param {String} iconName
+     * @function
+     * @memberOf PanelButton#
+     */
     setIconName: function(iconName) {
         this._icon.icon_name = iconName;
     },
-    
+
+    /**
+     * @description This changes the label of the button.
+     * @param {String} text
+     * @function
+     * @memberOf PanelButton#
+     */
     setLabelText: function(text) {
         this._label.text = text;
     },
 
+    /**
+     * @description This method activates or deactivates the button hotspot. The
+     *              used method for the hotspot is the button click handler.
+     * @param {Boolean} active
+     * @function
+     * @memberOf PanelButton#
+     */
     setHotspotActive: function(active) {
         this._hotspotActive = active;
     },
 
-    _onHotspotEntered: function() {
-        if (this._hotspotActive) {
-            this.menu.toggle();
-        }
-    },
-
-    setKeyboardShortcut: function(name, settings, handler) {
+    /**
+     * @description This method removes the last keybinding and activates the
+     *              new one if it is valid.
+     * @param {Object} settings
+     * @param {String} name
+     * @function
+     * @memberOf PanelButton#
+     */
+    setKeyboardShortcut: function(settings, name) {
         if (this._keybindingName) {
             Main.wm.removeKeybinding(this._keybindingName);
             this._keybindingName = null;
         }
-        if (name &amp;&amp; settings &amp;&amp; handler) {
+
+        if (name &amp;&amp; settings) {
+            let handler = Lang.bind(this, function() {
+                if (this.actor.visible) {
+                    this.menu.toggle();
+                }
+            });
             Main.wm.addKeybinding(name, settings, Meta.KeyBindingFlags.NONE, Shell.KeyBindingMode.NORMAL, handler);
             this._keybindingName = name;
         }
     },
-    
+
+    /**
+     * @description Destroys the button. Removes the key binding.
+     * @function
+     * @memberOf PanelButton#
+     */
     destroy: function() {
         this._hotspot.destroy();
         this.menu.destroy();
         this.menu = undefined;
-        
+
         this.setKeyboardShortcut(null, null, null);
         this.actor.destroy();
         this.container.destroy();
     },
 
-    // Override _onStyleChanged function
+    /**
+     * @description Override parent method.
+     * @function
+     * @memberOf PanelButton#
+     * @private
+     */
     _onStyleChanged: function(actor) {
         // Ignore HPadding
-    }
-    
-    // setSensitive: function(sensitive)
-    // setMenu: function(menu)
-    // destroy: function()
+    },
 });</code></pre>
         </article>
     </section>
@@ -294,13 +388,13 @@ const MenuButton = new Lang.Class({
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="AbstractSearchProvider.html">AbstractSearchProvider</a></li><li><a href="AppSearchProvider.html">AppSearchProvider</a></li><li><a href="AppsManager.html">AppsManager</a></li><li><a href="Button.html">Button</a></li><li><a href="ButtonGroup.html">ButtonGroup</a></li><li><a href="CategoryBox.html">CategoryBox</a></li><li><a href="CategoryPane.html">CategoryPane</a></li><li><a href="Component.html">Component</a></li><li><a href="ControlPane.html">ControlPane</a></li><li><a href="Datamanager.html">Datamanager</a></li><li><a href="DescriptionBox.html">DescriptionBox</a></li><li><a href="DraggableButton.html">DraggableButton</a></li><li><a href="DraggableGridButton.html">DraggableGridButton</a></li><li><a href="DraggableIconButton.html">DraggableIconButton</a></li><li><a href="DraggableListButton.html">DraggableListButton</a></li><li><a href="FortuneDialog.html">FortuneDialog</a></li><li><a href="GnoSearchProvider.html">GnoSearchProvider</a></li><li><a href="IconButton.html">IconButton</a></li><li><a href="IconToggleButton.html">IconToggleButton</a></li><li><a href="InternalButton.html">InternalButton</a></li><li><a href="Launchable.html">Launchable</a></li><li><a href="MainArea.html">MainArea</a></li><li><a href="Menu.html">Menu</a></li><li><a href="MenuMediator.html">MenuMediator</a></li><li><a href="MenuModel.html">MenuModel</a></li><li><a href="MenuSearch.html">MenuSearch</a></li><li><a href="MenuSettings.html">MenuSettings</a></li><li><a href="ModelObserver.html">ModelObserver</a></li><li><a href="NavigationArea.html">NavigationArea</a></li><li><a href="NavigationBox.html">NavigationBox</a></li><li><a href="PlacesManager.html">PlacesManager</a></li><li><a href="PreferencesButton.html">PreferencesButton</a></li><li><a href="ProviderResultBoxBase.html">ProviderResultBoxBase</a></li><li><a href="ProviderResultBoxButton.html">ProviderResultBoxButton</a></li><li><a href="ProviderResultGrid.html">ProviderResultGrid</a></li><li><a href="ProviderResultList.html">ProviderResultList</a></li><li><a href="RecentFilesManager.html">RecentFilesManager</a></li><li><a href="ResultArea.html">ResultArea</a></li><li><a href="SearchField.html">SearchField</a></li><li><a href="SearchLaunchable.html">SearchLaunchable</a></li><li><a href="SearchSystem.html">SearchSystem</a></li><li><a href="ShortcutArea.html">ShortcutArea</a></li><li><a href="ShortcutBoxBase.html">ShortcutBoxBase</a></li><li><a href="ShortcutGrid.html">ShortcutGrid</a></li><li><a href="ShortcutList.html">ShortcutList</a></li><li><a href="Sidebar.html">Sidebar</a></li><li><a href="StyleManager.html">StyleManager</a></li><li><a href="TextButton.html">TextButton</a></li><li><a href="TextToggleButton.html">TextToggleButton</a></li><li><a href="ToggleButton.html">ToggleButton</a></li><li><a href="UpdateableComponent.html">UpdateableComponent</a></li><li><a href="ViewModePane.html">ViewModePane</a></li><li><a href="WorkspaceBox.html">WorkspaceBox</a></li></ul><h3>Global</h3><ul><li><a href="global.html#_init">_init</a></li><li><a href="global.html#ECategoryDescriptionID">ECategoryDescriptionID</a></li><li><a href="global.html#ECategoryID">ECategoryID</a></li><li><a href="global.html#ECategoryNum">ECategoryNum</a></li><li><a href="global.html#EEventType">EEventType</a></li><li><a href="global.html#EMenuLayout">EMenuLayout</a></li><li><a href="global.html#EMousebutton">EMousebutton</a></li><li><a href="global.html#ESelectionMethod">ESelectionMethod</a></li><li><a href="global.html#EViewMode">EViewMode</a></li><li><a href="global.html#getSettings">getSettings</a></li><li><a href="global.html#initTranslations">initTranslations</a></li><li><a href="global.html#MAGIC_GNO_KEY">MAGIC_GNO_KEY</a></li><li><a href="global.html#PanelButton">PanelButton</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="AbstractSearchProvider.html">AbstractSearchProvider</a></li><li><a href="ActivitiesButton.html">ActivitiesButton</a></li><li><a href="AppSearchProvider.html">AppSearchProvider</a></li><li><a href="AppsManager.html">AppsManager</a></li><li><a href="Button.html">Button</a></li><li><a href="ButtonGroup.html">ButtonGroup</a></li><li><a href="CategoryBox.html">CategoryBox</a></li><li><a href="CategoryPane.html">CategoryPane</a></li><li><a href="Component.html">Component</a></li><li><a href="ControlPane.html">ControlPane</a></li><li><a href="Datamanager.html">Datamanager</a></li><li><a href="DescriptionBox.html">DescriptionBox</a></li><li><a href="DraggableButton.html">DraggableButton</a></li><li><a href="DraggableGridButton.html">DraggableGridButton</a></li><li><a href="DraggableIconButton.html">DraggableIconButton</a></li><li><a href="DraggableListButton.html">DraggableListButton</a></li><li><a href="FortuneDialog.html">FortuneDialog</a></li><li><a href="GnoSearchProvider.html">GnoSearchProvider</a></li><li><a href="IconButton.html">IconButton</a></li><li><a href="IconToggleButton.html">IconToggleButton</a></li><li><a href="InternalButton.html">InternalButton</a></li><li><a href="Launchable.html">Launchable</a></li><li><a href="MainArea.html">MainArea</a></li><li><a href="Menu.html">Menu</a></li><li><a href="MenuButton.html">MenuButton</a></li><li><a href="MenuMediator.html">MenuMediator</a></li><li><a href="MenuModel.html">MenuModel</a></li><li><a href="MenuSearch.html">MenuSearch</a></li><li><a href="MenuSettings.html">MenuSettings</a></li><li><a href="ModelObserver.html">ModelObserver</a></li><li><a href="NavigationArea.html">NavigationArea</a></li><li><a href="NavigationBox.html">NavigationBox</a></li><li><a href="PanelBox.html">PanelBox</a></li><li><a href="PanelButton.html">PanelButton</a></li><li><a href="PlacesManager.html">PlacesManager</a></li><li><a href="PreferencesButton.html">PreferencesButton</a></li><li><a href="ProviderResultBoxBase.html">ProviderResultBoxBase</a></li><li><a href="ProviderResultBoxButton.html">ProviderResultBoxButton</a></li><li><a href="ProviderResultGrid.html">ProviderResultGrid</a></li><li><a href="ProviderResultList.html">ProviderResultList</a></li><li><a href="RecentFilesManager.html">RecentFilesManager</a></li><li><a href="ResultArea.html">ResultArea</a></li><li><a href="SearchField.html">SearchField</a></li><li><a href="SearchLaunchable.html">SearchLaunchable</a></li><li><a href="SearchSystem.html">SearchSystem</a></li><li><a href="ShortcutArea.html">ShortcutArea</a></li><li><a href="ShortcutBoxBase.html">ShortcutBoxBase</a></li><li><a href="ShortcutGrid.html">ShortcutGrid</a></li><li><a href="ShortcutList.html">ShortcutList</a></li><li><a href="Sidebar.html">Sidebar</a></li><li><a href="StyleManager.html">StyleManager</a></li><li><a href="TextButton.html">TextButton</a></li><li><a href="TextToggleButton.html">TextToggleButton</a></li><li><a href="ToggleButton.html">ToggleButton</a></li><li><a href="UpdateableComponent.html">UpdateableComponent</a></li><li><a href="ViewModePane.html">ViewModePane</a></li><li><a href="WorkspaceBox.html">WorkspaceBox</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ECategoryDescriptionID">ECategoryDescriptionID</a></li><li><a href="global.html#ECategoryID">ECategoryID</a></li><li><a href="global.html#ECategoryNum">ECategoryNum</a></li><li><a href="global.html#EEventType">EEventType</a></li><li><a href="global.html#EMenuLayout">EMenuLayout</a></li><li><a href="global.html#EMousebutton">EMousebutton</a></li><li><a href="global.html#ESelectionMethod">ESelectionMethod</a></li><li><a href="global.html#EViewMode">EViewMode</a></li><li><a href="global.html#MAGIC_GNO_KEY">MAGIC_GNO_KEY</a></li></ul>
 </nav>
 
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-dev</a> on Thu Nov 27 2014 17:47:03 GMT+0100 (MEZ)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-dev</a> on Wed Dec 03 2014 21:44:33 GMT+0100 (MEZ)
 </footer>
 
 <script> prettyPrint(); </script>
