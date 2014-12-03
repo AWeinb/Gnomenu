@@ -12,8 +12,8 @@
     <property name="page_increment">10</property>
   </object>
   <object class="GtkNotebook" id="notebook">
-    <property name="width_request">950</property>
-    <property name="height_request">600</property>
+    <property name="width_request">800</property>
+    <property name="height_request">500</property>
     <property name="visible">True</property>
     <property name="can_focus">True</property>
     <property name="hexpand">True</property>

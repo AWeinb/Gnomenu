@@ -571,7 +571,7 @@ const IconToggleButton = new Lang.Class({
         let params = {
             actor_params:     { reactive: true, style_class: 'popup-menu-item popup-submenu-menu-item gnomenu-iconToggle-button', x_align: St.Align.MIDDLE, y_align: St.Align.MIDDLE },
             container_params: { vertical: true },
-            icon_add_params:  { x_fill: false, y_fill: false,x_align: St.Align.MIDDLE, y_align: St.Align.MIDDLE },
+            icon_add_params:  { x_fill: false, y_fill: true, x_align: St.Align.MIDDLE, y_align: St.Align.MIDDLE },
             label_params:     {  },
             label_add_params: {  },
         };

@@ -1,13 +1,16 @@
 .gnomenu-panel-box {
+    margin: 0px;
 }
 
 .gnomenu-panel-button {
     margin: 0px;
-    padding: 0px 10px;
+    padding: 0px;
+    padding-right: 5px;
+    padding-left: 5px;
 }
 
 .gnomenu-panel-button-icon {
-    padding: 0px;
+    margin: 0px;
 }
 
 /*------------------------------*/
@@ -233,7 +236,7 @@
 .gnomenu-searchArea-category-button {
     border-radius: 5px;
     border-width: 1px;
-    height: 22px;
+    height: 26px;
     padding: 0px 10px;
     background-gradient-direction: vertical;
     background-gradient-start: rgba(136,138,133,0.2);
@@ -263,8 +266,8 @@
 .gnomenu-textToggle-button {
     border-radius: 14px;
     border-width: 1px;
-    height: 21px;
-    padding-top: 2px;
+    height: 22px;
+    padding-top: 3px;
     padding-right: 11px;
     padding-bottom: 3px;
     padding-left: 11px;
@@ -301,7 +304,11 @@
 .gnomenu-iconToggle-button {
     border-radius: 14px;
     border-width: 1px;
-    padding: 4px 10px;
+    height: 22px;
+    padding-top: 3px;
+    padding-right: 11px;
+    padding-bottom: 3px;
+    padding-left: 11px;
 }
 
 .gnomenu-iconToggle-button:insensitive {

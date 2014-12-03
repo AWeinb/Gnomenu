@@ -1,35 +1,50 @@
 .gnomenu-panel-box {
+    margin: 0px;
 }
 
 .gnomenu-panel-button {
     margin: 0px;
-    padding: 0px 10px;
+    padding: 0px;
+    padding-right: 5px;
+    padding-left: 5px;
 }
 
 .gnomenu-panel-button-icon {
-    padding: 0px;
+    margin: 0px;
 }
 
 /*------------------------------*/
 
 .gnomenu-menu-box {
-    padding: 5px 20px 0px 20px;
+    padding-top: 10px;
+    padding-right: 20px;
+    padding-bottom: 0px;
+    padding-left: 20px;
 }
 
 .gnomenu-menu-topPane {
-    padding: 0px 0px 20px 0px;
+    padding-top: 0px;
+    padding-right: 0px;
+    padding-bottom: 20px;
+    padding-left: 0px;
 }
 
 .gnomenu-menu-middlePane {
-    padding: 0px 0px 0px 0px;
+    padding-top: 0px;
+    padding-right: 0px;
+    padding-bottom: 0px;
+    padding-left: 0px;
 }
 
 .gnomenu-menu-middlePane StScrollBar {
-    width: 10px;
+    width: 12px;
 }
 
 .gnomenu-menu-bottomPane {
-    padding: 0px 0px 0px 0px;
+    padding-top: 5px;
+    padding-right: 0px;
+    padding-bottom: 0px;
+    padding-left: 0px;
 }
 
 /*------------------------------*/
@@ -66,7 +81,7 @@
     border: 1px solid rgba(255,255,255,0.3);
     width: 150px;
     font-size: 9pt;
-    font-weight: bold;
+    font-weight: normal;
     height: 24px;
     padding: 0px 8px;
 }
@@ -125,8 +140,7 @@
 /*------------------------------*/
 
 .gnomenu-controlPane-box {
-    border-width: 2px;
-    padding: 3px 0px 0px 0px;
+    border-width: 1px;
     spacing: 2px;
 }
 
@@ -134,7 +148,10 @@
 
 .gnomenu-mainArea-box {
     border-image: url("b-panel-r.png") 12 12 12 12;
-    padding: 5px 2px 4px 2px;
+    padding-top: 5px;
+    padding-right: 2px;
+    padding-bottom: 5px;
+    padding-left: 2px;
     width: 362px;
 }
 
@@ -145,18 +162,19 @@
 }
 
 .gnomenu-applications-list-box {
+    padding-top: 8px;
+    padding-right: 0px;
     padding-bottom: 0px;
     padding-left: 38px;
-    padding-right: 0px;
-    padding-top: 8px;
     spacing: 2px;
 }
 
 .gnomenu-applications-grid-box {
-    padding-bottom: 0px;
-    padding-left: 4px;
-    padding-right: 4px;
     padding-top: 0px;
+    padding-right: 4px;
+    padding-bottom: 0px;
+    padding-left: 10px;
+    spacing: 5px;
 }
 
 .gnomenu-searchArea-scrollbox {
@@ -165,6 +183,8 @@
 .gnomenu-searchArea-box {
     padding-top: 10px;
     padding-right: 10px;
+    padding-bottom: 0px;
+    padding-left: 28px;
 }
 
 .gnomenu-searchArea-category-box {
@@ -189,7 +209,10 @@
 /*------------------------------*/
 
 .gnomenu-description-box {
-    padding: 2px 6px 0px 0px;
+    padding-top: 0px;
+    padding-right: 10px;
+    padding-bottom: 0px;
+    padding-left: 20px;
     text-align: right;
     max-width: 100px;
 }
@@ -212,7 +235,7 @@
 .gnomenu-searchArea-category-button {
     border-radius: 4px;
     border-width: 1px;
-    height: 20px;
+    height: 22px;
     padding: 0px 10px;
     background-gradient-direction: vertical;
     background-gradient-start: rgba(136,138,133,0.2);
@@ -239,8 +262,11 @@
 .gnomenu-textToggle-button {
     border-radius: 14px;
     border-width: 1px;
-    height: 22px;
-    padding: 0px 9px;
+    height: 20px;
+    padding-top: 2px;
+    padding-right: 6px;
+    padding-bottom: 2px;
+    padding-left: 6px;
 }
 
 .gnomenu-textToggle-button:insensitive {
@@ -266,7 +292,7 @@
 
 .gnomenu-textToggle-button-label {
     font-size: 10pt;
-    font-weight: bold;
+    font-weight: normal;
 }
 
 /*------------------------------*/
@@ -274,7 +300,11 @@
 .gnomenu-iconToggle-button {
     border-radius: 14px;
     border-width: 1px;
-    padding: 3px 7px;
+    height: 20px;
+    padding-top: 2px;
+    padding-right: 6px;
+    padding-bottom: 2px;
+    padding-left: 6px;
 }
 
 .gnomenu-iconToggle-button:insensitive {
@@ -393,7 +423,7 @@
 
 .gnomenu-appList-button-label {
     font-size: 9pt;
-    font-weight: bold;
+    font-weight: normal;
     padding: 2px 0px 3px 24px;
 }
 
@@ -426,7 +456,7 @@
 
 .gnomenu-appGrid-button-label {
     font-size: 8pt;
-    font-weight: bold;
+    font-weight: normal;
     padding-top: 2px;
     text-align: center;
     width: 48px;

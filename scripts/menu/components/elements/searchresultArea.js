@@ -47,7 +47,7 @@ const CLOSE_ICON = 'list-remove-symbolic';
  * @description Iconsize for the box button.
  * @private
  */
-const ICON_SIZE = 25;
+const ICON_SIZE = 22;
 
 
 

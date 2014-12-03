@@ -160,7 +160,7 @@ const SignalHandlers = new Lang.Class({
         let selected = combobox.get_active();
         if (selected == 2) {
             sidebarIconsizeCombobox.set_active(ICONSIZES.indexOf(24));
-            menuAppListIconsizeCombobox.set_active(ICONSIZES.indexOf(16));
+            menuAppListIconsizeCombobox.set_active(ICONSIZES.indexOf(24));
             menuAppGridIconsizeCombobox.set_active(ICONSIZES.indexOf(32));
             
         } else if (selected == 1) {
