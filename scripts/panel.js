@@ -1,7 +1,6 @@
 
 const Lang = imports.lang;
 const St = imports.gi.St;
-const IconTheme = imports.gi.Gtk.IconTheme;
 
 const Main = imports.ui.main;
 
@@ -17,22 +16,11 @@ const PanelBox = new Lang.Class({
 
     Name: 'Gnomenu.panel.PanelBox',
     
-        //this._buttonTwo = new PanelButton("World!", null, true, Lang.bind(this, function() {
-        //    global.log("sssss");
-        //}));
-        //this.actor.add(this._buttonTwo.container);
 
     _init: function(settings) {
         this._settings = settings;
         
         this.actor = new St.BoxLayout({ style_class: 'gnomenu-panel-box' });
-        
-        // Add extension icons to icon theme directory path
-        // TODO: move this to enable/disable?
-        // GS patch https://bugzilla.gnome.org/show_bug.cgi?id=675561
-        let theme = IconTheme.get_default();
-        theme.append_search_path(Me.path + "/icons");
-    
     
         this._styleManager = new StyleManager(this._settings);
         if (!this._styleManager.load()) {
@@ -44,28 +32,22 @@ const PanelBox = new Lang.Class({
     },
     
     _createButtons: function() {
-        this._viewButton = this._easyCreate('enable-workspace-button', 'workspace-button-text', 'enable-workspace-button-icon', 'workspace-button-icon', PanelButton);
+        this._workspaceButton = this._easyCreate('enable-workspace-button', 'workspace-button-text', 'enable-workspace-button-icon', 'workspace-button-icon', PanelButton);
         let workspaceBtnCallback = Lang.bind(this, function() {
             if (Main.overview.visible) {
-                if (!Main.overview.viewSelector._showAppsButton.checked) {
-                    Main.overview.hide();
-                }
-                Main.overview.viewSelector._showAppsButton.checked = false;
+                Main.overview.hide();
             } else {
                 Main.overview.show();
+                Main.overview.viewSelector._showAppsButton.checked = false;
             }
         });
-        this._viewButton.setButtonHandler(workspaceBtnCallback);
+        this._workspaceButton.setButtonHandler(workspaceBtnCallback);
         
         this._appsButton = this._easyCreate('enable-apps-button', 'apps-button-text', 'enable-apps-button-icon', 'apps-button-icon', PanelButton);
         let appsBtnCallback = Lang.bind(this, function() {
             if (Main.overview.visible) {
-                if (Main.overview.viewSelector._showAppsButton.checked) {
-                    Main.overview.hide();
-                    Main.overview.viewSelector._showAppsButton.checked = false;
-                } else {
-                    Main.overview.viewSelector._showAppsButton.checked = true;
-                }
+                Main.overview.hide();
+                
             } else {
                 Main.overview.show();
                 Main.overview.viewSelector._showAppsButton.checked = true;
@@ -76,7 +58,10 @@ const PanelBox = new Lang.Class({
         this._menuButton = this._easyCreate('enable-menu-button', 'menu-button-text', 'enable-menu-button-icon', 'menu-button-icon', MenuButton);
         let menu = new Menu(this._menuButton.actor, this._settings);
         this._menuButton.setMenu(menu);
-        this._menuButton.setHotspotActive(true);
+        this._menuButton.setHotspotActive(this._settings.get_boolean('disable-menu-hotspot'));
+        if (this._settings.get_boolean('enable-menu-shortcut')) {
+            this._menuButton.setKeyboardShortcut(this._settings, 'menu-shortcut-key');
+        }
     },
     
     _easyCreate: function(enableButtonID, labelID, enableIconID, iconID, buttonClass) {
@@ -97,38 +82,111 @@ const PanelBox = new Lang.Class({
     },
     
     _connectToSettings: function(settings) {
-        settings.connect('changed::enable-menu-button', Lang.bind(this, function() {
+        this._settingsIDs = [];
+        
+        this._settingsIDs.push(settings.connect('changed::enable-workspace-button', Lang.bind(this, function() {
+            if (settings.get_boolean('enable-workspace-button')) {
+                this._workspaceButton.actor.show();
+            } else {
+                this._workspaceButton.actor.hide();
+            }
+        })));
+        this._settingsIDs.push(settings.connect('changed::workspace-button-text', Lang.bind(this, function() {
+            this._workspaceButton.setLabelText(String(settings.get_strv('workspace-button-text')));
+        })));
+        this._settingsIDs.push(settings.connect('changed::enable-workspace-button-icon', Lang.bind(this, function() {
+            if (settings.get_boolean('enable-workspace-button-icon')) {
+                this._workspaceButton.setIconName(String(settings.get_strv('workspace-button-icon')));
+            } else {
+                this._workspaceButton.setIconName("");
+            }
+        })));
+        this._settingsIDs.push(settings.connect('changed::workspace-button-icon', Lang.bind(this, function() {
+            this._workspaceButton.setIconName(String(settings.get_strv('workspace-button-icon')));
+        })));
+        
+        
+        this._settingsIDs.push(settings.connect('changed::enable-apps-button', Lang.bind(this, function() {
+            if (settings.get_boolean('enable-apps-button')) {
+                this._appsButton.actor.show();
+            } else {
+                this._appsButton.actor.hide();
+            }
+        })));
+        this._settingsIDs.push(settings.connect('changed::apps-button-text', Lang.bind(this, function() {
+            this._appsButton.setLabelText(String(settings.get_strv('apps-button-text')));
+        })));
+        this._settingsIDs.push(settings.connect('changed::enable-apps-button-icon', Lang.bind(this, function() {
+            if (settings.get_boolean('enable-apps-button-icon')) {
+                this._appsButton.setIconName(String(settings.get_strv('apps-button-icon')));
+            } else {
+                this._appsButton.setIconName("");
+            }
+        })));
+        this._settingsIDs.push(settings.connect('changed::apps-button-icon', Lang.bind(this, function() {
+            this._appsButton.setIconName(String(settings.get_strv('apps-button-icon')));
+        })));
+        
+        
+        this._settingsIDs.push(settings.connect('changed::enable-menu-button', Lang.bind(this, function() {
             if (settings.get_boolean('enable-menu-button')) {
                 this._menuButton.actor.show();
             } else {
                 this._menuButton.actor.hide();
             }
-        }));
-        settings.connect('changed::menu-button-text', Lang.bind(this, function() {
+        })));
+        this._settingsIDs.push(settings.connect('changed::menu-button-text', Lang.bind(this, function() {
             this._menuButton.setLabelText(String(settings.get_strv('menu-button-text')));
-        }));
-        settings.connect('changed::enable-menu-button-icon', Lang.bind(this, function() {
+        })));
+        this._settingsIDs.push(settings.connect('changed::enable-menu-button-icon', Lang.bind(this, function() {
             if (settings.get_boolean('enable-menu-button-icon')) {
                 this._menuButton.setIconName(String(settings.get_strv('menu-button-icon')));
             } else {
                 this._menuButton.setIconName("");
             }
-        }));
-        settings.connect('changed::menu-button-icon', Lang.bind(this, function() {
+        })));
+        this._settingsIDs.push(settings.connect('changed::menu-button-icon', Lang.bind(this, function() {
             this._menuButton.setIconName(String(settings.get_strv('menu-button-icon')));
-        }));
+        })));
+        this._settingsIDs.push(settings.connect('changed::disable-menu-hotspot', Lang.bind(this, function() {
+            this._menuButton.setHotspotActive(settings.get_boolean('disable-menu-hotspot'));
+        })));
+        this._settingsIDs.push(settings.connect('changed::enable-menu-shortcut', Lang.bind(this, function() {
+            if (settings.get_boolean('enable-menu-shortcut')) {
+                this._menuButton.setKeyboardShortcut(settings, 'menu-shortcut-key');
+            } else {
+                this._menuButton.setKeyboardShortcut(settings, null);
+            }
+        })));
+        this._settingsIDs.push(settings.connect('changed::menu-shortcut-key', Lang.bind(this, function() {
+            if (settings.get_boolean('enable-menu-shortcut')) {
+                this._menuButton.setKeyboardShortcut(settings, 'menu-shortcut-key');
+            }
+        })));
         
-        settings.connect('changed::menu-layout', Lang.bind(this, function() {
+        
+        this._settingsIDs.push(settings.connect('changed::menu-layout', Lang.bind(this, function() {
             this._styleManager.refresh();
             
             this._menuButton.menu.destroy();
             this._menuButton.menu = undefined;
             let menu = new Menu(this._menuButton.actor, settings);
             this._menuButton.setMenu(menu);
-        }));
+        })));
     },
     
     destroy: function() {
+        for each (let id in this._settingsIDs) {
+            try {
+                this._settings.disconnect(id);
+            } catch(e) {
+                log(e);
+            }
+        }
+        this._settingsIDs = undefined;
+        
+        this._workspaceButton.destroy();
+        this._appsButton.destroy();
         this._menuButton.destroy();
         this.actor.destroy();
             

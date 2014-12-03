@@ -4,6 +4,7 @@ const Signals = imports.signals;
 const Atk = imports.gi.Atk;
 const Clutter = imports.gi.Clutter;
 const Shell = imports.gi.Shell;
+const Meta = imports.gi.Meta;
 const St = imports.gi.St;
 
 const Button = imports.ui.panelMenu.Button;
@@ -14,53 +15,13 @@ const Me = imports.misc.extensionUtils.getCurrentExtension();
 const Log = Me.imports.scripts.misc.log;
 
 
-/**
- * PanelButton:
- *  @setHotspotHandler:
- *      Sets the hotspot callback method.
- *  @setKeyboardShortcut:
- *      
- *
- *
- * This class creates a simple button with label, icon, and hotspot above them.
- * 
- *
- */
 const PanelButton = new Lang.Class({
 
     Name: 'Gnomenu.panelbutton.PanelButton',
     Extends: ButtonBox,
 
-    _buttonHandler: null,
-    _buttonHandlerId: null,
-    // Clutter.Actor used as mouse hotspot.
-    _hotspot: null,
-    _hotspotId: null,
-    _hotspotActive: null,
-    // Settings name for the keybinding. Stored to remove it again.
-    _keybindingName: null,
 
-    /**
-     * _init:
-     *  @nameText:
-     *      The label and name text of the button. The nameText can be null.
-     *  @iconName:
-     *      The name/filename without file extension of the icon if it's in the theme path.
-     *      Otherwise the path to the icon relative to the extension. The iconName can
-     *      be null.
-     *  @hotspotHandler:
-     *      The callback method that is called when the button hotspot is entered. The
-     *      hotspotHandler can be null.
-     *
-     * ;
-     * Creates the button view elements and adds them to the base actor.
-     *
-     */
     _init: function(nameText, iconName) {
-        if (!iconName && !nameText) {
-            Log.logError("Gnomenu.panelbutton.PanelButton", "_init", "Icon and label are null!");
-        }
-        
         this.parent({ reactive: true,
                       can_focus: true,
                       track_hover: true,
@@ -81,23 +42,22 @@ const PanelButton = new Lang.Class({
         this._hotspotActive = false;
         
         // The bin is used to align the button vertically in the middle.
-        let descBin = new St.Bin({reactive: true});
         // The box takes the icon on the left and the label on the right.
-        let descBox = new St.BoxLayout();
+        let descBin = new St.Bin({reactive: true});
         
+        let descBox = new St.BoxLayout();
         this._icon = new St.Icon({ margin_right: 2, style_class: 'system-status-icon gnomenu-panel-button-icon' });
         if (iconName) {
             this._icon.icon_name = iconName;
         }
         descBox.add(this._icon);
-        
         this._label = new St.Label();
         if (nameText) {
             this._label.text = nameText;
         }
         descBox.add(this._label);
-        
         descBin.set_child(descBox);
+        
         // expand: true tells the system that the bin with the button should fill the place.
         mainBox.add(descBin, { expand: true });
         
@@ -134,14 +94,14 @@ const PanelButton = new Lang.Class({
         this._hotspotActive = active;
     },
 
-    setKeyboardShortcut: function(name, settings) {
+    setKeyboardShortcut: function(settings, name) {
         if (this._keybindingName != null) {
             Main.wm.removeKeybinding(this._keybindingName);
             this._keybindingName = null;
         }
         if (name && settings && this._buttonHandler) {
-            Main.wm.addKeybinding(name, settings, Meta.KeyBindingFlags.NONE, Shell.KeyBindingMode.NORMAL, this._buttonHandler);
-            this._keybindingName = name;
+            Main.wm.addKeybinding(String(name), settings, Meta.KeyBindingFlags.NONE, Shell.KeyBindingMode.NORMAL, this._buttonHandler);
+            this._keybindingName = String(name);
         }
     },
 
@@ -186,23 +146,22 @@ const MenuButton = new Lang.Class({
         mainBox.add(this._hotspot);
         
         // The bin is used to align the button vertically in the middle.
-        let descBin = new St.Bin({reactive: true});
         // The box takes the icon on the left and the label on the right.
-        let descBox = new St.BoxLayout();
+        let descBin = new St.Bin({reactive: true});
         
+        let descBox = new St.BoxLayout();
         this._icon = new St.Icon({ margin_right: 2, style_class: 'system-status-icon gnomenu-panel-button-icon' });
         if (iconName) {
             this._icon.icon_name = iconName;
         }
         descBox.add(this._icon);
-        
         this._label = new St.Label();
         if (nameText) {
             this._label.text = nameText;
         }
         descBox.add(this._label);
-        
         descBin.set_child(descBox);
+        
         // expand: true tells the system that the bin with the button should fill the place.
         mainBox.add(descBin, {expand: true});
         
@@ -227,12 +186,18 @@ const MenuButton = new Lang.Class({
         }
     },
 
-    setKeyboardShortcut: function(name, settings, handler) {
+    setKeyboardShortcut: function(settings, name) {
         if (this._keybindingName) {
             Main.wm.removeKeybinding(this._keybindingName);
             this._keybindingName = null;
         }
-        if (name && settings && handler) {
+        
+        if (name && settings) {
+            let handler = Lang.bind(this, function() {
+                if (this.actor.visible) {
+                    this.menu.toggle();
+                }
+            });
             Main.wm.addKeybinding(name, settings, Meta.KeyBindingFlags.NONE, Shell.KeyBindingMode.NORMAL, handler);
             this._keybindingName = name;
         }
