@@ -48,7 +48,7 @@ const MOUSEBUTTON = Me.imports.scripts.menu.components.elements.menubutton.EMous
  *            boxlayouts.
  *
  * @description @see Component
- * 
+ *
  *
  * @param {MenuModel} model A model instance.
  * @param {MenuMediator} mediator A mediator instance.
@@ -68,7 +68,7 @@ const ControlPane = new Lang.Class({
 
     _init: function(model, mediator) {
         this.parent(model, mediator);
-        
+
         this._session = new GnomeSession.SessionManager();
 
         this.actor = new St.BoxLayout({ style_class: 'gnomenu-controlPane-box' });
@@ -153,7 +153,7 @@ const ControlPane = new Lang.Class({
     destroy: function() {
         this.actor.destroy();
     },
-    
+
     /**
      * @description Removes unneeded effects like the hover style.
      * @function
@@ -162,7 +162,7 @@ const ControlPane = new Lang.Class({
     clean: function() {
         this._buttonGroup.clean();
     },
-    
+
     /**
      * @description This method restarts the shell.
      * @function

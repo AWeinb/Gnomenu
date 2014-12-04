@@ -106,7 +106,7 @@ const PanelBox = new Lang.Class({
         this._menuButton = this._easyButtonCreate('enable-menu-button', 'menu-button-text', 'enable-menu-button-icon', 'menu-button-icon', MenuButton);
         let menu = new Menu(this._menuButton.actor, this._settings);
         this._menuButton.setMenu(menu);
-        this._menuButton.setHotspotActive(this._settings.get_boolean('disable-menu-hotspot'));
+        this._menuButton.setHotspotActive(!this._settings.get_boolean('disable-menu-hotspot'));
 
         // Set up the shortcut key to open the menu.
         if (this._settings.get_boolean('enable-menu-shortcut')) {
@@ -218,7 +218,7 @@ const PanelBox = new Lang.Class({
             this._menuButton.setIconName(String(settings.get_strv('menu-button-icon')));
         })));
         this._settingsIDs.push(settings.connect('changed::disable-menu-hotspot', Lang.bind(this, function() {
-            this._menuButton.setHotspotActive(settings.get_boolean('disable-menu-hotspot'));
+            this._menuButton.setHotspotActive(!settings.get_boolean('disable-menu-hotspot'));
         })));
         this._settingsIDs.push(settings.connect('changed::enable-menu-shortcut', Lang.bind(this, function() {
             if (settings.get_boolean('enable-menu-shortcut')) {

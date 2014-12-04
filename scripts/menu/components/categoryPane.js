@@ -39,7 +39,7 @@ const MOUSEBUTTON = Me.imports.scripts.menu.components.elements.menubutton.EMous
 /**
  * @class CategoryPane
  * @extends Component
- * 
+ *
  * @classdesc This class creates a small pane with category buttons. It
  *            contains toggle buttons that show which category is active. You
  *            can also set the selected category programmatically. If you
@@ -48,7 +48,7 @@ const MOUSEBUTTON = Me.imports.scripts.menu.components.elements.menubutton.EMous
  *            component. This triggers a complete rebuild of the component
  *            which is probably not needed very often. It is possible to add
  *            the actor of this class to a normal boxlayout.
- * 
+ *
  * @description You need to provide valid instances of model and mediator. The
  *              model is needed to receive current data which then is displayed.
  *              The mediator is used to interact with the other components of
@@ -205,7 +205,7 @@ const CategoryPane = new Lang.Class({
     deselectButtons: function() {
         this._buttonGroup.clearButtonStates();
     },
-    
+
     /**
      * @description Removes unneeded effects like the hover style.
      * @function

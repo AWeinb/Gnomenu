@@ -297,7 +297,7 @@ const ProviderResultList = new Lang.Class({
             }
         }
     },
-    
+
     /**
      * @description Removes unneeded effects like the hover style.
      * @function
@@ -499,7 +499,7 @@ const ProviderResultGrid = new Lang.Class({
             }
         }
     },
-    
+
     /**
      * @description Removes unneeded effects like the hover style.
      * @function
@@ -707,7 +707,8 @@ const ResultArea = new Lang.Class({
 
         // Sign that is shown if no provider has results.
         this._emptySign = new St.Label();
-        this._emptySign.set_text(_("No Result"));
+        this._emptySign.set_text(_("No results."));
+        this._mainBox.add(this._emptySign, { x_fill: false, y_fill: false, expand: true, x_align: St.Align.MIDDLE, y_align: St.Align.MIDDLE });
 
         this._viewMode = null;
         this._lastResults = null;
@@ -737,10 +738,16 @@ const ResultArea = new Lang.Class({
         let actors = this._mainBox.get_children();
         if (actors) {
             for each (let actor in actors) {
+                if (actor.get_gid() == this._emptySign.get_gid()) {
+                    // Spare the empty label.
+                    continue;
+                }
                 this._mainBox.remove_actor(actor);
                 actor.destroy();
             }
         }
+
+        this._emptySign.show();
 
         this._viewmodeProviderBoxMap = {};
         this._selectedIdx = 0;
@@ -755,7 +762,7 @@ const ResultArea = new Lang.Class({
     destroy: function() {
         this.actor.destroy();
     },
-    
+
     /**
      * @description Removes unneeded effects like the hover style.
      * @function
@@ -765,12 +772,12 @@ const ResultArea = new Lang.Class({
         if (!this._viewMode) {
             return;
         }
-        
+
         let boxmap = this._viewmodeProviderBoxMap[this._viewMode];
         if (!boxmap) {
             return;
         }
-        
+
         for each (let box in boxmap) {
             box.clean();
         }
@@ -1023,6 +1030,10 @@ const ResultArea = new Lang.Class({
      * @memberOf ResultArea#
      */
     _showResults: function(resultMetas) {
+        // Show the empty sign by default. It is hidden when its clear that
+        // something is shown.
+        this._emptySign.show();
+
         if (!resultMetas) {
             return;
         }
@@ -1042,6 +1053,10 @@ const ResultArea = new Lang.Class({
         let actors = this._mainBox.get_children();
         if (actors) {
             for each (let actor in actors) {
+                if (actor.get_gid() == this._emptySign.get_gid()) {
+                    // Spare the empty label.
+                    continue;
+                }
                 this._mainBox.remove_actor(actor);
             }
         }
@@ -1097,9 +1112,8 @@ const ResultArea = new Lang.Class({
             }
         }
 
-        if (!isFirstVisible) {
-            // If one box is visible this would be true. If its not then there is no box.
-            this._mainBox.add(this._emptySign, { x_fill: false, y_fill: false, expand: true, x_align: St.Align.MIDDLE, y_align: St.Align.MIDDLE });
+        if (isFirstVisible) {
+            this._emptySign.hide();
         }
 
         // Ok, it seems that changing the reference does not change the original...

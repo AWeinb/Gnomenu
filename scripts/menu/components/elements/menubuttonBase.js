@@ -59,7 +59,7 @@ const EMousebutton = {
  *
  * @description This class takes as parameter not only icon and label but also
  *              parameters for its basic components.
- * 
+ *
  *
  * @param {Icon} icon The icon. The now working icon types are the Gio icons,
  *                    Clutter textures, and names.
@@ -241,7 +241,7 @@ const Button = new Lang.Class({
 
         this._isSelected = false;
     },
-    
+
     /**
      * @description Removes style modifier without valueable meaning.
      * @function
@@ -397,7 +397,7 @@ const Button = new Lang.Class({
  *            @see Button
  *
  * @description @see Button
- * 
+ *
  *
  * @param {Icon} icon The icon. The now working icon types are the Gio icons,
  *                    Clutter textures, and names.
@@ -421,7 +421,7 @@ const InternalButton = new Lang.Class({
     _init: function(icon, iconSize, labelTextID, params) {
         this.parent(icon, iconSize, labelTextID, params);
     },
-    
+
 
     /**
      * @description Function that is called in case of a press event. It
@@ -441,7 +441,7 @@ const InternalButton = new Lang.Class({
             this.actor.remove_style_pseudo_class('active');
 
             this._btnHandlers[button](actor, event);
-            
+
             // no notify activation.
 
             return Clutter.EVENT_STOP;
@@ -549,7 +549,7 @@ const ToggleButton = new Lang.Class({
         let button = event.get_button();
         if (this._btnHandlers[button]) {
             this.toggleState();
-            
+
             this.actor.remove_style_pseudo_class('pressed');
             this.actor.remove_style_pseudo_class('active');
 

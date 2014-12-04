@@ -47,7 +47,7 @@ const MOUSEBUTTON = Me.imports.scripts.menu.components.elements.menubutton.EMous
  */
 const WORKSPACE_SWITCH_WAIT_TIME = 200;
 /**
- * Delay between two category changes. 
+ * Delay between two category changes.
  * @private
  */
 const CATEGORY_SWITCH_WAIT_TIME = 50;
@@ -63,10 +63,10 @@ const CATEGORY_SWITCH_WAIT_TIME = 50;
  *
  * @description The constructor creates the actor of the basic navigationbox
  *              and takes for this some parameters.
- * 
- *        
+ *
+ *
  * @param {Object} params Layout parameters for the actor.
- * 
+ *
  * @property {Clutter.Actor} actor The clutter actor of this component.
  *
  *
@@ -139,7 +139,7 @@ const NavigationBox = new Lang.Class({
  * @description For this class to work properly you need to provide a valid
  *              mediator instance. The constructor then creates the actor
  *              and starts listening to changes in the workspaces.
- * 
+ *
  *
  * @param {MenuModel} model A model instance.
  * @param {MenuMediator} mediator A mediator instance.
@@ -209,7 +209,7 @@ const WorkspaceBox = new Lang.Class({
      */
     activateFirst: function() {
         let metaWorkspace = global.screen.get_workspace_by_index(0);
-		if (metaWorkspace) {
+        if (metaWorkspace) {
             metaWorkspace.activate(true);
         }
     },
@@ -263,9 +263,9 @@ const WorkspaceBox = new Lang.Class({
      * @memberOf WorkspaceBox#
      */
     _switch: function(diff) {
-		let newIndex = global.screen.get_active_workspace().index() + diff;
+        let newIndex = global.screen.get_active_workspace().index() + diff;
         let metaWorkspace = global.screen.get_workspace_by_index(newIndex);
-		if (metaWorkspace) {
+        if (metaWorkspace) {
             metaWorkspace.activate(true);
         }
     },
@@ -320,7 +320,7 @@ const WorkspaceBox = new Lang.Class({
  *
  * @description The constructor creates the actor of the element. You need
  *              to provide valid mediator and model instances.
- * 
+ *
  *
  * @param {MenuModel} model A model instance.
  * @param {MenuMediator} mediator A mediator instance.
@@ -491,7 +491,7 @@ const CategoryBox = new Lang.Class({
     destroy: function() {
         this.actor.destroy();
     },
-    
+
     /**
      * @description Removes unneeded effects like the hover style.
      * @function
@@ -514,7 +514,7 @@ const CategoryBox = new Lang.Class({
  *
  * @description The constructor creates a scrollview as actor and inits all
  *              viewmode elements. @see UpdateableComponent
- * 
+ *
  *
  * @param {MenuModel} model A model instance.
  * @param {MenuMediator} mediator A mediator instance.
@@ -563,7 +563,7 @@ const NavigationArea = new Lang.Class({
         // Listen for keyboard events to control the views with the keyboard.
         this._keyPressID = this.actor.connect('key_press_event', Lang.bind(this, this._onKeyboardEvent));
         // I want the boxes to react on scroll events.
-		this._scrollID = this.actor.connect('scroll-event', Lang.bind(this, this._onScrollEvent));
+        this._scrollID = this.actor.connect('scroll-event', Lang.bind(this, this._onScrollEvent));
 
         this.refresh();
     },
@@ -625,7 +625,7 @@ const NavigationArea = new Lang.Class({
 
         this.actor.destroy();
     },
-    
+
     /**
      * @description Removes unneeded effects like the hover style.
      * @function
@@ -856,8 +856,8 @@ const NavigationArea = new Lang.Class({
      * @function
      * @memberOf NavigationArea#
      */
-	_onScrollEvent : function(actor, event) {
-		let direction = event.get_scroll_direction();
+    _onScrollEvent : function(actor, event) {
+        let direction = event.get_scroll_direction();
         switch (direction) {
 
             case Clutter.ScrollDirection.UP:
@@ -873,7 +873,7 @@ const NavigationArea = new Lang.Class({
         }
 
         return Clutter.EVENT_STOP;
-	},
+    },
 
     /**
      * @description Handles the keyboard events. The third parameter allows me
@@ -893,10 +893,10 @@ const NavigationArea = new Lang.Class({
 
         // Prevents too fast changes.
         let currentTime = global.get_current_time();
-		if (this._tLastScroll && currentTime < this._tLastScroll + CATEGORY_SWITCH_WAIT_TIME) {
+        if (this._tLastScroll && currentTime < this._tLastScroll + CATEGORY_SWITCH_WAIT_TIME) {
             return Clutter.EVENT_STOP;
-		}
-		this._tLastScroll = currentTime;
+        }
+        this._tLastScroll = currentTime;
 
         let state = event.get_state();
         let ctrl_pressed = (state & Clutter.ModifierType.CONTROL_MASK ? true : false);

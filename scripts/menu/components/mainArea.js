@@ -53,10 +53,10 @@ const BUTTON_SWITCH_WAIT_TIME = 50;
  *            be provided with searchresult event, ie model update events to work
  *            properly. If you provide the component with keyfocus it is possible
  *            to use the keyboard controls.
- * 
+ *
  * @description @see UpdateableComponent
  *
- * 
+ *
  * @param {MenuModel} model A model instance.
  * @param {MenuMediator} mediator A mediator instance.
  *
@@ -141,7 +141,7 @@ const MainArea = new Lang.Class({
 
         this.actor.destroy();
     },
-    
+
     /**
      * @description Removes unneeded effects like the hover style.
      * @function
@@ -358,10 +358,10 @@ const MainArea = new Lang.Class({
 
         // Prevents too fast changes.
         let currentTime = global.get_current_time();
-		if (this._tLastScroll && currentTime < this._tLastScroll + BUTTON_SWITCH_WAIT_TIME) {
+        if (this._tLastScroll && currentTime < this._tLastScroll + BUTTON_SWITCH_WAIT_TIME) {
             return Clutter.EVENT_STOP;
-		}
-		this._tLastScroll = currentTime;
+        }
+        this._tLastScroll = currentTime;
 
         let state = event.get_state();
         let ctrl_pressed = (state & Clutter.ModifierType.CONTROL_MASK ? true : false);

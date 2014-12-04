@@ -282,7 +282,7 @@ const ButtonGroup = new Lang.Class({
             button.deselect();
         }
     },
-    
+
     /**
      * @description Removes style modifier without valueable meaning.
      * @function

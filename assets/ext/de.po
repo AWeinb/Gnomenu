@@ -1,0 +1,231 @@
+# Localization of the GnoMenu. This data is only for the menu, not the preferences.
+# Copyright (C) 2014 THE PANACEA PROJECTS
+# This file is distributed under the same license as the GnoMenu package.
+# AxP <Der_AxP@t-online.de>, 2014.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: 1.0\n"
+"Report-Msgid-Bugs-To: The GnoMenu GitHub Page\n"
+"POT-Creation-Date: 2014-11-23 18:13+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: AxP <Der_AxP@t-online.de>\n"
+"Language-Team: -\n"
+"Language: DE\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+
+# -------------------------------------------------------
+# search provider
+
+msgid "provider_applications"
+msgstr "Ergebnisse aus allen Anwendungen"
+
+msgid "provider_gno"
+msgstr "Ergebnisse vom Gno"
+
+
+# -------------------------------------------------------
+
+#. Translation for the ALL APPS Category Button.
+#: menuModel.js:60
+msgid "All Apps"
+msgstr "Alle Anwendungen"
+
+#. Translation for the MOST USED Category Button.
+#: menuModel.js:60
+msgid "Most-Used"
+msgstr "Häufig-Genutzt"
+
+#. Translation for the FAVORITES Category Button.
+#: menuModel.js:60
+msgid "Favorites"
+msgstr "Favoriten"
+
+#. Translation for the RECENT FILES Category Button.
+#: menuModel.js:60
+msgid "Recent"
+msgstr "Kürzliches"
+
+#. Translation for the PLACES Category Button.
+#: menuModel.js:60
+msgid "Places"
+msgstr "Orte"
+
+#. Translation for the DEVICES Category Button.
+#: menuModel.js:60
+msgid "Devices"
+msgstr "Geräte"
+
+#. Translation for the NETWORK DEVICES Category Button.
+#: menuModel.js:60
+msgid "Network"
+msgstr "Netzwerk"
+
+#. Translation for the BOOKMARKS Category Button.
+#: menuModel.js:60
+msgid "Bookmarks"
+msgstr "Lesezeichen"
+
+#. Translation for the WEB BOOKMARKS Category Button.
+#: menuModel.js:60
+msgid "Web"
+msgstr "Web"
+
+# -------------------------------------------------------
+
+
+#. Translation for the ALL APPS Category Description.
+#: menuModel.js:70
+msgid "All-Apps Description"
+msgstr "Alle Anwendungen des Systems"
+
+#. Translation for the MOST USED Category Description.
+#: menuModel.js:70
+msgid "Most-Used Description"
+msgstr "Häufig genutze Programme des Systems"
+
+#. Translation for the FAVORITES Category Description.
+#: menuModel.js:70
+msgid "Favorites Description"
+msgstr "Zeigt die Favoriten an"
+
+#. Translation for the RECENT FILES Category Description.
+#: menuModel.js:70
+msgid "Recent-Files Description"
+msgstr "Vor kurzem verwendete Dateien"
+
+#. Translation for the PLACES Category Description.
+#: menuModel.js:70
+msgid "Places Description"
+msgstr "Wichtige Ordner des Systems"
+
+#. Translation for the DEVICES Category Description.
+#: menuModel.js:70
+msgid "Devices Description"
+msgstr "Angeschlossene Festplatten oder USB-Sticks"
+
+#. Translation for the NETWORK DEVICES Category Description.
+#: menuModel.js:70
+msgid "Network-Devices Description"
+msgstr "Zeigt die erkannten Netzwerk-Geräte an"
+
+#. Translation for the BOOKMARKS Category Description.
+#: menuModel.js:70
+msgid "Bookmarks Description"
+msgstr "Ordner-Lesezeichen des Systems"
+
+#. Translation for the WEB BOOKMARKS Category Description.
+#: menuModel.js:70
+msgid "Web-Bookmarks Description"
+msgstr "Webseiten-Lesezeichen aus dem Browser"
+
+#. Translation for the GENERIC Category Description.
+#: menuModel.js:70
+msgid "Category Description"
+msgstr " "
+
+# -------------------------------------------------------
+
+
+#. Translation for the VIEWMODE LIST Button.
+#: viewmodePane.js:60
+msgid "List Viewmode"
+msgstr "Listenansicht"
+
+#. Translation for the VIEWMODE LIST Button Description.
+#: viewmodePane.js:60
+msgid "List Viewmode Description"
+msgstr "Zeigt die Programme in einer Liste"
+
+#. Translation for the VIEWMODE GRID Button.
+#: viewmodePane.js:60
+msgid "Grid Viewmode"
+msgstr "Rasteransicht"
+
+#. Translation for the VIEWMODE GRID Button Description.
+#: viewmodePane.js:60
+msgid "Grid Viewmode Description"
+msgstr "Zeigt die Programme in einem Raster"
+
+# -------------------------------------------------------
+
+
+#. Translation for the POWER-OFF CONTROL Button.
+#: controlPane.js:70
+msgid "Power Off"
+msgstr "Ausschalten"
+
+#. Translation for the POWER-OFF CONTROL Button Description.
+#: controlPane.js:70
+msgid "PowerOff Description"
+msgstr "Fährt den Computer herunter"
+
+#. Translation for the POWER-OFF CONTROL Button.
+#: controlPane.js:70
+msgid "Suspend"
+msgstr "In Bereitschaft versetzen"
+
+#. Translation for the POWER-OFF CONTROL Button Description.
+#: controlPane.js:70
+msgid "Suspend Description"
+msgstr "Schaltet die meisten Geräte des PCs aus"
+
+#. Translation for the POWER-OFF CONTROL Button.
+#: controlPane.js:70
+msgid "Log Out"
+msgstr "Abmelden"
+
+#. Translation for the POWER-OFF CONTROL Button Description.
+#: controlPane.js:70
+msgid "Log Out Description"
+msgstr "Meldet den Benutzer ab"
+
+#. Translation for the POWER-OFF CONTROL Button.
+#: controlPane.js:70
+msgid "Lock"
+msgstr "Sperren"
+
+#. Translation for the POWER-OFF CONTROL Button Description.
+#: controlPane.js:70
+msgid "Lock Description"
+msgstr "Sperrt den Computer"
+
+#. Translation for the POWER-OFF CONTROL Button.
+#: controlPane.js:70
+msgid "Restart Shell"
+msgstr "Benutzeroberfläche neustarten"
+
+#. Translation for the POWER-OFF CONTROL Button Description.
+#: controlPane.js:70
+msgid "Restart Shell Description"
+msgstr "Lädt die Oberflächenelemente neu"
+
+# -------------------------------------------------------
+
+
+#. Translation for the Search Hint.
+#: searchField.js:70
+msgid "Type to search…"
+msgstr "Suchbegriff eingeben …"
+
+#. Translation for the Search "No-Result" Hint.
+#: searchField.js:70
+msgid "No results."
+msgstr "Keine Ergebnisse."
+
+# -------------------------------------------------------
+
+
+#. Translation for the Settings Button.
+#: searchField.js:70
+msgid "Settings"
+msgstr "Einstellungen"
+
+#. Translation for the Settings Button Description.
+#: searchField.js:70
+msgid "Settings Description"
+msgstr "Mittlere Maustaste öffnet die Erweiterungsoptionen"

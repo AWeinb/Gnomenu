@@ -32,9 +32,9 @@ const Component = Me.imports.scripts.menu.components.component.Component;
  *            is used by the menu, ie the mediator to show information about the
  *            currently hovered element. It provides for this two labels, one for
  *            the title and one for the description.
- * 
+ *
  * @description @see Component
- * 
+ *
  *
  * @param {MenuModel} model A model instance.
  * @param {MenuMediator} mediator A mediator instance.

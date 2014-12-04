@@ -46,7 +46,7 @@ const MOUSEBUTTON = Me.imports.scripts.menu.components.elements.menubutton.EMous
  *            to select a button by viewmode ID.
  *
  * @description @see Component
- * 
+ *
  *
  * @param {MenuModel} model A model instance.
  * @param {MenuMediator} mediator A mediator instance.
@@ -128,7 +128,7 @@ const ViewModePane = new Lang.Class({
     destroy: function() {
         this.actor.destroy();
     },
-    
+
     /**
      * @description Removes unneeded effects like the hover style.
      * @function

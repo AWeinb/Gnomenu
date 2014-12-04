@@ -1,0 +1,270 @@
+# Localization of the GnoMenu. This data is only for the preferences.
+# Copyright (C) 2014 THE PANACEA PROJECTS
+# This file is distributed under the same license as the GnoMenu package.
+# AxP <Der_AxP@t-online.de>, 2014.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: 1.0\n"
+"Report-Msgid-Bugs-To: The GnoMenu GitHub Page\n"
+"POT-Creation-Date: 2014-11-23 18:13+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: AxP <Der_AxP@t-online.de>\n"
+"Language-Team: ?? <LL@li.org>\n"
+"Language: ??\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#.
+#: prefs.glade
+msgctxt ""
+msgid "Invalid Accelerator. Try F12, <Super>space, <Ctrl><Alt><Shift>a, etc."
+msgstr ""
+
+#. Info about the menu.
+#: prefs.glade:6
+msgctxt "text_nb3_infos"
+msgid "text_nb3_infos"
+msgstr ""
+
+#. Label for a settings area for general panel and menu settings.
+#: prefs.glade:53
+msgctxt "label"
+msgid "Common Options"
+msgstr ""
+
+#. Label for a switch to deactivate the main hot corner.
+#: prefs.glade:85
+msgctxt "label"
+msgid "Disable Main-Hotcorner"
+msgstr ""
+
+#. A label of a checkbutton and a textfield to set the shortcut key.
+#: prefs.glade:111
+msgctxt "label"
+msgid "Menu Shorcut-Key"
+msgstr ""
+
+#. Label for a switch to deactivate the menu button hotspot.
+#: prefs.glade:133
+msgctxt "label"
+msgid "Disable Menu-Hotspot"
+msgstr ""
+
+#. A label for a checkbutton and an area for settings for a specific panel button. (menu)
+#: prefs.glade:207
+msgctxt "label"
+msgid "Menubutton Options"
+msgstr ""
+
+#. Label for a textfield to set the menu button text.
+#: prefs.glade:241
+msgctxt "label"
+msgid "Menubutton Text"
+msgstr ""
+
+#. A label of a checkbutton and a textfield for setting the menu button icon name.
+#: prefs.glade:252
+msgctxt "label"
+msgid "Menubutton Icon"
+msgstr ""
+
+#. A label for a checkbutton and an area for settings for a specific panel button. (apps)
+#: prefs.glade:333
+msgctxt "label"
+msgid "Appsbutton Options"
+msgstr ""
+
+#. Label for a textfield to set the apps button text.
+#: prefs.glade:367
+msgctxt "label"
+msgid "Appsbutton Text"
+msgstr ""
+
+#. A label of a checkbutton and a textfield for setting the apps button icon name.
+#: prefs.glade:378
+msgctxt "label"
+msgid "Appsbutton Icon"
+msgstr ""
+
+#. A label for a checkbutton and an area for settings for a specific panel button. (workspace)
+#: prefs.glade:459
+msgctxt "label"
+msgid "Workspacebutton Options"
+msgstr ""
+
+#. Label for a textfield to set the workspace button text.
+#: prefs.glade:520
+msgctxt "label"
+msgid "Workspacebutton Text"
+msgstr ""
+
+#. A label of a checkbutton and a textfield for setting the workspace button icon name.
+#: prefs.glade:531
+msgctxt "label"
+msgid "Workspacebutton Icon"
+msgstr ""
+
+#. Notebook label 1
+#: prefs.glade:577
+msgctxt "button"
+msgid "Panel Settings"
+msgstr ""
+
+#. head of elements to modify sidebar options.
+#: prefs.glade:614
+msgctxt "label"
+msgid "Sidebar Options"
+msgstr ""
+
+#. Label for switch to activate sidebar.
+#: prefs.glade:646
+msgctxt "label"
+msgid "Activate Sidebar"
+msgstr ""
+
+#. Label for combobox to set default sidebar category.
+#: prefs.glade:675
+msgctxt "label"
+msgid "Default Sidebar Category"
+msgstr ""
+
+#. Label for combobox to set sidebar iconsize.
+#: prefs.glade:689
+msgctxt "label"
+msgid "Sidebar Iconsize"
+msgstr ""
+
+#. Entry of a combobox. Name of a category.
+#: prefs.glade:706
+msgctxt "combobox"
+msgid "Favorites"
+msgstr ""
+
+#. Entry of a combobox. Name of a category.
+#: prefs.glade:707
+msgctxt "combobox"
+msgid "Places"
+msgstr ""
+
+#. head of menu settings.
+#: prefs.glade:771
+msgctxt "label"
+msgid "Menu Options"
+msgstr ""
+
+#. Label for combobox to set menu layout.
+#: prefs.glade:803
+msgctxt "label"
+msgid "Menu Layout"
+msgstr ""
+
+#. Label for combobox to set menu startup category.
+#: prefs.glade:817
+msgctxt "label"
+msgid "Default Menu Category"
+msgstr ""
+
+#. Label for combobox to set the default viewmode.
+#: prefs.glade:831
+msgctxt "label"
+msgid "Menu View-Mode"
+msgstr ""
+
+#. Label for combobox to set the category selection method.
+#: prefs.glade:845
+msgctxt "label"
+msgid "Category Selection Method"
+msgstr ""
+
+#. Label for combobox to set the iconsize of the applist.
+#: prefs.glade:859
+msgctxt "label"
+msgid "Applist Iconsize"
+msgstr ""
+
+#. Label for combobox to set the iconsize of the appgrid.
+#: prefs.glade:873
+msgctxt "label"
+msgid "Appgrid Iconsize"
+msgstr ""
+
+#. Entry of a combobox.
+#: prefs.glade:890
+msgctxt "combobox"
+msgid "Large"
+msgstr ""
+
+#. Entry of a combobox.
+#: prefs.glade:891
+msgctxt "combobox"
+msgid "Medium"
+msgstr ""
+
+#. Entry of a combobox.
+#: prefs.glade:892
+msgctxt "combobox"
+msgid "Small"
+msgstr ""
+
+#. Entry of a combobox.
+#: prefs.glade:911
+msgctxt "combobox"
+msgid "Most Used"
+msgstr ""
+
+#. Entry for a combobox.
+#: prefs.glade:912
+msgctxt "combobox"
+msgid "All Apps"
+msgstr ""
+
+#. Entry of a combobox.
+#: prefs.glade:931
+msgctxt "combobox"
+msgid "List Mode"
+msgstr ""
+
+#. Entry of a combobox.
+#: prefs.glade:932
+msgctxt "combobox"
+msgid "Grid Mode"
+msgstr ""
+
+#. Entry of a combobox.
+#: prefs.glade:951
+msgctxt "combobox"
+msgid "Left Click"
+msgstr ""
+
+#. Entry of a combobox.
+#: prefs.glade:952
+msgctxt "combobox"
+msgid "Mouse Hover"
+msgstr ""
+
+#. head of elements to modify sidebar options.
+#: prefs.glade:1040
+msgctxt "label"
+msgid "Search Options"
+msgstr ""
+
+#. Label for a spintextbox to set the number of shown search results.
+#: prefs.glade:1072
+msgctxt "label"
+msgid "Max. Resultcount"
+msgstr ""
+
+#. Notebook label 2
+#: prefs.glade:1138
+msgctxt "button"
+msgid "Menu Settings"
+msgstr ""
+
+#. Notebook label 3
+#: prefs.glade:1200
+msgctxt "button"
+msgid "About"
+msgstr ""

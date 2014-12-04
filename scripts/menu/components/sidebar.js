@@ -52,7 +52,7 @@ const MOUSEBUTTON = Me.imports.scripts.menu.components.elements.menubutton.EMous
  *            model to keep it up-to-date.
  *
  * @description @see UpdateableComponent
- * 
+ *
  *
  * @param {MenuModel} model A model instance.
  * @param {MenuMediator} mediator A mediator instance.
@@ -159,7 +159,7 @@ const Sidebar = new Lang.Class({
     destroy: function() {
         this.actor.destroy();
     },
-    
+
     /**
      * @description Removes unneeded effects like the hover style.
      * @function

@@ -1,0 +1,231 @@
+# Localization of the GnoMenu. This data is only for the menu, not the preferences.
+# Copyright (C) 2014 THE PANACEA PROJECTS
+# This file is distributed under the same license as the GnoMenu package.
+# AxP <Der_AxP@t-online.de>, 2014.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: 1.0\n"
+"Report-Msgid-Bugs-To: The GnoMenu GitHub Page\n"
+"POT-Creation-Date: 2014-11-23 18:13+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: AxP <Der_AxP@t-online.de>\n"
+"Language-Team: -\n"
+"Language: EN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+
+# -------------------------------------------------------
+# search provider
+
+msgid "provider_applications"
+msgstr "Results from all apps"
+
+msgid "provider_gno"
+msgstr "Results from Gno"
+
+
+# -------------------------------------------------------
+
+#. Translation for the ALL APPS Category Button.
+#: menuModel.js:60
+msgid "All Apps"
+msgstr "All Applications"
+
+#. Translation for the MOST USED Category Button.
+#: menuModel.js:60
+msgid "Most-Used"
+msgstr "Most-Used"
+
+#. Translation for the FAVORITES Category Button.
+#: menuModel.js:60
+msgid "Favorites"
+msgstr "Favorites"
+
+#. Translation for the RECENT FILES Category Button.
+#: menuModel.js:60
+msgid "Recent"
+msgstr "Recent Files"
+
+#. Translation for the PLACES Category Button.
+#: menuModel.js:60
+msgid "Places"
+msgstr "Places"
+
+#. Translation for the DEVICES Category Button.
+#: menuModel.js:60
+msgid "Devices"
+msgstr "Devices"
+
+#. Translation for the NETWORK DEVICES Category Button.
+#: menuModel.js:60
+msgid "Network"
+msgstr "Network Devices"
+
+#. Translation for the BOOKMARKS Category Button.
+#: menuModel.js:60
+msgid "Bookmarks"
+msgstr "Bookmarks"
+
+#. Translation for the WEB BOOKMARKS Category Button.
+#: menuModel.js:60
+msgid "Web"
+msgstr "Web"
+
+# -------------------------------------------------------
+
+
+#. Translation for the ALL APPS Category Description.
+#: menuModel.js:70
+msgid "All-Apps Description"
+msgstr "All applications of the system"
+
+#. Translation for the MOST USED Category Description.
+#: menuModel.js:70
+msgid "Most-Used Description"
+msgstr "Your most-used applications"
+
+#. Translation for the FAVORITES Category Description.
+#: menuModel.js:70
+msgid "Favorites Description"
+msgstr "Your favorite applications"
+
+#. Translation for the RECENT FILES Category Description.
+#: menuModel.js:70
+msgid "Recent-Files Description"
+msgstr "The recently used files"
+
+#. Translation for the PLACES Category Description.
+#: menuModel.js:70
+msgid "Places Description"
+msgstr "Some important directories of the system"
+
+#. Translation for the DEVICES Category Description.
+#: menuModel.js:70
+msgid "Devices Description"
+msgstr "Connected Devices like harddrives or usb-sticks"
+
+#. Translation for the NETWORK DEVICES Category Description.
+#: menuModel.js:70
+msgid "Network-Devices Description"
+msgstr "Over network connected devices"
+
+#. Translation for the BOOKMARKS Category Description.
+#: menuModel.js:70
+msgid "Bookmarks Description"
+msgstr "The bookmarked directories of the system"
+
+#. Translation for the WEB BOOKMARKS Category Description.
+#: menuModel.js:70
+msgid "Web-Bookmarks Description"
+msgstr "The browser internet bookmarks"
+
+#. Translation for the GENERIC Category Description.
+#: menuModel.js:70
+msgid "Category Description"
+msgstr " "
+
+# -------------------------------------------------------
+
+
+#. Translation for the VIEWMODE LIST Button.
+#: viewmodePane.js:60
+msgid "List Viewmode"
+msgstr "Listview"
+
+#. Translation for the VIEWMODE LIST Button Description.
+#: viewmodePane.js:60
+msgid "List Viewmode Description"
+msgstr "Shows the apps as a list"
+
+#. Translation for the VIEWMODE GRID Button.
+#: viewmodePane.js:60
+msgid "Grid Viewmode"
+msgstr "Gridview"
+
+#. Translation for the VIEWMODE GRID Button Description.
+#: viewmodePane.js:60
+msgid "Grid Viewmode Description"
+msgstr "Shows the apps in a grid"
+
+# -------------------------------------------------------
+
+
+#. Translation for the POWER-OFF CONTROL Button.
+#: controlPane.js:70
+msgid "Power Off"
+msgstr "Power Off"
+
+#. Translation for the POWER-OFF CONTROL Button Description.
+#: controlPane.js:70
+msgid "PowerOff Description"
+msgstr "Shuts the computer down"
+
+#. Translation for the POWER-OFF CONTROL Button.
+#: controlPane.js:70
+msgid "Suspend"
+msgstr "Suspend"
+
+#. Translation for the POWER-OFF CONTROL Button Description.
+#: controlPane.js:70
+msgid "Suspend Description"
+msgstr "Suspends the computer"
+
+#. Translation for the POWER-OFF CONTROL Button.
+#: controlPane.js:70
+msgid "Log Out"
+msgstr "Log Out"
+
+#. Translation for the POWER-OFF CONTROL Button Description.
+#: controlPane.js:70
+msgid "Log Out Description"
+msgstr "Logs out the user"
+
+#. Translation for the POWER-OFF CONTROL Button.
+#: controlPane.js:70
+msgid "Lock"
+msgstr "Lock"
+
+#. Translation for the POWER-OFF CONTROL Button Description.
+#: controlPane.js:70
+msgid "Lock Description"
+msgstr "Locks the computer"
+
+#. Translation for the POWER-OFF CONTROL Button.
+#: controlPane.js:70
+msgid "Restart Shell"
+msgstr "Restart Shell"
+
+#. Translation for the POWER-OFF CONTROL Button Description.
+#: controlPane.js:70
+msgid "Restart Shell Description"
+msgstr "Restarts the shell and recreates the view elements"
+
+# -------------------------------------------------------
+
+
+#. Translation for the Search Hint.
+#: searchField.js:70
+msgid "Type to search…"
+msgstr "Type to search…"
+
+#. Translation for the Search "No-Result" Hint.
+#: searchField.js:70
+msgid "No results."
+msgstr "No results."
+
+# -------------------------------------------------------
+
+
+#. Translation for the Settings Button.
+#: searchField.js:70
+msgid "Settings"
+msgstr "Settings"
+
+#. Translation for the Settings Button Description.
+#: searchField.js:70
+msgid "Settings Description"
+msgstr "Extension settings accessible with mouse-middle press"

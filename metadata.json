@@ -2,9 +2,9 @@
   "name":        "TestMenu",
   "description": "Lorem ipsum sit alum anus dolor semper bla.",
   
-  "gettext-domain":       "testMenuGettext",
+  "gettext-domain":       "extGettext",
   "gettext-dir":          "/locale",
-  "gettext-prefs-domain": "testMenuPrefsGettext",
+  "gettext-prefs-domain": "prefsGettext",
   "gettext-prefs-dir":    "/locale",
   
   "prefs-glade-file": "/assets/prefs.glade",

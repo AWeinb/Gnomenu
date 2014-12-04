@@ -31,6 +31,8 @@ const PanelBox = Me.imports.scripts.panel.PanelBox;
 const Convenience = Me.imports.scripts.misc.convenience;
 const StyleManager = Me.imports.scripts.misc.styleManager.StyleManager;
 
+imports.gettext.textdomain(Me.metadata['gettext-domain']);
+imports.gettext.bindtextdomain(Me.metadata['gettext-domain'], Me.path + Me.metadata['gettext-dir']);
 
 /* This can be removed if it is sure that this variables exist. */
 if (Clutter.EVENT_PROPAGATE == undefined) Clutter.EVENT_PROPAGATE = false;

@@ -46,7 +46,7 @@ const EViewMode = MenuModel.EViewMode;
  *
  * @description Creates basic functions which are useful for every kind of box.
  *              It does not create an actor.
- * 
+ *
  *
  * @param {MenuMediator} mediator A mediator instance.
  *
@@ -428,7 +428,7 @@ const ShortcutBoxBase = new Lang.Class({
             this.actor.destroy();
         }
     },
-    
+
     /**
      * @description Removes unneeded effects like the hover style.
      * @function
@@ -438,7 +438,7 @@ const ShortcutBoxBase = new Lang.Class({
         if (!this._selectedButtonMap) {
             return;
         }
-        
+
         for each (let btn in this._selectedButtonMap) {
             btn.clean();
         }
@@ -459,7 +459,7 @@ const ShortcutBoxBase = new Lang.Class({
  *            important parts of the keyboard controls.
  *
  * @description Creates the actor for this component.
- * 
+ *
  *
  * @param {MenuMediator} mediator A mediator instance.
  *
@@ -564,7 +564,7 @@ const ShortcutList = new Lang.Class({
  *            the same as the ones of the list.
  *
  * @description Creates the actor for this component.
- * 
+ *
  *
  * @param {MenuMediator} mediator A mediator instance.
  *
@@ -766,7 +766,7 @@ const ShortcutArea = new Lang.Class({
 
         this.actor.destroy();
     },
-    
+
     /**
      * @description Removes unneeded effects like the hover style.
      * @function

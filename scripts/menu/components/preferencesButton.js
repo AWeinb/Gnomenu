@@ -45,7 +45,7 @@ const MOUSEBUTTON = Me.imports.scripts.menu.components.elements.menubutton.EMous
  *            the boxlayout.
  *
  * @description @see Component
- * 
+ *
  *
  * @param {MenuModel} model A model instance.
  * @param {MenuMediator} mediator A mediator instance.
@@ -121,7 +121,7 @@ const PreferencesButton = new Lang.Class({
     destroy: function() {
         this.actor.destroy();
     },
-    
+
     /**
      * @description Removes unneeded effects like the hover style.
      * @function
@@ -130,7 +130,7 @@ const PreferencesButton = new Lang.Class({
     clean: function() {
         this._extensionPreferencesBtn.clean();
     },
-    
+
     /**
      * @description This method opens the gnome control center.
      * @function

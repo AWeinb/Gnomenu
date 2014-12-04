@@ -1,6 +1,6 @@
 /*
     Copyright (C) 2014-2015, Gnome Shell
-    
+
     Modified by passingthru67 <panacier@gmail.com> and
                 AxP <Der_AxP@t-online.de>
     to fit better into the menu.
@@ -807,35 +807,35 @@ const GnoMenuThumbnailsBox = new Lang.Class({
 
         for (let w = 0; w < this._thumbnails.length; w++)
             this._thumbnails[w].destroy();
-            
+
         this._activeThumbnail = null;
         this._thumbnails = [];
     },
-    
+
     getActiveThumbnailBounds: function() {
         if (!this._activeThumbnail) {
             return null;
         }
-        
+
         let elemBox = this._activeThumbnail.actor.get_allocation_box();
         let newX1 = elemBox.x1;
         let newX2 = elemBox.x1 + (elemBox.x2 - elemBox.x1) * this._scale;
         let newY1 = elemBox.y1;
         let newY2 = elemBox.y1 + (elemBox.y2 - elemBox.y1) * this._scale;
-        
+
         let themeNode = this.actor.get_theme_node();
         let spacing = themeNode.get_length('spacing');
-        
-        return { x1: newX1, x2: newX2, y1: newY1, y2: newY2 + spacing };  
+
+        return { x1: newX1, x2: newX2, y1: newY1, y2: newY2 + spacing };
     },
-    
+
     getEstimatedHeight: function() {
         if (this._thumbnails.length == 0) {
             return 0;
         }
-        
+
         let thumbnailHeight = this._porthole.height;
-        
+
         let themeNode = this.actor.get_theme_node();
         let spacing = themeNode.get_length('spacing');
 
@@ -854,7 +854,7 @@ const GnoMenuThumbnailsBox = new Lang.Class({
                 break;
             }
         }
-        
+
         if (!thumbnail || !thumbnail.actor) {
             return;
         }

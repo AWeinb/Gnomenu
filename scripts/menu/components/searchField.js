@@ -42,7 +42,7 @@ const Component = Me.imports.scripts.menu.components.component.Component;
  *
  * @description @see Component
  *
- * 
+ *
  * @param {MenuModel} model A model instance.
  * @param {MenuMediator} mediator A mediator instance.
  *
@@ -82,7 +82,7 @@ const SearchField = new Lang.Class({
          */
         this.actor = new St.BoxLayout({ style_class: 'gnomenu-search-box' });
         // This is the actual textfield.
-        this._searchEntry = new St.Entry({ name: 'searchEntry', style_class: 'search-entry-icon gnomenu-search-searchEntry', hint_text: _('Type to Search'), track_hover: true, can_focus: true });
+        this._searchEntry = new St.Entry({ name: 'searchEntry', style_class: 'search-entry-icon gnomenu-search-searchEntry', hint_text: _('Type to search…'), track_hover: true, can_focus: true });
         this.actor.add(this._searchEntry, { expand: true, x_align: St.Align.START, y_align: St.Align.START });
         this._searchEntryText = this._searchEntry.clutter_text;
 

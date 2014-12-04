@@ -27,7 +27,7 @@ const Log = Me.imports.scripts.misc.log;
 
 /**
  * @class Component
- * 
+ *
  * @classdesc Represents a basic menu component and provides some often used
  *            functions. Some of the declared functions are not implemented and
  *            need to be created by subclasses.
@@ -167,7 +167,7 @@ const Component = new Lang.Class({
  *            by the model observer to update the components. @see Component
  *
  * @description @see Component
- * 
+ *
  *
  * @param {MenuModel} model A model instance.
  * @param {MenuMediator} mediator A mediator instance.
