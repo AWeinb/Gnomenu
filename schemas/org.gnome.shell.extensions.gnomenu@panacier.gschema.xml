@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<schemalist gettext-domain="testMenuGettext">
+<schemalist gettext-domain="prefsGettext">
 
     <enum id='org.gnome.shell.extensions.testMenu.categorySelectionMethod'>
         <value value='20' nick='selectionMethod_click'/>
@@ -28,7 +28,7 @@
     </enum>
 
 
-    <schema path="/org/gnome/shell/extensions/testmenu/" id="org.gnome.shell.extensions.testmenu">
+    <schema path="/org/gnome/shell/extensions/gnomenu@panacier/" id="org.gnome.shell.extensions.gnomenu@panacier">
 
         <key type="b" name="disable-activities-hotcorner">
             <default>true</default>

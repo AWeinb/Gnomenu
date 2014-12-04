@@ -1,6 +1,6 @@
 {
-  "name":        "TestMenu",
-  "description": "Lorem ipsum sit alum anus dolor semper bla.",
+  "name":        "Gno-Menu",
+  "description": "Gno-Menu is a traditional styled full featured Gnome-Shell apps menu, that aims to offer all the essentials in a simple uncluttered intuitive interface.",
   
   "gettext-domain":       "extGettext",
   "gettext-dir":          "/locale",
@@ -9,7 +9,7 @@
   
   "prefs-glade-file": "/assets/prefs.glade",
   
-  "settings-schema": "org.gnome.shell.extensions.testmenu",
+  "settings-schema": "org.gnome.shell.extensions.gnomenu@panacier",
   
   "stylesheets-path": "/themes/default/",
 
@@ -17,7 +17,7 @@
     "3.10"
   ],
   
-  "url":     "https://www.TestMenu.com",
-  "uuid":    "testmenu-uuid",
+  "url":     "https://github.com/The-Panacea-Projects/Gnomenu",
+  "uuid":    "gnomenu@panacier.gmail.com",
   "version": 10
 }
